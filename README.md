@@ -1,4 +1,5 @@
-# django-jbank
+django-jbank
+============
 
 Basic Finnish bank file format support for Django projects
 
