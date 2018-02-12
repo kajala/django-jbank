@@ -1,0 +1,63 @@
+{
+    "xmlns": "http://bxd.fi/xmldata/",
+    "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "CustomerId": "55768601",
+    "Timestamp": "2018-02-07T11:28:41.520+02:00",
+    "ResponseCode": "00",
+    "ResponseText": "OK",
+    "Encrypted": "false",
+    "Compressed": "false",
+    "AmountTotal": "49.00",
+    "TransactionCount": "1",
+    "FileDescriptors": {
+        "FileDescriptor": [
+            {
+                "FileReference": "547945197",
+                "TargetId": "NONE",
+                "FileType": "XL",
+                "FileTimestamp": "2018-02-07T11:28:41.520+02:00",
+                "Status": "WFP",
+                "AmountTotal": "49.00",
+                "TransactionCount": "1",
+                "Deletable": "false"
+            }
+        ]
+    },
+    "FileType": "XL",
+    "Signature": {
+        "SignedInfo": {
+            "CanonicalizationMethod": {
+                "Algorithm": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+            },
+            "SignatureMethod": {
+                "Algorithm": "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+            },
+            "Reference": {
+                "Transforms": {
+                    "Transform": [
+                        {
+                            "Algorithm": "http://www.w3.org/2000/09/xmldsig#enveloped-signature"
+                        },
+                        {
+                            "Algorithm": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+                        }
+                    ]
+                },
+                "DigestMethod": {
+                    "Algorithm": "http://www.w3.org/2000/09/xmldsig#sha1"
+                },
+                "DigestValue": "JYoEqJCp/2pnmvnzhr6pqsvWM3I="
+            }
+        },
+        "SignatureValue": "Ux7uSnTis/0Bbl4w6DpaqpYzxPlZrUNKbRp5+2RLUNnguwE3gsMBvTDaW7Aq5jwEzCFZqwIQAgwT7aX8JpnfgvsI7emuVUb4kmLPCPlFiLvyPzHADGX2O2nmU57e5EqRClYaxpPY4prDWfwvl3zaO9lUxcmDhAccSfWkJb1LlV1UYbTh/TX1+og7+2hjhoQ/0a1qeNduGy55jx//3GM+DK9FQ2cZcm+I+kFV37gINbh/7SyzRdEhjkHh1+HA+hAfzYC696B3n/KytvYujFi4brjCXNP1rPT9FlIAuuB8wsdSKr7CW7R+KRyvDojc8YqI3WAbntIfdN2bZvh/f39pEw==",
+        "KeyInfo": {
+            "X509Data": {
+                "X509Certificate": "MIIE6jCCAtKgAwIBAgIRALnlnUQheKd3tDjvt09n9yMwDQYJKoZIhvcNAQELBQAwPTELMAkGA1UEBhMCRkkxEDAOBgNVBAoMB1NhbWxpbmsxHDAaBgNVBAMME1NhbWxpbmsgQ3VzdG9tZXIgQ0EwHhcNMTcwOTExMTEwNTEzWhcNMjAwOTEwMTEwNTEzWjBWMQswCQYDVQQGEwJGSTEhMB8GA1UECgwYQWluZWlzdG9wYWx2ZWx1dC1TYW1saW5rMREwDwYDVQQDDAhTRVBBV0VCUzERMA8GA1UEBAwIMDAwMDAwMDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDaQzawuAvtr1Lg7w2Kb0Z9eAFluPCZTgvDP8OZOf37vAfrFe9Krf56NySgSjbzaag69+ISCwbQnN06aRg8/lL/1t+O0PzeNgdWffHACjBJKCry3EFaLZS0s8V3huZ4bGSsO/bosjcfFXjx55z1Y4x9fnWjhtMRD2anC16rSYdnSPTox7Ph1pIMvBLnb9BqztIOQK6xDdbHzX6fVnYWe58x7WHCGFQKWQfaFTKQZFlwQFd12TW7vt4B2wLOyTYvnPdDDproZc1CBegzVFNGoa00EeeS8p5BlbmP745ULyHcw+9WwtzKDWdciYKFg4tQ42pJHUoo4h9pSybWJSkP1U1XAgMBAAGjgcswgcgwHwYDVR0jBBgwFoAUyoA4M5OKYwSRjQVpVmhCNeXH/7wwdgYDVR0fBG8wbTBroGmgZ4ZlbGRhcDovLzE5NC4yNTIuMTI0LjI0MTozODkvY249U2FtbGluayUyMEN1c3RvbWVyJTIwQ0Esbz1TYW1saW5rLGM9Zmk/Y2VydGlmaWNhdGVyZXZvY2F0aW9ubGlzdDtiaW5hcnkwDgYDVR0PAQH/BAQDAgTwMB0GA1UdDgQWBBRAKA6XVEG1vSt+Zdit8sIDXpi3ljANBgkqhkiG9w0BAQsFAAOCAgEAOSRWbWEcCWEpCPoe3Gk2t8lK+6gCdOx37R6yloQmqDRzUeCA/Sju/4Xta5UGBQFiR89zm81YAmMpI3bb7+tIpqhLyTQze6OEoTE2BAf9O0H7APKUo/ddPE7F6+NN3EaTMnX2RAgzVtr/g3Ce+dLexJPgLP14B7s8fBwH0te4CMKr9hNAabepl6XIMHZJRIr4oDPvdHtDHsSwREhnfhy7QCmLLyu3vYi+/g37srfdcl2An9KBKoB6ExTZ5Te/g7S0aLWj0+jWoy4pXtErh4Q+ke8UxvjZlmTAPyKG6SIsxubj+XE3f20Ov0F82LscTirm37vFEwI0c1/wsp0FVexoicknUOIaPbwtjasHQKRXXWqdD6036NUG9KvLTDQenIlh1iTKRx5LLOpUryVnoQIqhsQMaq6UDm7Z25uR+A83yz95NgiL9CiryhWfCtoEhENIeT9PoXribxW5oy7fPXqq/sZva9OtrfR1Rrx60mNKzpGzKMacaN81wAJQ6z6j35m5kFnEgx7xKuMwGxPDu1XaCl0QQ3Dlc1ESHsH5mAbtlHqmfx7ojjjTIe8OaO82z4f2o0VppNOYNXl7WzfDKVAG2jpU7imwmEPKpZ9zJ+K7F/4sb3DMLfyCapaipjTWVoaxCOhEZxCOOJw5kPzmH7SJTxm98HSUTMAB6zQDu41NQAo=",
+                "X509IssuerSerial": {
+                    "X509IssuerName": "CN=Samlink Customer CA, O=Samlink, C=FI",
+                    "X509SerialNumber": "247099404936995603562179025757878613795"
+                }
+            }
+        }
+    }
+}

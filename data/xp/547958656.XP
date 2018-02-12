@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.002.001.03"><CstmrPmtStsRpt>                                                                                                                                                                                 
+<GrpHdr>
+<MsgId>V000000009726773</MsgId>
+<CreDtTm>2018-02-07T12:04:51+02:00</CreDtTm>
+<FwdgAgt>
+<FinInstnId>
+<BIC>           </BIC>
+</FinInstnId>
+</FwdgAgt>
+<DbtrAgt>
+<FinInstnId>
+<BIC>POPFFI22XXX</BIC>
+</FinInstnId>
+</DbtrAgt>
+</GrpHdr>
+<OrgnlGrpInfAndSts>
+<OrgnlMsgId>201802071211XJANITEST</OrgnlMsgId>
+<OrgnlMsgNmId>PAIN.001.001.03</OrgnlMsgNmId>
+<OrgnlNbOfTxs>1</OrgnlNbOfTxs>
+<OrgnlCtrlSum>49.00</OrgnlCtrlSum>
+<GrpSts>ACCP</GrpSts>
+</OrgnlGrpInfAndSts>
+</CstmrPmtStsRpt>
+</Document>
