@@ -49,24 +49,25 @@ class Tests(TestCase):
         self.assertEqual(res.returncode, 0)
 
     def test_to(self):
-        filename = join(settings.BASE_DIR, 'data/to/538152264.TO')
+        filename = join(settings.BASE_DIR, 'data/to/547404896.TO')
         statements = parse_tiliote_statements_from_file(filename)
-        rec = statements[1]['records'][0]
+        rec = statements[0]['records'][0]
         # pprint(rec)
-        self.assertEqual(rec['amount'], Decimal('-5256.70'))
-        self.assertEqual(rec['archive_identifier'], '171207473047IE0423')
-        self.assertEqual(rec['paid_date'], date(2017, 12, 7))
-        self.assertEqual(rec['sepa']['iban_account_number'], 'GB41BARC20473575193933')
+        self.assertEqual(rec['amount'], Decimal('-1799.00'))
+        self.assertEqual(rec['archive_identifier'], '180203473047IE5807')
+        self.assertEqual(rec['paid_date'], date(2018, 2, 3))
+        self.assertEqual(rec['sepa']['iban_account_number'], 'FI8847304720017517')
 
     def test_svm(self):
-        filename = join(settings.BASE_DIR, 'data/svm/539042873.SVM')
+        filename = join(settings.BASE_DIR, 'data/svm/547392460.SVM')
         batches = parse_svm_batches_from_file(filename)
         recs = batches[0]['records']
         self.assertEqual(len(recs), 1)
         rec = recs[0]
-        self.assertEqual(rec['amount'], Decimal('1091.10'))
-        self.assertEqual(rec['archive_identifier'], '01022588WWNE0751')
-        self.assertEqual(rec['remittance_info'], '00000000000000102063')
+        # pprint(rec)
+        self.assertEqual(rec['amount'], Decimal('49.00'))
+        self.assertEqual(rec['archive_identifier'], '02042588WWRV0212')
+        self.assertEqual(rec['remittance_info'], '00000000000000013013')
 
     def test_xp(self):
         filename = join(settings.BASE_DIR, 'data/xp/547958656.XP')

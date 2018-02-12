@@ -23,7 +23,6 @@ class Command(SafeCommand):
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('path', type=str)
         parser.add_argument('--verbose', action='store_true')
-        parser.add_argument('--dump-records', action='store_true')
         parser.add_argument('--test', action='store_true')
         parser.add_argument('--delete-old', action='store_true')
         parser.add_argument('--auto-create-accounts', action='store_true')

@@ -15,6 +15,7 @@ class Command(SafeCommand):
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('path', type=str)
+        parser.add_argument('--test', action='store_true')
 
     def do(self, *args, **options):
         files = list_dir_files(options['path'], '.XP')
@@ -29,6 +30,9 @@ class Command(SafeCommand):
                 p = Payout.objects.filter(msg_id=s.original_msg_id).first()
                 ps = PayoutStatus(payout=p, file_name=f_base, msg_id=s.msg_id, original_msg_id=s.original_msg_id, group_status=s.group_status, status_reason=s.status_reason[:255])
                 ps.full_clean()
+                if options['test']:
+                    print(p, ps)
+                    continue
                 ps.save()
                 if p:
                     logger.info('{} status updated {}'.format(p, ps))
