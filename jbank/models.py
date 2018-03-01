@@ -175,7 +175,19 @@ class StatementRecordSepaInfo(models.Model):
         return '[{}]'.format(self.id)
 
 
+class ReferencePaymentBatchManager(models.Manager):
+    def latest_record_date(self) -> datetime:
+        """
+        :return: datetime of latest record available or None
+        """
+        obj = self.order_by('-record_date').first()
+        if not obj:
+            return None
+        return obj.record_date
+
+
 class ReferencePaymentBatch(AccountEntrySourceFile):
+    objects = ReferencePaymentBatchManager()
     file = models.ForeignKey('ReferencePaymentBatchFile', blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_('record date'), db_index=True)
     institution_identifier = models.CharField(_('institution identifier'), max_length=2)
