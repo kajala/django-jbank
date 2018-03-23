@@ -27,6 +27,8 @@ class Command(SafeCommand):
         parser.add_argument('--file-type', type=str, help='E.g. XL, NDCORPAYS, pain.001.001.03')
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--force', action='store_true')
+        parser.add_argument('--retry-error', action='store_true')
+        parser.add_argument('--ignore-uploaded', action='store_true')
         parser.add_argument('--move-to', type=str, help='Target directory for successfully uploaded files')
 
     def do(self, *args, **options):
@@ -42,8 +44,14 @@ class Command(SafeCommand):
             response_code = response_text = ''
 
             try:
-                if not options['force'] and p and p.is_upload_done:
-                    raise ValidationError(_('File already uploaded') + ' ({})'.format(p.group_status))
+                if not options['force']:
+                    if p:
+                        if p.state == PAYOUT_ERROR and not options['retry_error']:  # unless --retry-error
+                            continue
+                        if p.is_upload_done:
+                            if options['ignore_uploaded']:
+                                continue
+                            raise ValidationError(_('File already uploaded') + ' ({})'.format(p.group_status))
 
                 # upload file
                 logger.info('Uploading {} file {}'.format(file_type, filename_base))
