@@ -218,7 +218,7 @@ SVM_FILE_HEADER = (
     ('record_date', '9(6)', 'P'),
     ('record_time', '9(4)', 'P'),
     ('institution_identifier', 'X(2)', 'P'),
-    ('service_identifier', '9(9)', 'P'),
+    ('service_identifier', 'X(9)', 'P'),
     ('currency_identifier', 'X(1)', 'P'),
     ('pad01', 'X(67)', 'P'),
 )
@@ -525,8 +525,13 @@ def parse_tiliote_statements(content: str, filename: str) -> list:
     return statements
 
 
+def parse_filename_suffix(filename: str) -> str:
+    a = filename.rsplit('.', 1)
+    return a[len(a)-1]
+
+
 def parse_tiliote_statements_from_file(filename: str) -> dict:
-    if not filename.upper().endswith('.TO') and not filename.upper().endswith('.TXT'):
+    if parse_filename_suffix(filename).upper() not in ('TO', 'TXT'):
         raise ValidationError(_('Not "tiliote" (.TO) file') + ': {}'.format(filename))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
         return parse_tiliote_statements(fp.read(), filename=basename(filename))
@@ -583,7 +588,7 @@ def parse_svm_batches(content: str, filename: str) -> list:
 
 
 def parse_svm_batches_from_file(filename: str) -> dict:
-    if not filename.endswith('.SVM') and not filename.upper().endswith('.TXT'):
+    if parse_filename_suffix(filename).upper() not in ('SVM', 'TXT', 'KTL'):
         raise ValidationError(_('Not "saapuvat viitemaksut" (.SVM) file') + ': {}'.format(filename))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
         return parse_svm_batches(fp.read(), filename=basename(filename))

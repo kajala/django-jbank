@@ -13,7 +13,7 @@ SECRET_KEY = 'w+_-h3@0a57%cz68!-xspzfg4h+#z=%+ovct08q$vmvod3n=#o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'localhost.kajala.com']
 
 
 # Application definition
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'jutil',
     'jacc',
     'jbank',
 ]
