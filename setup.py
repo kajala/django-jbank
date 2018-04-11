@@ -8,7 +8,7 @@ install_requires = [str(ir.req) for ir in reqs if str(ir.req) != 'None']
 
 setup(
     name='django-jbank',
-    version='1.0.6',
+    version='1.0.7',
     author=u'Jani Kajala',
     author_email='kajala@gmail.com',
     packages=find_packages(exclude=['project', 'venv']),
