@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-09 10:16+0000\n"
+"POT-Creation-Date: 2018-04-19 13:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgstr ""
 msgid "statements"
 msgstr ""
 
-#: jbank/admin.py:527 jbank/models.py:187
+#: jbank/admin.py:527 jbank/models.py:199
 msgid "reference payment batches"
 msgstr ""
 
@@ -72,7 +72,7 @@ msgstr ""
 msgid "bank account"
 msgstr ""
 
-#: jbank/management/commands/wsedi_upload.py:46 jbank/models.py:315
+#: jbank/management/commands/wsedi_upload.py:54 jbank/models.py:327
 msgid "File already uploaded"
 msgstr ""
 
@@ -220,7 +220,7 @@ msgstr ""
 msgid "error"
 msgstr ""
 
-#: jbank/models.py:94 jbank/models.py:197 jbank/models.py:265
+#: jbank/models.py:94 jbank/models.py:209 jbank/models.py:277
 msgid "account number"
 msgstr ""
 
@@ -236,8 +236,8 @@ msgstr ""
 msgid "end date"
 msgstr ""
 
-#: jbank/models.py:98 jbank/models.py:131 jbank/models.py:180
-#: jbank/models.py:198
+#: jbank/models.py:98 jbank/models.py:131 jbank/models.py:192
+#: jbank/models.py:210
 msgid "record date"
 msgstr ""
 
@@ -289,7 +289,7 @@ msgstr ""
 msgid "IBAN"
 msgstr ""
 
-#: jbank/models.py:111 jbank/models.py:164 jbank/models.py:266
+#: jbank/models.py:111 jbank/models.py:164 jbank/models.py:278
 msgid "BIC"
 msgstr ""
 
@@ -301,7 +301,7 @@ msgstr ""
 msgid "record number"
 msgstr ""
 
-#: jbank/models.py:130 jbank/models.py:168 jbank/models.py:200
+#: jbank/models.py:130 jbank/models.py:168 jbank/models.py:212
 msgid "archive identifier"
 msgstr ""
 
@@ -309,7 +309,7 @@ msgstr ""
 msgid "value date"
 msgstr ""
 
-#: jbank/models.py:133 jbank/models.py:199 jbank/models.py:301
+#: jbank/models.py:133 jbank/models.py:211 jbank/models.py:313
 msgid "paid date"
 msgstr ""
 
@@ -317,7 +317,7 @@ msgstr ""
 msgid "entry type"
 msgstr ""
 
-#: jbank/models.py:135 jbank/models.py:196
+#: jbank/models.py:135 jbank/models.py:208
 msgid "record type"
 msgstr ""
 
@@ -325,19 +325,19 @@ msgstr ""
 msgid "record description"
 msgstr ""
 
-#: jbank/models.py:137 jbank/models.py:207
+#: jbank/models.py:137 jbank/models.py:219
 msgid "receipt code"
 msgstr ""
 
-#: jbank/models.py:138 jbank/models.py:206
+#: jbank/models.py:138 jbank/models.py:218
 msgid "delivery method"
 msgstr ""
 
-#: jbank/models.py:139 jbank/models.py:264
+#: jbank/models.py:139 jbank/models.py:276
 msgid "name"
 msgstr ""
 
-#: jbank/models.py:140 jbank/models.py:204
+#: jbank/models.py:140 jbank/models.py:216
 msgid "name source"
 msgstr ""
 
@@ -349,7 +349,7 @@ msgstr ""
 msgid "recipient account number changed"
 msgstr ""
 
-#: jbank/models.py:143 jbank/models.py:201
+#: jbank/models.py:143 jbank/models.py:213
 msgid "remittance info"
 msgstr ""
 
@@ -397,165 +397,165 @@ msgstr ""
 msgid "SEPA"
 msgstr ""
 
-#: jbank/models.py:181
+#: jbank/models.py:193
 msgid "institution identifier"
 msgstr ""
 
-#: jbank/models.py:182
+#: jbank/models.py:194
 msgid "service identifier"
 msgstr ""
 
-#: jbank/models.py:183 jbank/models.py:203
+#: jbank/models.py:195 jbank/models.py:215
 msgid "currency identifier"
 msgstr ""
 
-#: jbank/models.py:186
+#: jbank/models.py:198
 msgid "reference payment batch"
 msgstr ""
 
-#: jbank/models.py:195
+#: jbank/models.py:207
 msgid "batch"
 msgstr ""
 
-#: jbank/models.py:202
+#: jbank/models.py:214
 msgid "payer name"
 msgstr ""
 
-#: jbank/models.py:205
+#: jbank/models.py:217
 msgid "correction identifier"
 msgstr ""
 
-#: jbank/models.py:210 jbank/models.py:211
+#: jbank/models.py:222 jbank/models.py:223
 msgid "reference payment records"
 msgstr ""
 
-#: jbank/models.py:230 jbank/models.py:247 jbank/models.py:344
+#: jbank/models.py:242 jbank/models.py:259 jbank/models.py:356
 msgid "created"
 msgstr ""
 
-#: jbank/models.py:231 jbank/models.py:248
+#: jbank/models.py:243 jbank/models.py:260
 msgid "file"
 msgstr ""
 
-#: jbank/models.py:232 jbank/models.py:249
+#: jbank/models.py:244 jbank/models.py:261
 msgid "errors"
 msgstr ""
 
-#: jbank/models.py:235
+#: jbank/models.py:247
 #, fuzzy
 #| msgid "account.entry.matched.filter"
 msgid "account statement file"
 msgstr "settled"
 
-#: jbank/models.py:236
+#: jbank/models.py:248
 msgid "account statement files"
 msgstr ""
 
-#: jbank/models.py:252
+#: jbank/models.py:264
 msgid "reference payment batch file"
 msgstr ""
 
-#: jbank/models.py:253
+#: jbank/models.py:265
 msgid "reference payment batch files"
 msgstr ""
 
-#: jbank/models.py:267
+#: jbank/models.py:279
 msgid "organization id"
 msgstr ""
 
-#: jbank/models.py:268
+#: jbank/models.py:280
 msgid "address"
 msgstr ""
 
-#: jbank/models.py:269
+#: jbank/models.py:281
 msgid "country code"
 msgstr ""
 
-#: jbank/models.py:270
+#: jbank/models.py:282
 msgid "payouts account"
 msgstr ""
 
-#: jbank/models.py:273
+#: jbank/models.py:285
 msgid "payout party"
 msgstr ""
 
-#: jbank/models.py:274
+#: jbank/models.py:286
 msgid "payout parties"
 msgstr ""
 
-#: jbank/models.py:294
+#: jbank/models.py:306
 msgid "payer"
 msgstr ""
 
-#: jbank/models.py:295
+#: jbank/models.py:307
 msgid "recipient"
 msgstr ""
 
-#: jbank/models.py:296
+#: jbank/models.py:308
 msgid "recipient messages"
 msgstr ""
 
-#: jbank/models.py:297 jbank/models.py:348
+#: jbank/models.py:309 jbank/models.py:360
 msgid "message id"
 msgstr ""
 
-#: jbank/models.py:298 jbank/models.py:345
+#: jbank/models.py:310 jbank/models.py:357
 msgid "file name"
 msgstr ""
 
-#: jbank/models.py:299
+#: jbank/models.py:311
 msgid "file reference"
 msgstr ""
 
-#: jbank/models.py:300
+#: jbank/models.py:312
 msgid "due date"
 msgstr ""
 
-#: jbank/models.py:302
+#: jbank/models.py:314
 msgid "state"
 msgstr ""
 
-#: jbank/models.py:305 jbank/models.py:343
+#: jbank/models.py:317 jbank/models.py:355
 msgid "payout"
 msgstr ""
 
-#: jbank/models.py:306
+#: jbank/models.py:318
 msgid "payouts"
 msgstr ""
 
-#: jbank/models.py:346
+#: jbank/models.py:358
 msgid "response code"
 msgstr ""
 
-#: jbank/models.py:347
+#: jbank/models.py:359
 msgid "response text"
 msgstr ""
 
-#: jbank/models.py:349
+#: jbank/models.py:361
 msgid "original message id"
 msgstr ""
 
-#: jbank/models.py:350
+#: jbank/models.py:362
 msgid "group status"
 msgstr ""
 
-#: jbank/models.py:351
+#: jbank/models.py:363
 msgid "status reason"
 msgstr ""
 
-#: jbank/models.py:354
+#: jbank/models.py:366
 msgid "payout status"
 msgstr ""
 
-#: jbank/models.py:355
+#: jbank/models.py:367
 msgid "payout statuses"
 msgstr ""
 
-#: jbank/models.py:371
+#: jbank/models.py:383
 msgid "refund"
 msgstr ""
 
-#: jbank/models.py:372
+#: jbank/models.py:384
 msgid "refunds"
 msgstr ""
 
@@ -596,16 +596,20 @@ msgstr ""
 msgid "Invalid decimal field format: {}"
 msgstr ""
 
-#: jbank/parsers.py:522 jbank/parsers.py:579
+#: jbank/parsers.py:522 jbank/parsers.py:584
 msgid "Unknown record type on {}({}): {}"
 msgstr ""
 
-#: jbank/parsers.py:530
+#: jbank/parsers.py:535
 msgid "Not \"tiliote\" (.TO) file"
 msgstr ""
 
-#: jbank/parsers.py:587
+#: jbank/parsers.py:592
 msgid "Not \"saapuvat viitemaksut\" (.SVM) file"
+msgstr ""
+
+#: jbank/sepa.py:67
+msgid "pain001.remittance.info.missing"
 msgstr ""
 
 #: jbank/templates/admin/jbank/referencepaymentbatch/change_form.html:8

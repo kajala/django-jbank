@@ -63,9 +63,11 @@ class Pain001(object):
                     amount: Decimal,
                     remittance_info: str,
                     due_date: date=None):
-        creditor = Pain001Party(creditor_name, creditor_account, creditor_bic)
+        if not remittance_info:
+            raise ValidationError(_('pain001.remittance.info.missing'))
         if not due_date:
             due_date = self._local_time().date()
+        creditor = Pain001Party(creditor_name, creditor_account, creditor_bic)
         p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, due_date)
         self.payments.append(p)
 
