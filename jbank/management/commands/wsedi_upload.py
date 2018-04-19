@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.move import file_move_safe
 from django.core.management import CommandParser
 from jbank.files import list_dir_files
-from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR
+from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_CANCELED
 from jbank.wsedi import wsedi_get, wsedi_upload_file
 from jutil.command import SafeCommand
 from jutil.email import send_email
@@ -30,6 +30,7 @@ class Command(SafeCommand):
         parser.add_argument('--retry-error', action='store_true')
         parser.add_argument('--ignore-uploaded', action='store_true')
         parser.add_argument('--move-to', type=str, help='Target directory for successfully uploaded files')
+        parser.add_argument('--move-canceled-to', type=str, help='Target directory for canceled payment files')
 
     def do(self, *args, **options):
         file_type = options['file_type']
@@ -46,6 +47,12 @@ class Command(SafeCommand):
             try:
                 if not options['force']:
                     if p:
+                        if p.state == PAYOUT_CANCELED:
+                            if options['move_canceled_to']:
+                                dst = os.path.join(options['move_canceled_to'], filename_base)
+                                logger.info('Moving {} to {}'.format(filename, dst))
+                                file_move_safe(filename, dst, allow_overwrite=True)
+                            continue
                         if p.state == PAYOUT_ERROR and not options['retry_error']:  # unless --retry-error
                             continue
                         if p.is_upload_done:
