@@ -8,4 +8,4 @@ __pycache__
 /dist
 /django_jbank.egg-info
 /uploads
-
+/*.gz
