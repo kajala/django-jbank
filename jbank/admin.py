@@ -623,6 +623,12 @@ class PayoutAdmin(ModelAdminBase):
         'group_status',
     )
 
+    search_fields = (
+        '=msg_id',
+        '=file_name',
+        '=file_reference',
+    )
+
     def save_model(self, request, obj, form, change):
         assert isinstance(obj, Payout)
         if not change:
