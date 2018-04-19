@@ -305,7 +305,7 @@ class PayoutParty(models.Model):
 class Payout(AccountEntry):
     payer = models.ForeignKey(PayoutParty, verbose_name=_('payer'), related_name='+', on_delete=models.PROTECT)
     recipient = models.ForeignKey(PayoutParty, verbose_name=_('recipient'), related_name='+', on_delete=models.PROTECT)
-    messages = models.TextField(_('recipient messages'), blank=True)
+    messages = models.TextField(_('recipient messages'))
     msg_id = models.CharField(_('message id'), max_length=64, blank=True, db_index=True, editable=False)
     file_name = models.CharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
     file_reference = models.CharField(_('file reference'), max_length=255, blank=True, db_index=True, editable=False)
@@ -320,6 +320,8 @@ class Payout(AccountEntry):
     def clean(self):
         if self.parent and not self.amount:
             self.amount = self.parent.amount
+
+        # prevent canceling payouts which have been uploaded successfully
         if self.state == PAYOUT_CANCELED:
             if self.is_upload_done:
                 group_status = self.group_status
