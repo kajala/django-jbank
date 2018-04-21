@@ -47,18 +47,27 @@ class Command(SafeCommand):
             try:
                 if not options['force']:
                     if p:
+                        # ignore canceled files, optionally move them to 'canceled' directory
                         if p.state == PAYOUT_CANCELED:
                             if options['move_canceled_to']:
                                 dst = os.path.join(options['move_canceled_to'], filename_base)
                                 logger.info('Moving {} to {}'.format(filename, dst))
                                 file_move_safe(filename, dst, allow_overwrite=True)
                             continue
+
+                        # ignore files in error state unless --retry-error
                         if p.state == PAYOUT_ERROR and not options['retry_error']:  # unless --retry-error
                             continue
+
+                        # ignore already uploaded files
                         if p.is_upload_done:
                             if options['ignore_uploaded']:
                                 continue
                             raise ValidationError(_('File already uploaded') + ' ({})'.format(p.group_status))
+
+                        # ignore paid files
+                        if p.is_accepted:
+                            continue
 
                 # upload file
                 logger.info('Uploading {} file {}'.format(file_type, filename_base))
