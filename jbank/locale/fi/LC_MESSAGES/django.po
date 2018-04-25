@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-19 13:10+0000\n"
+"POT-Creation-Date: 2018-04-25 17:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,11 +51,11 @@ msgstr "Tiliä {account_number} ei löydy"
 msgid "Unhandled error"
 msgstr "Käsittelemätön virhe"
 
-#: jbank/admin.py:454 jbank/models.py:115
+#: jbank/admin.py:454 jbank/models.py:119
 msgid "statements"
 msgstr "tiliotteet"
 
-#: jbank/admin.py:527 jbank/models.py:199
+#: jbank/admin.py:527 jbank/models.py:203
 msgid "reference payment batches"
 msgstr "viitemaksuerät"
 
@@ -69,11 +69,7 @@ msgstr "tapahtuman tyyppi puuttuu"
 
 #: jbank/helpers.py:195
 msgid "bank account"
-msgstr ""
-
-#: jbank/management/commands/wsedi_upload.py:54 jbank/models.py:327
-msgid "File already uploaded"
-msgstr "Tiedosto jo lähetetty"
+msgstr "pankkitili"
 
 #: jbank/models.py:21
 msgid "Deposit"
@@ -203,360 +199,372 @@ msgstr "Normaali tapahtuma"
 msgid "Correction Entry"
 msgstr "Korjaustapahtuma"
 
-#: jbank/models.py:84
-msgid "waiting"
-msgstr "odottaa"
+#: jbank/models.py:86
+msgid "waiting processing"
+msgstr ""
 
-#: jbank/models.py:85
+#: jbank/models.py:87
+msgid "waiting upload"
+msgstr "odottaa lähetystä"
+
+#: jbank/models.py:88
+msgid "uploaded"
+msgstr "lähetetty"
+
+#: jbank/models.py:89
 msgid "paid"
 msgstr "maksettu"
 
-#: jbank/models.py:86
+#: jbank/models.py:90
 msgid "canceled"
 msgstr "peruutettu"
 
-#: jbank/models.py:87
+#: jbank/models.py:91
 msgid "error"
 msgstr "virhe"
 
-#: jbank/models.py:94 jbank/models.py:209 jbank/models.py:277
+#: jbank/models.py:98 jbank/models.py:213 jbank/models.py:281
 msgid "account number"
 msgstr "tilinumero"
 
-#: jbank/models.py:95
+#: jbank/models.py:99
 msgid "statement number"
 msgstr "tiliotteen numero"
 
-#: jbank/models.py:96
+#: jbank/models.py:100
 msgid "begin date"
 msgstr "alkupäivämäärä"
 
-#: jbank/models.py:97
+#: jbank/models.py:101
 msgid "end date"
 msgstr "loppupäivämäärä"
 
-#: jbank/models.py:98 jbank/models.py:131 jbank/models.py:192
-#: jbank/models.py:210
+#: jbank/models.py:102 jbank/models.py:135 jbank/models.py:196
+#: jbank/models.py:214
 msgid "record date"
 msgstr "kirjauspäivä"
 
-#: jbank/models.py:99
+#: jbank/models.py:103
 msgid "customer identifier"
 msgstr "asiakkaan tunniste"
 
-#: jbank/models.py:100
+#: jbank/models.py:104
 msgid "begin balance date"
 msgstr "alkusaldon päivämäärä"
 
-#: jbank/models.py:101
+#: jbank/models.py:105
 msgid "begin balance"
 msgstr "alkusaldo"
 
-#: jbank/models.py:102
+#: jbank/models.py:106
 msgid "record count"
 msgstr "tietueiden lukumäärä"
 
-#: jbank/models.py:103
+#: jbank/models.py:107
 msgid "currency code"
 msgstr "valuuttakoodi"
 
-#: jbank/models.py:104
+#: jbank/models.py:108
 msgid "account name"
 msgstr "tilin nimi"
 
-#: jbank/models.py:105
+#: jbank/models.py:109
 msgid "account limit"
 msgstr "tilin limiitti"
 
-#: jbank/models.py:106
+#: jbank/models.py:110
 msgid "owner name"
 msgstr "omistajan nimi"
 
-#: jbank/models.py:107
+#: jbank/models.py:111
 msgid "contact info (1)"
 msgstr "yhteystiedot (1)"
 
-#: jbank/models.py:108
+#: jbank/models.py:112
 msgid "contact info (2)"
 msgstr "yhteystiedot (2)"
 
-#: jbank/models.py:109
+#: jbank/models.py:113
 msgid "bank specific info (1)"
 msgstr "pankkikohtainen tieto (1)"
 
-#: jbank/models.py:110 jbank/models.py:163
+#: jbank/models.py:114 jbank/models.py:167
 msgid "IBAN"
 msgstr "IBAN"
 
-#: jbank/models.py:111 jbank/models.py:164 jbank/models.py:278
+#: jbank/models.py:115 jbank/models.py:168 jbank/models.py:282
 msgid "BIC"
 msgstr "BIC"
 
-#: jbank/models.py:114 jbank/models.py:128
+#: jbank/models.py:118 jbank/models.py:132
 msgid "statement"
 msgstr "tiliote"
 
-#: jbank/models.py:129
+#: jbank/models.py:133
 msgid "record number"
 msgstr "tietueen numero"
 
-#: jbank/models.py:130 jbank/models.py:168 jbank/models.py:212
+#: jbank/models.py:134 jbank/models.py:172 jbank/models.py:216
 msgid "archive identifier"
 msgstr "arkistointitunnus"
 
-#: jbank/models.py:132
+#: jbank/models.py:136
 msgid "value date"
 msgstr "arvopäivämäärä"
 
-#: jbank/models.py:133 jbank/models.py:211 jbank/models.py:313
+#: jbank/models.py:137 jbank/models.py:215 jbank/models.py:318
 msgid "paid date"
 msgstr "maksupäivämäärä"
 
-#: jbank/models.py:134
+#: jbank/models.py:138
 msgid "entry type"
 msgstr "tapahtuman tyyppi"
 
-#: jbank/models.py:135 jbank/models.py:208
+#: jbank/models.py:139 jbank/models.py:212
 msgid "record type"
 msgstr "tietueen tyyppi"
 
-#: jbank/models.py:136
+#: jbank/models.py:140
 msgid "record description"
 msgstr "tietueen kuvaus"
 
-#: jbank/models.py:137 jbank/models.py:219
+#: jbank/models.py:141 jbank/models.py:223
 msgid "receipt code"
 msgstr "kuittikoodi"
 
-#: jbank/models.py:138 jbank/models.py:218
+#: jbank/models.py:142 jbank/models.py:222
 msgid "delivery method"
 msgstr "toimitustapa"
 
-#: jbank/models.py:139 jbank/models.py:276
+#: jbank/models.py:143 jbank/models.py:280
 msgid "name"
 msgstr "nimi"
 
-#: jbank/models.py:140 jbank/models.py:216
+#: jbank/models.py:144 jbank/models.py:220
 msgid "name source"
 msgstr "nimen lähde"
 
-#: jbank/models.py:141
+#: jbank/models.py:145
 msgid "recipient account number"
 msgstr "vastaanottajan tilinumero"
 
-#: jbank/models.py:142
+#: jbank/models.py:146
 msgid "recipient account number changed"
 msgstr "vastaanottajan tilinumero muuttunut"
 
-#: jbank/models.py:143 jbank/models.py:213
+#: jbank/models.py:147 jbank/models.py:217
 msgid "remittance info"
 msgstr "maksuviite"
 
-#: jbank/models.py:144
+#: jbank/models.py:148
 msgid "messages"
 msgstr "viestit"
 
-#: jbank/models.py:145
+#: jbank/models.py:149
 msgid "client messages"
 msgstr "asiakkaan viestit"
 
-#: jbank/models.py:146
+#: jbank/models.py:150
 msgid "bank messages"
 msgstr "pankin viestit"
 
-#: jbank/models.py:149
+#: jbank/models.py:153
 msgid "statement record"
 msgstr "tiliotteen tietue"
 
-#: jbank/models.py:150
+#: jbank/models.py:154
 msgid "statement records"
 msgstr "tiliotteen tietueet"
 
-#: jbank/models.py:161
+#: jbank/models.py:165
 msgid "record"
 msgstr "tietue"
 
-#: jbank/models.py:162
+#: jbank/models.py:166
 msgid "reference"
 msgstr "viite"
 
-#: jbank/models.py:165
+#: jbank/models.py:169
 msgid "recipient name detail"
 msgstr "vastaanottajan nimen tarkenne"
 
-#: jbank/models.py:166
+#: jbank/models.py:170
 msgid "payer name detail"
 msgstr "maksajan nimen tarkenne"
 
-#: jbank/models.py:167
+#: jbank/models.py:171
 msgid "identifier"
 msgstr "tunniste"
 
-#: jbank/models.py:171 jbank/models.py:172
+#: jbank/models.py:175 jbank/models.py:176
 msgid "SEPA"
 msgstr "SEPA"
 
-#: jbank/models.py:193
+#: jbank/models.py:197
 msgid "institution identifier"
 msgstr "instituution tunniste"
 
-#: jbank/models.py:194
+#: jbank/models.py:198
 msgid "service identifier"
 msgstr "palvelun tunniste"
 
-#: jbank/models.py:195 jbank/models.py:215
+#: jbank/models.py:199 jbank/models.py:219
 msgid "currency identifier"
 msgstr "valuutan tunniste"
 
-#: jbank/models.py:198
+#: jbank/models.py:202
 msgid "reference payment batch"
 msgstr "viitemaksuerä"
 
-#: jbank/models.py:207
+#: jbank/models.py:211
 msgid "batch"
 msgstr "erä"
 
-#: jbank/models.py:214
+#: jbank/models.py:218
 msgid "payer name"
 msgstr "maksajan nimi"
 
-#: jbank/models.py:217
+#: jbank/models.py:221
 msgid "correction identifier"
 msgstr "korjauksen tunniste"
 
-#: jbank/models.py:222 jbank/models.py:223
+#: jbank/models.py:226 jbank/models.py:227
 msgid "reference payment records"
 msgstr "viitemaksutietueet"
 
-#: jbank/models.py:242 jbank/models.py:259 jbank/models.py:356
+#: jbank/models.py:246 jbank/models.py:263 jbank/models.py:363
 msgid "created"
 msgstr "luotu"
 
-#: jbank/models.py:243 jbank/models.py:260
+#: jbank/models.py:247 jbank/models.py:264
 msgid "file"
 msgstr "tiedosto"
 
-#: jbank/models.py:244 jbank/models.py:261
+#: jbank/models.py:248 jbank/models.py:265
 msgid "errors"
 msgstr "virheet"
 
-#: jbank/models.py:247
+#: jbank/models.py:251
 msgid "account statement file"
 msgstr "tiliote-tiedosto"
 
-#: jbank/models.py:248
+#: jbank/models.py:252
 msgid "account statement files"
 msgstr "tiliote-tiedostot"
 
-#: jbank/models.py:264
+#: jbank/models.py:268
 msgid "reference payment batch file"
 msgstr "viitemaksutiedosto"
 
-#: jbank/models.py:265
+#: jbank/models.py:269
 msgid "reference payment batch files"
 msgstr "viitemaksutiedostot"
 
-#: jbank/models.py:279
+#: jbank/models.py:283
 msgid "organization id"
 msgstr "organisaation tunnus"
 
-#: jbank/models.py:280
+#: jbank/models.py:284
 msgid "address"
 msgstr "osoite"
 
-#: jbank/models.py:281
+#: jbank/models.py:285
 msgid "country code"
 msgstr "maakoodi"
 
-#: jbank/models.py:282
+#: jbank/models.py:286
 msgid "payouts account"
 msgstr "ulosmaksun kirjaustili"
 
-#: jbank/models.py:285
+#: jbank/models.py:289
 msgid "payout party"
 msgstr "ulosmaksun osapuoli"
 
-#: jbank/models.py:286
+#: jbank/models.py:290
 msgid "payout parties"
 msgstr "ulosmaksun osapuolet"
 
-#: jbank/models.py:306
+#: jbank/models.py:310
 msgid "payer"
 msgstr "maksaja"
 
-#: jbank/models.py:307
+#: jbank/models.py:311
 msgid "recipient"
 msgstr "vastaanottaja"
 
-#: jbank/models.py:308
+#: jbank/models.py:312
 msgid "recipient messages"
 msgstr "viesti vastaanottajalle"
 
-#: jbank/models.py:309 jbank/models.py:360
+#: jbank/models.py:313 jbank/models.py:367
 msgid "message id"
 msgstr "viestin tunnus"
 
-#: jbank/models.py:310 jbank/models.py:357
+#: jbank/models.py:314 jbank/models.py:364
 msgid "file name"
 msgstr "tiedosto"
 
-#: jbank/models.py:311
-#, fuzzy
-#| msgid "reference"
+#: jbank/models.py:315
+msgid "full path"
+msgstr ""
+
+#: jbank/models.py:316
 msgid "file reference"
-msgstr "viite"
+msgstr "tiedostoviite"
 
-#: jbank/models.py:312
-#, fuzzy
-#| msgid "value date"
+#: jbank/models.py:317
 msgid "due date"
-msgstr "arvopäivämäärä"
+msgstr "eräpäivä"
 
-#: jbank/models.py:314
+#: jbank/models.py:319
 msgid "state"
 msgstr "tila"
 
-#: jbank/models.py:317 jbank/models.py:355
+#: jbank/models.py:322 jbank/models.py:362
 msgid "payout"
 msgstr "ulosmaksu"
 
-#: jbank/models.py:318
+#: jbank/models.py:323
 msgid "payouts"
 msgstr "ulosmaksut"
 
-#: jbank/models.py:358
+#: jbank/models.py:334
+msgid "File already uploaded"
+msgstr "Tiedosto jo lähetetty"
+
+#: jbank/models.py:365
 msgid "response code"
 msgstr "vastauskoodi"
 
-#: jbank/models.py:359
+#: jbank/models.py:366
 msgid "response text"
 msgstr "vastausteksti"
 
-#: jbank/models.py:361
+#: jbank/models.py:368
 msgid "original message id"
 msgstr "alkup.viestin tunnus"
 
-#: jbank/models.py:362
+#: jbank/models.py:369
 msgid "group status"
 msgstr "ryhmäkoodi"
 
-#: jbank/models.py:363
+#: jbank/models.py:370
 msgid "status reason"
 msgstr "tilan syy"
 
-#: jbank/models.py:366
+#: jbank/models.py:373
 msgid "payout status"
 msgstr "ulosmaksun tila"
 
-#: jbank/models.py:367
+#: jbank/models.py:374
 msgid "payout statuses"
 msgstr "ulosmaksun tilat"
 
-#: jbank/models.py:383
+#: jbank/models.py:390
 msgid "refund"
 msgstr "palautus"
 
-#: jbank/models.py:384
+#: jbank/models.py:391
 msgid "refunds"
 msgstr "palautukset"
 
