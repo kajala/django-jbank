@@ -75,13 +75,17 @@ DELIVERY_METHOD = (
     ('J', _('From Bank System')),
 )
 
-PAYOUT_WAITING = 'W'
+PAYOUT_WAITING_PROCESSING = 'W'
+PAYOUT_WAITING_UPLOAD = 'U'
+PAYOUT_UPLOADED = 'D'
 PAYOUT_PAID = 'P'
 PAYOUT_CANCELED = 'C'
 PAYOUT_ERROR = 'E'
 
 PAYOUT_STATE = (
-    (PAYOUT_WAITING, _('waiting')),
+    (PAYOUT_WAITING_PROCESSING, _('waiting processing')),
+    (PAYOUT_WAITING_UPLOAD, _('waiting upload')),
+    (PAYOUT_UPLOADED, _('uploaded')),
     (PAYOUT_PAID, _('paid')),
     (PAYOUT_CANCELED, _('canceled')),
     (PAYOUT_ERROR, _('error')),
@@ -308,10 +312,11 @@ class Payout(AccountEntry):
     messages = models.TextField(_('recipient messages'))
     msg_id = models.CharField(_('message id'), max_length=64, blank=True, db_index=True, editable=False)
     file_name = models.CharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
+    full_path = models.TextField(_('full path'), blank=True, editable=False)
     file_reference = models.CharField(_('file reference'), max_length=255, blank=True, db_index=True, editable=False)
     due_date = models.DateField(_('due date'), db_index=True, blank=True, null=True, default=None)
     paid_date = models.DateTimeField(_('paid date'), db_index=True, blank=True, null=True, default=None)
-    state = models.CharField(_('state'), max_length=1, blank=True, default=PAYOUT_WAITING, choices=PAYOUT_STATE, db_index=True)
+    state = models.CharField(_('state'), max_length=1, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True)
 
     class Meta:
         verbose_name = _("payout")

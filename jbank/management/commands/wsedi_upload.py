@@ -8,10 +8,11 @@ from django.core.exceptions import ValidationError
 from django.core.files.move import file_move_safe
 from django.core.management import CommandParser
 from jbank.files import list_dir_files
-from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_CANCELED
+from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_CANCELED, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED
 from jbank.wsedi import wsedi_get, wsedi_upload_file
 from jutil.command import SafeCommand
 from jutil.email import send_email
+
 
 logger = logging.getLogger(__name__)
 
@@ -20,60 +21,36 @@ class Command(SafeCommand):
     help = """
         Upload Finnish bank files. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
         Uses project settings WSEDI_URL and WSEDI_TOKEN.
+        By default uploads files of Payouts in WAITING_UPLOAD state.
         """
 
     def add_arguments(self, parser: CommandParser):
-        parser.add_argument('path', type=str)
+        parser.add_argument('--payout', type=int)
         parser.add_argument('--file-type', type=str, help='E.g. XL, NDCORPAYS, pain.001.001.03')
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--force', action='store_true')
-        parser.add_argument('--retry-error', action='store_true')
-        parser.add_argument('--ignore-uploaded', action='store_true')
-        parser.add_argument('--move-to', type=str, help='Target directory for successfully uploaded files')
-        parser.add_argument('--move-canceled-to', type=str, help='Target directory for canceled payment files')
 
     def do(self, *args, **options):
         file_type = options['file_type']
         if not file_type:
             return print('--file-type required (e.g. XL, NDCORPAYS, pain.001.001.03)')
 
-        files = list_dir_files(options['path'])
-        for filename in files:
-            filename_base = basename(filename)
-            p = Payout.objects.filter(file_name=filename_base).first()
-            assert p is None or isinstance(p, Payout)
-            response_code = response_text = ''
+        payouts = Payout.objects.all()
+        if options['payout']:
+            payouts = Payout.objects.filter(id=options['payout'])
+        else:
+            payouts = payouts.filter(state=PAYOUT_WAITING_UPLOAD)
 
+        for p in list(payouts):
+            assert isinstance(p, Payout)
             try:
-                if not options['force']:
-                    if p:
-                        # ignore canceled files, optionally move them to 'canceled' directory
-                        if p.state == PAYOUT_CANCELED:
-                            if options['move_canceled_to']:
-                                dst = os.path.join(options['move_canceled_to'], filename_base)
-                                logger.info('Moving {} to {}'.format(filename, dst))
-                                file_move_safe(filename, dst, allow_overwrite=True)
-                            continue
-
-                        # ignore files in error state unless --retry-error
-                        if p.state == PAYOUT_ERROR and not options['retry_error']:  # unless --retry-error
-                            continue
-
-                        # ignore already uploaded files
-                        if p.is_upload_done:
-                            if options['ignore_uploaded']:
-                                continue
-                            raise ValidationError(_('File already uploaded') + ' ({})'.format(p.group_status))
-
-                        # ignore paid files
-                        if p.is_accepted:
-                            continue
-
                 # upload file
-                logger.info('Uploading {} file {}'.format(file_type, filename_base))
-                with open(filename, 'rt') as fp:
+                logger.info('Uploading payment id={} {} file {}'.format(p.id, file_type, p.full_path))
+                with open(p.full_path, 'rt') as fp:
                     file_content = fp.read()
-                res = wsedi_upload_file(file_content, file_type, filename)
+                p.state = PAYOUT_UPLOADED
+                p.save(update_fields=['state'])
+                res = wsedi_upload_file(file_content, file_type, p.file_name)
                 logger.info('HTTP response {}'.format(res.status_code))
                 logger.info(res.text)
 
@@ -84,25 +61,16 @@ class Command(SafeCommand):
                 fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
                 fd = {} if len(fds) != 0 else fds[0]
                 file_reference = fd.get('FileReference', '')
-                if p:
-                    p.file_reference = file_reference
-                    p.save()
-                    PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=filename_base, response_code=response_code, response_text=response_text, status_reason='File upload OK')
-
-                # move successful files to new directory (optional)
-                if options['move_to']:
-                    if response_code == '00':
-                        dst = os.path.join(options['move_to'], filename_base)
-                        logger.info('Moving {} to {}'.format(filename, dst))
-                        file_move_safe(filename, dst, allow_overwrite=True)
+                if not file_reference:
+                    raise Exception("FileReference missing from response")
+                p.file_reference = file_reference
+                p.save(update_fields=['file_reference'])
+                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code, response_text=response_text, status_reason='File upload OK')
 
             except Exception as e:
-                long_err = "File upload failed ({}): ".format(filename) + traceback.format_exc()
+                long_err = "File upload failed ({}): ".format(p.full_path) + traceback.format_exc()
                 logger.error(long_err)
-                if p:
-                    short_err = 'File upload failed: ' + str(e)
-                    p.state = PAYOUT_ERROR
-                    PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=filename_base, response_code=response_code, response_text=response_text, status_reason=short_err[:255])
-
-            if p:
-                p.save()
+                short_err = 'File upload failed: ' + str(e)
+                p.state = PAYOUT_ERROR
+                p.save(update_fields=['state'])
+                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code, response_text=response_text, status_reason=short_err[:255])
