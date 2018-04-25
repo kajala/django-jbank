@@ -16,15 +16,18 @@ class Command(SafeCommand):
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('path', type=str)
         parser.add_argument('--test', action='store_true')
+        parser.add_argument('--verbose', action='store_true')
 
     def do(self, *args, **options):
         files = list_dir_files(options['path'], '.XP')
         for f in files:
             f_base = basename(f)
             if PayoutStatus.objects.filter(file_name=f_base).count() > 0:
-                print('Skipping payment status file', f_base)
+                if options['verbose']:
+                    print('Skipping payment status file', f_base)
                 continue
-            print('Importing payment status file', f_base)
+            if options['verbose']:
+                print('Importing payment status file', f_base)
             with open(f, 'rb') as fp:
                 s = Pain002(fp.read())
                 p = Payout.objects.filter(msg_id=s.original_msg_id).first()
