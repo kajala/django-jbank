@@ -59,7 +59,7 @@ class Command(SafeCommand):
                 response_code = data.get('ResponseCode', '')[:4]
                 response_text = data.get('ResponseText', '')[:255]
                 fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
-                fd = {} if len(fds) != 0 else fds[0]
+                fd = {} if len(fds) == 0 else fds[0]
                 file_reference = fd.get('FileReference', '')
                 if not file_reference:
                     raise Exception("FileReference missing from response")
