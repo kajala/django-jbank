@@ -13,7 +13,7 @@ install_requires = parse_requirements('requirements.txt', session=False)
 
 setup(
     name='django-jbank',
-    version='1.0.21',
+    version='1.0.22',
     author=u'Jani Kajala',
     author_email='kajala@gmail.com',
     packages=find_packages(exclude=['project', 'venv']),
