@@ -42,9 +42,6 @@ class Pain001(object):
     # pain_element_name = 'pain.001.001.03'
     tz_str = 'Europe/Helsinki'
     tz = None
-    msg_id = None
-    debtor = None
-    payments = []
 
     def __init__(self, msg_id: str,
                  debtor_name: str,
@@ -55,6 +52,7 @@ class Pain001(object):
                  debtor_country_code: str):
         self.msg_id = msg_id
         self.debtor = Pain001Party(debtor_name, debtor_account, debtor_bic, debtor_org_id, debtor_address_lines, debtor_country_code)
+        self.payments = []
 
     def add_payment(self, payment_id,
                     creditor_name: str,
