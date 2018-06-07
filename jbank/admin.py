@@ -211,12 +211,12 @@ class StatementRecordAdmin(ModelAdminBase):
         'account',
     )
     search_fields = (
-        'archive_identifier',
+        '=archive_identifier',
+        '=amount',
+        '=recipient_account_number',
         'record_description',
         'name',
-        'amount',
-        'recipient_account_number',
-        'remittance_i_PAYOUTnfo',
+        'remittance_info',
     )
     list_display = (
         'id',
@@ -309,10 +309,10 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         'account',
     )
     search_fields = (
-        'archive_identifier',
+        '=archive_identifier',
+        '=amount',
         'remittance_info',
         'payer_name',
-        'amount',
         'batch__name',
     )
     list_display = (
@@ -367,10 +367,10 @@ class ReferencePaymentBatchAdmin(ModelAdminBase):
     )
     search_fields = (
         'name',
-        'record_set__archive_identifier',
+        '=record_set__archive_identifier',
+        '=record_set__amount',
         'record_set__remittance_info',
         'record_set__payer_name',
-        'record_set__amount',
     )
     list_display = (
         'id',
