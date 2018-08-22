@@ -1,8 +1,8 @@
+import logging
 import os
 from copy import copy
 from pathlib import Path
 from pprint import pprint
-
 from django.conf import settings
 from django.core.files import File
 from django.core.management import CommandParser
@@ -15,6 +15,9 @@ from jbank.models import Statement, ReferencePaymentBatch, ReferencePaymentBatch
 from jbank.parsers import parse_svm_batches_from_file
 from jutil.command import SafeCommand
 from django.utils.translation import ugettext as _
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
@@ -41,7 +44,7 @@ class Command(SafeCommand):
                 continue
 
             if ReferencePaymentBatch.objects.filter(name=plain_filename).count() == 0:
-                print('Importing reference payment batch file {}'.format(plain_filename))
+                logger.info('Importing reference payment batch file {}'.format(plain_filename))
 
                 batches = parse_svm_batches_from_file(filename)
                 if options['verbose']:

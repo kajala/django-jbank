@@ -1,11 +1,12 @@
 import logging
+from os.path import basename
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from jacc.models import Account, AccountType, EntryType
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentBatch, \
-    ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile
+    ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile, Payout, PayoutStatus, PAYOUT_PAID
 
 
 ASSIGNABLE_STATEMENT_HEADER_FIELDS = (
@@ -195,3 +196,38 @@ def get_or_create_bank_account(account_number: str, currency: str='EUR') -> Acco
     a_type, created = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={'name': _('bank account')})
     acc, created = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)
     return acc
+
+
+def process_pain002_file_content(bcontent: bytes, filename: str):
+    from jbank.sepa import Pain002
+
+    s = Pain002(bcontent)
+    p = Payout.objects.filter(msg_id=s.original_msg_id).first()
+    ps = PayoutStatus(payout=p, file_name=basename(filename), msg_id=s.msg_id, original_msg_id=s.original_msg_id, group_status=s.group_status, status_reason=s.status_reason[:255])
+    ps.full_clean()
+    fields = (
+        'payout',
+        'file_name',
+        'response_code',
+        'response_text',
+        'msg_id',
+        'original_msg_id',
+        'group_status',
+        'status_reason',
+    )
+    params = {}
+    for k in fields:
+        params[k] = getattr(ps, k)
+    ps_old = PayoutStatus.objects.filter(**params).first()
+    if ps_old:
+        ps = ps_old
+    else:
+        ps.save()
+        logger.info('{} status updated {}'.format(p, ps))
+    if p:
+        if ps.is_accepted:
+            p.state = PAYOUT_PAID
+            p.paid_date = s.credit_datetime
+            p.save(update_fields=['state', 'paid_date'])
+            logger.info('{} marked as paid {}'.format(p, ps))
+    return ps

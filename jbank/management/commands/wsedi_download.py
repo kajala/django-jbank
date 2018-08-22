@@ -2,6 +2,7 @@ import base64
 import logging
 import os
 from django.core.management import CommandParser
+from jbank.helpers import process_pain002_file_content
 from jbank.wsedi import wsedi_get
 from jutil.command import SafeCommand
 
@@ -23,6 +24,7 @@ class Command(SafeCommand):
         parser.add_argument('--status', type=str, default='', help='E.g. DLD, NEW')
         parser.add_argument('--file-reference', type=str, help='Download single file based on file reference')
         parser.add_argument('--list-only', action='store_true')
+        parser.add_argument('--process-pain002', action='store_true')
 
     def do(self, *args, **options):
         path = options['path']
@@ -65,7 +67,8 @@ class Command(SafeCommand):
                 for fd in data['FileDescriptors']['FileDescriptor']:
                     file_reference = fd['FileReference']
                     file_type = fd['FileType']
-                    file_path = os.path.join(path, file_reference) + '.' + file_type
+                    file_basename = file_reference + '.' + file_type
+                    file_path = os.path.join(path, file_basename)
                     if options['list_only']:
                         print('{file_reference} ({file_type}/{status}): {user_filename} ({timestamp})'.format(file_reference=file_reference, file_type=file_type, status=fd.get('Status'), user_filename=fd.get('UserFilename'), timestamp=fd.get('FileTimestamp')))
                         continue
@@ -79,6 +82,10 @@ class Command(SafeCommand):
                         with open(file_path, 'wb') as fp:
                             fp.write(bcontent)
                         logger.info('Wrote file {}'.format(file_path))
+
+                        # process selected files immediately
+                        if options['process_pain002'] and file_type in ['XP', 'pain.002.001.03', 'NDCORPAYL']:
+                            process_pain002_file_content(bcontent, file_path)
                     else:
                         print('Skipping old file {}'.format(file_path))
             else:

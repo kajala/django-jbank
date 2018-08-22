@@ -14,6 +14,7 @@ from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
 from jutil.validators import fi_iban_validator, iban_validator, iban_bic
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -358,7 +359,13 @@ class Payout(AccountEntry):
         return status.group_status if status else ''
 
 
+class PayoutStatusManager(models.Manager):
+    def is_file_processed(self, filename: str) -> bool:
+        return self.filter(file_name=basename(filename)).first() is not None
+
+
 class PayoutStatus(models.Model):
+    objects = PayoutStatusManager()
     payout = models.ForeignKey(Payout, verbose_name=_('payout'), related_name='payoutstatus_set', on_delete=models.PROTECT, null=True, default=None, blank=True)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     file_name = models.CharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
