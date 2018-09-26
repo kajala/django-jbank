@@ -43,7 +43,7 @@ class Command(SafeCommand):
                 pprint(batches)
                 continue
 
-            if ReferencePaymentBatch.objects.filter(name=plain_filename).count() == 0:
+            if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
                 logger.info('Importing reference payment batch file {}'.format(plain_filename))
 
                 batches = parse_svm_batches_from_file(filename)
@@ -51,18 +51,19 @@ class Command(SafeCommand):
                     pprint(batches)
 
                 with transaction.atomic():
-                    file = ReferencePaymentBatchFile()
-                    file.save()
-                    with open(filename, 'rb') as fp:
-                        file.file.save(plain_filename, File(fp))
+                    if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
+                        file = ReferencePaymentBatchFile()
+                        file.save()
+                        with open(filename, 'rb') as fp:
+                            file.file.save(plain_filename, File(fp))
 
-                    for data in batches:
-                        if options['auto_create_accounts']:
-                            for rec_data in data['records']:
-                                account_number = rec_data.get('account_number')
-                                if account_number:
-                                    get_or_create_bank_account(account_number)
+                        for data in batches:
+                            if options['auto_create_accounts']:
+                                for rec_data in data['records']:
+                                    account_number = rec_data.get('account_number')
+                                    if account_number:
+                                        get_or_create_bank_account(account_number)
 
-                        create_reference_payment_batch(data, name=plain_filename, file=file)
+                            create_reference_payment_batch(data, name=plain_filename, file=file)
             else:
                 print('Skipping reference payment batch file {}'.format(filename))

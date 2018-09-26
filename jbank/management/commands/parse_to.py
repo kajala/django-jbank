@@ -38,7 +38,7 @@ class Command(SafeCommand):
                 pprint(statements)
                 continue
 
-            if Statement.objects.filter(name=plain_filename).count() == 0:
+            if not Statement.objects.filter(name=plain_filename).first():
                 print('Importing statement file {}'.format(plain_filename))
 
                 statements = parse_tiliote_statements_from_file(filename)
@@ -46,16 +46,17 @@ class Command(SafeCommand):
                     pprint(statements)
 
                 with transaction.atomic():
-                    file = StatementFile()
-                    file.save()
-                    with open(filename, 'rb') as fp:
-                        file.file.save(plain_filename, File(fp))
-                    for data in statements:
-                        if options['auto_create_accounts']:
-                            account_number = data.get('header', {}).get('account_number')
-                            if account_number:
-                                get_or_create_bank_account(account_number)
+                    if not Statement.objects.filter(name=plain_filename).first():
+                        file = StatementFile()
+                        file.save()
+                        with open(filename, 'rb') as fp:
+                            file.file.save(plain_filename, File(fp))
+                        for data in statements:
+                            if options['auto_create_accounts']:
+                                account_number = data.get('header', {}).get('account_number')
+                                if account_number:
+                                    get_or_create_bank_account(account_number)
 
-                        create_statement(data, name=plain_filename, file=file)
+                            create_statement(data, name=plain_filename, file=file)
             else:
                 print('Skipping statement file {}'.format(filename))
