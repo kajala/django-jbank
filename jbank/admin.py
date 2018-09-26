@@ -510,6 +510,10 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase):
         'file_link',
     )
 
+    search_fields = (
+        'file__contains',
+    )
+
     readonly_fields = (
         'created',
         'errors',
