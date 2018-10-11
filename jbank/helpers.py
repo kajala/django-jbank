@@ -96,7 +96,6 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     """
     if 'header' not in statement_data or not statement_data['header']:
         raise ValidationError('Invalid header field in statement data {}: {}'.format(name, statement_data.get('header')))
-
     header = statement_data['header']
 
     account_number = header['account_number']
@@ -160,12 +159,13 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
     :param name: File name of the batch file
     :return: ReferencePaymentBatch
     """
+    if ReferencePaymentBatch.objects.exclude(file=file).filter(name=name).first():
+        raise ValidationError('Reference payment batch file {} already exists'.format(name))
+
     if 'header' not in batch_data or not batch_data['header']:
         raise ValidationError('Invalid header field in reference payment batch data {}: {}'.format(name, batch_data.get('header')))
-
     header = batch_data['header']
-    if ReferencePaymentBatch.objects.filter(name=name).first():
-        raise ValidationError('Reference payment batch file {} already exists'.format(name))
+
     batch = ReferencePaymentBatch(name=name, file=file)
     for k in ASSIGNABLE_REFERENCE_PAYMENT_BATCH_HEADER_FIELDS:
         if k in header:
