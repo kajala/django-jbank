@@ -18,6 +18,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy, capfirst
 from django.utils.translation import ugettext_lazy as _
+from jacc.admin import AccountTypeAccountEntryFilter
 from jacc.models import Account, EntryType
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
@@ -216,7 +217,6 @@ class StatementRecordAdmin(ModelAdminBase):
         AccountEntryMatchedFilter,
         SettlementEntryTypesFilter,
         'record_code',
-        'account',
     )
     search_fields = (
         '=archive_identifier',
@@ -314,7 +314,6 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         AccountEntryMatchedFilter,
         'correction_identifier',
         'receipt_code',
-        'account',
     )
     search_fields = (
         '=archive_identifier',
