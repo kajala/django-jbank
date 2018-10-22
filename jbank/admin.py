@@ -31,6 +31,9 @@ logger = logging.getLogger(__name__)
 
 
 class SettlementEntryTypesFilter(SimpleListFilter):
+    """
+    Filters incoming settlement type entries.
+    """
     title = _('account entry types')
     parameter_name = 'type'
 
@@ -48,6 +51,9 @@ class SettlementEntryTypesFilter(SimpleListFilter):
 
 
 class AccountEntryMatchedFilter(SimpleListFilter):
+    """
+    Filters incoming payments which do not have any child/derived account entries.
+    """
     title = _('account.entry.matched.filter')
     parameter_name = 'matched'
 
@@ -59,10 +65,12 @@ class AccountEntryMatchedFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         val = self.value()
-        if val == '1':
-            return queryset.filter(child_set=None)
-        elif val == '2':
-            return queryset.exclude(child_set=None)
+        if val:
+            queryset = queryset.filter(type__is_settlement=True, parent=None)
+            if val == '1':
+                return queryset.filter(child_set=None)
+            elif val == '2':
+                return queryset.exclude(child_set=None)
         return queryset
 
 
