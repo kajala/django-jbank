@@ -12,8 +12,8 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
-from jutil.validators import fi_iban_validator, iban_validator, iban_bic
-
+from jutil.validators import fi_iban_validator, iban_validator, iban_bic, iso_payment_reference_validator, \
+    fi_payment_reference_validator
 
 logger = logging.getLogger(__name__)
 
@@ -331,6 +331,13 @@ class Payout(AccountEntry):
         # prevent defining both reference and messages
         if self.messages and self.reference:
             raise ValidationError(_('Both recipient messages and recipient reference cannot be defined simultenously'))
+
+        # validate reference if any
+        if self.reference:
+            if self.reference[:2] == 'RF':
+                iso_payment_reference_validator(self.reference)
+            else:
+                fi_payment_reference_validator(self.reference)
 
         # prevent canceling payouts which have been uploaded successfully
         if self.state == PAYOUT_CANCELED:
