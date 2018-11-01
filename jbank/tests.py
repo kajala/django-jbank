@@ -8,7 +8,7 @@ from pprint import pprint
 from django.conf import settings
 from django.test import TestCase
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
-from jbank.sepa import Pain001, Pain002
+from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jutil.format import format_xml
 from jutil.validators import iban_bic
 
@@ -26,6 +26,8 @@ class Tests(TestCase):
                     ['Koukkukankareentie 29', '20320 Turku'], 'FI')
         creditor_acc = 'FI8847304720017517'
         p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), 'vuokratilitys')
+        p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), '302300', PAIN001_REMITTANCE_INFO_OCR)
+        p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), 'RF92 1229', PAIN001_REMITTANCE_INFO_OCR_ISO)
         xml_str = format_xml(p.render().decode())
         # print(xml_str)
 

@@ -6,10 +6,25 @@ from decimal import Decimal
 import pytz
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
+from django.utils.translation import ugettext_lazy as _
 from jutil.format import dec2
 from jutil.parse import parse_datetime
-from jutil.validators import iban_filter, iban_validator
+from jutil.validators import iban_filter, iban_validator, iso_payment_reference_validator, \
+    fi_payment_reference_validator
 from jutil.xml import dict_to_element, xml_to_dict
+
+
+PAIN001_REMITTANCE_INFO_MSG = 'M'
+PAIN001_REMITTANCE_INFO_OCR = 'O'
+PAIN001_REMITTANCE_INFO_OCR_ISO = 'I'
+
+PAIN001_REMITTANCE_INFO_TYPE = (
+    (PAIN001_REMITTANCE_INFO_MSG, _('message')),
+    (PAIN001_REMITTANCE_INFO_OCR, _('OCR')),
+    (PAIN001_REMITTANCE_INFO_OCR_ISO, _('OCR/ISO')),
+)
+
+PAIN001_REMITTANCE_INFO_VALUES = [t[0] for t in PAIN001_REMITTANCE_INFO_TYPE]
 
 
 class Pain001Party(object):
@@ -25,12 +40,26 @@ class Pain001Party(object):
 
 
 class Pain001Payment(object):
-    def __init__(self, payment_id, creditor: Pain001Party, amount: Decimal, remittance_info: str, due_date: date):
+    def __init__(self, payment_id, creditor: Pain001Party, amount: Decimal, remittance_info: str, remittance_info_type: str, due_date: date):
         self.payment_id = payment_id
         self.creditor = creditor
         self.amount = amount
         self.remittance_info = remittance_info
+        self.remittance_info_type = remittance_info_type
         self.due_date = due_date
+
+    def clean(self):
+        if not self.remittance_info:
+            raise ValidationError(_('pain001.remittance.info.missing'))
+        if self.remittance_info_type not in PAIN001_REMITTANCE_INFO_VALUES:
+            raise ValidationError(_('pain001.remittance.info.type.invalid'))
+        if self.remittance_info_type == PAIN001_REMITTANCE_INFO_MSG:
+            if not self.remittance_info:
+                raise ValidationError(_('Invalid payment reference: {}').format(self.remittance_info))
+        elif self.remittance_info_type == PAIN001_REMITTANCE_INFO_OCR:
+            fi_payment_reference_validator(self.remittance_info)
+        elif self.remittance_info_type == PAIN001_REMITTANCE_INFO_OCR_ISO:
+            iso_payment_reference_validator(self.remittance_info)
 
 
 class Pain001(object):
@@ -60,13 +89,14 @@ class Pain001(object):
                     creditor_bic: str,
                     amount: Decimal,
                     remittance_info: str,
-                    due_date: date=None):
-        if not remittance_info:
-            raise ValidationError(_('pain001.remittance.info.missing'))
+                    remittance_info_type: str=PAIN001_REMITTANCE_INFO_MSG,
+                    due_date: date=None,
+                    ):
         if not due_date:
             due_date = self._local_time().date()
         creditor = Pain001Party(creditor_name, creditor_account, creditor_bic)
-        p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, due_date)
+        p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, remittance_info_type, due_date)
+        p.clean()
         self.payments.append(p)
 
     def _ctrl_sum(self) -> Decimal:
@@ -112,6 +142,40 @@ class Pain001(object):
         return g
 
     def _pmt_inf(self, p: Pain001Payment) -> Element:
+        if p.remittance_info_type == PAIN001_REMITTANCE_INFO_MSG:
+            rmt_inf = ['RmtInf', OrderedDict([
+                ('Ustrd', p.remittance_info),
+            ])]
+        elif p.remittance_info_type == PAIN001_REMITTANCE_INFO_OCR:
+            rmt_inf = ['RmtInf', OrderedDict([
+                ('Strd', OrderedDict([
+                    ('CdtrRefInf', OrderedDict([
+                        ('Tp', OrderedDict([
+                            ('CdOrPrtry', OrderedDict([
+                                ('Cd', 'SCOR'),
+                            ])),
+                        ])),
+                        ('Ref', p.remittance_info),
+                    ])),
+                ])),
+            ])]
+        elif p.remittance_info_type == PAIN001_REMITTANCE_INFO_OCR_ISO:
+            rmt_inf = ['RmtInf', OrderedDict([
+                ('Strd', OrderedDict([
+                    ('CdtrRefInf', OrderedDict([
+                        ('Tp', OrderedDict([
+                            ('CdOrPrtry', OrderedDict([
+                                ('Cd', 'SCOR'),
+                            ])),
+                            ('Issr', 'ISO'),
+                        ])),
+                        ('Ref', p.remittance_info),
+                    ])),
+                ])),
+            ])]
+        else:
+            raise ValidationError(_('Invalid remittance info type: {}').format(p.remittance_info_type))
+
         return dict_to_element({
             'PmtInf': OrderedDict([
                 ('PmtInfId', str(p.payment_id)),
@@ -168,9 +232,7 @@ class Pain001(object):
                             ('IBAN', p.creditor.account),
                         ])),
                     ])),
-                    ('RmtInf', OrderedDict([
-                        ('Ustrd', p.remittance_info),
-                    ])),
+                    rmt_inf,
                 ])),
             ]),
         })
