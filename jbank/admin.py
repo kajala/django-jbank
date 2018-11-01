@@ -608,6 +608,7 @@ class PayoutAdmin(ModelAdminBase):
         'recipient',
         'amount',
         'messages',
+        'reference',
         'msg_id',
         'file_name',
         'timestamp',

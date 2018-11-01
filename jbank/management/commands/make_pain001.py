@@ -8,7 +8,8 @@ from django.conf import settings
 from django.core.management import CommandParser
 from django.db import transaction
 from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD
-from jbank.sepa import Pain001
+from jbank.sepa import Pain001, PAIN001_REMITTANCE_INFO_MSG, PAIN001_REMITTANCE_INFO_OCR_ISO, \
+    PAIN001_REMITTANCE_INFO_OCR
 from jutil.command import SafeCommand
 from jutil.format import format_xml
 from jutil.validators import iban_bic
@@ -50,7 +51,13 @@ class Command(SafeCommand):
                     p.save(update_fields=['msg_id', 'file_name'])
 
                 pain001 = Pain001(p.msg_id, p.payer.name, p.payer.account_number, p.payer.bic, p.payer.org_id, p.payer.address_lines, p.payer.country_code)
-                pain001.add_payment(p.id, p.recipient.name, p.recipient.account_number, p.recipient.bic, p.amount, p.messages, p.due_date)
+                if p.messages:
+                    remittance_info = p.messages
+                    remittance_info_type = PAIN001_REMITTANCE_INFO_MSG
+                else:
+                    remittance_info = p.reference
+                    remittance_info_type = PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == 'RF' else PAIN001_REMITTANCE_INFO_OCR
+                pain001.add_payment(p.id, p.recipient.name, p.recipient.account_number, p.recipient.bic, p.amount, remittance_info, remittance_info_type, p.due_date)
 
                 p.full_path = full_path = os.path.join(options['dir'], p.file_name)
                 if options['verbose']:
