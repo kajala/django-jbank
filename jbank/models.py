@@ -330,7 +330,7 @@ class Payout(AccountEntry):
 
         # prevent defining both reference and messages
         if self.messages and self.reference:
-            raise ValidationError(_('Both recipient messages and recipient reference cannot be defined simultenously'))
+            raise ValidationError(_('Both recipient messages and recipient reference cannot be defined simultaneously'))
 
         # validate reference if any
         if self.reference:
