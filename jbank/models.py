@@ -156,9 +156,7 @@ class StatementRecord(AccountEntry):
 
     def clean(self):
         self.source_file = self.statement
-        paid_date = self.paid_date
-        assert isinstance(paid_date, date)
-        self.timestamp = pytz.utc.localize(datetime.combine(paid_date, time(0, 0)))
+        self.timestamp = pytz.utc.localize(datetime.combine(self.record_date, time(0, 0)))
         self.description = '{name}: {record_description}'.format(record_description=self.record_description, name=self.name)
 
 
@@ -237,9 +235,7 @@ class ReferencePaymentRecord(AccountEntry):
 
     def clean(self):
         self.source_file = self.batch
-        paid_date = self.paid_date
-        assert isinstance(paid_date, date)
-        self.timestamp = pytz.utc.localize(datetime.combine(paid_date, time(0, 0)))
+        self.timestamp = pytz.utc.localize(datetime.combine(self.paid_date, time(0, 0)))
         self.description = '{amount} {remittance_info} {payer_name}'.format(amount=self.amount, remittance_info=self.remittance_info, payer_name=self.payer_name)
 
 
