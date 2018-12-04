@@ -25,8 +25,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase
-
+from jutil.admin import ModelAdminBase, AdminFileDownloadMixin
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +84,7 @@ class StatementAdmin(ModelAdminBase):
         'account_number',
     )
     readonly_fields = (
-        'file',
-        'name',
+        'file_link',
         'account_number',
         'statement_number',
         'begin_date',
@@ -106,6 +104,7 @@ class StatementAdmin(ModelAdminBase):
         'iban',
         'bic',
     )
+    fields = readonly_fields
     search_fields = (
         'name',
         'statement_number',
@@ -126,6 +125,15 @@ class StatementAdmin(ModelAdminBase):
         admin_url = reverse('admin:jbank_statementrecord_statement_changelist', args=(obj.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), StatementRecord.objects.filter(statement=obj).count())
     account_entry_list.short_description = _('account entries')
+
+    def file_link(self, obj):
+        assert isinstance(obj, Statement)
+        if not obj.file:
+            return ''
+        admin_url = reverse('admin:jbank_statementfile_change', args=(obj.file.id, ))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.name)
+    file_link.admin_order_field = 'file'
+    file_link.short_description = _('file')
 
     def get_urls(self):
         return [
@@ -350,7 +358,7 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         assert isinstance(obj, ReferencePaymentRecord)
         if not obj.batch:
             return ''
-        admin_url = reverse('admin:jbank_referencepaymentbatch_change', args=(obj.batch.id, ))
+        admin_url = reverse('admin:jbank_referencepaymentbatchfile_change', args=(obj.batch.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.name)
     source_file_link.admin_order_field = 'batch'
     source_file_link.short_description = _('account entry source file')
@@ -365,8 +373,17 @@ class ReferencePaymentBatchAdmin(ModelAdminBase):
     list_filter = (
         'record_set__account_number',
     )
+    fields = (
+        'file_link',
+        'record_date',
+        'institution_identifier',
+        'service_identifier',
+        'currency_identifier',
+    )
     readonly_fields = (
         'name',
+        'file',
+        'file_link',
         'record_date',
         'institution_identifier',
         'service_identifier',
@@ -393,6 +410,15 @@ class ReferencePaymentBatchAdmin(ModelAdminBase):
         admin_url = reverse('admin:jbank_referencepaymentrecord_batch_changelist', args=(obj.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), ReferencePaymentRecord.objects.filter(batch=obj).count())
     account_entry_list.short_description = _('account entries')
+
+    def file_link(self, obj):
+        assert isinstance(obj, ReferencePaymentBatch)
+        if not obj.file:
+            return ''
+        admin_url = reverse('admin:jbank_referencepaymentbatchfile_change', args=(obj.file.id, ))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file)
+    file_link.admin_order_field = 'file'
+    file_link.short_description = _('file')
 
     def get_urls(self):
         return [
@@ -433,7 +459,7 @@ class StatementFileForm(forms.ModelForm):
         return file
 
 
-class StatementFileAdmin(ModelAdminBase):
+class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     save_on_top = False
     exclude = ()
     form = StatementFileForm
@@ -480,6 +506,9 @@ class StatementFileAdmin(ModelAdminBase):
 
         return super().construct_change_message(request, form, formsets, add)
 
+    def get_urls(self):
+        return self.get_download_urls() + super().get_urls()
+
 
 class ReferencePaymentBatchFileForm(forms.ModelForm):
     class Meta:
@@ -506,7 +535,7 @@ class ReferencePaymentBatchFileForm(forms.ModelForm):
         return file
 
 
-class ReferencePaymentBatchFileAdmin(ModelAdminBase):
+class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     save_on_top = False
     exclude = ()
     form = ReferencePaymentBatchFileForm
@@ -562,6 +591,9 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase):
                     instance.delete()
 
         return super().construct_change_message(request, form, formsets, add)
+
+    def get_urls(self):
+        return self.get_download_urls() + super().get_urls()
 
 
 class PayoutStatusInlineAdmin(admin.TabularInline):
