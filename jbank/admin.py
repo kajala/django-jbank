@@ -291,6 +291,7 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
     readonly_fields = (
         'id',
         'batch',
+        'file_link',
         'record_type',
         'account_number',
         'record_date',
@@ -339,6 +340,15 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         'remittance_info',
         'source_file_link',
     )
+
+    def file_link(self, obj):
+        assert isinstance(obj, ReferencePaymentRecord)
+        if not obj.batch or not obj.batch.file:
+            return ''
+        admin_url = reverse('admin:jbank_referencepaymentbatchfile_change', args=(obj.batch.file.id, ))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.file)
+    file_link.admin_order_field = 'file'
+    file_link.short_description = _('file')
 
     def get_urls(self):
         return [
