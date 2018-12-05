@@ -252,7 +252,7 @@ class StatementFile(models.Model):
 
     @property
     def full_path(self):
-        return join(settings.MEDIA_DIR, self.file.name) if self.file else ''
+        return join(settings.MEDIA_ROOT, self.file.name) if self.file else ''
 
     def __str__(self):
         return basename(str(self.file.name)) if self.file else ''
@@ -269,7 +269,7 @@ class ReferencePaymentBatchFile(models.Model):
 
     @property
     def full_path(self):
-        return join(settings.MEDIA_DIR, self.file.name) if self.file else ''
+        return join(settings.MEDIA_ROOT, self.file.name) if self.file else ''
 
     def __str__(self):
         return basename(str(self.file.name)) if self.file else ''
