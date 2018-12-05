@@ -131,6 +131,7 @@ class PaymentRecordManager(models.Manager):
 class StatementRecord(AccountEntry):
     objects = PaymentRecordManager()
     statement = models.ForeignKey(Statement, verbose_name=_('statement'), related_name='record_set', on_delete=models.CASCADE)
+    line_number = models.SmallIntegerField(_('line number'), default=0, blank=True)
     record_number = models.IntegerField(_('record number'))
     archive_identifier = models.CharField(_('archive identifier'), max_length=32, blank=True, default='', db_index=True)
     record_date = models.DateField(_('record date'), db_index=True)
@@ -208,6 +209,7 @@ class ReferencePaymentRecord(AccountEntry):
     """
     objects = PaymentRecordManager()
     batch = models.ForeignKey(ReferencePaymentBatch, verbose_name=_('batch'), related_name='record_set', on_delete=models.CASCADE)
+    line_number = models.SmallIntegerField(_('line number'), default=0, blank=True)
     record_type = models.CharField(_('record type'), max_length=1)
     account_number = models.CharField(_('account number'), max_length=32, db_index=True)
     record_date = models.DateField(_('record date'), db_index=True)

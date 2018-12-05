@@ -129,8 +129,9 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     }
 
     for rec_data in statement_data['records']:
+        line_number = rec_data['line_number']
         e_type = entry_types.get(rec_data['entry_type'])
-        rec = StatementRecord(statement=stm, account=account, type=e_type)
+        rec = StatementRecord(statement=stm, account=account, type=e_type, line_number=line_number)
         for k in ASSIGNABLE_STATEMENT_RECORD_FIELDS:
             if k in rec_data:
                 setattr(rec, k, rec_data[k])
@@ -178,6 +179,7 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
     e_type = EntryType.objects.get(code=settings.E_BANK_REFERENCE_PAYMENT)
 
     for rec_data in batch_data['records']:
+        line_number = rec_data['line_number']
         account_number = rec_data['account_number']
         if not account_number:
             raise ValidationError('{name}: '.format(name=name) + _("account.not.found").format(account_number=''))
@@ -187,7 +189,7 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
         account = accounts[0]
         assert isinstance(account, Account)
 
-        rec = ReferencePaymentRecord(batch=batch, account=account, type=e_type)
+        rec = ReferencePaymentRecord(batch=batch, account=account, type=e_type, line_number=line_number)
         for k in ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS:
             if k in rec_data:
                 setattr(rec, k, rec_data[k])

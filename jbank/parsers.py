@@ -311,7 +311,8 @@ def parse_record_value(data_type, data_len, data, name: str, line_number: int) -
 def parse_records(line: str, specs: tuple, line_number: int, check_record_length: bool=True, record_length: int=None) -> dict:
     # print(line)
     i = 0
-    data = {}
+    data = dict()
+    data['line_number'] = line_number
     for name, fmt, req in specs:
         data_type, data_len = parse_record_format(fmt)
         value = parse_record_value(data_type, data_len, line[i:], name=name, line_number=line_number)
@@ -587,7 +588,7 @@ def parse_svm_batches(content: str, filename: str) -> list:
     return batches
 
 
-def parse_svm_batches_from_file(filename: str) -> dict:
+def parse_svm_batches_from_file(filename: str) -> list:
     if parse_filename_suffix(filename).upper() not in ('SVM', 'TXT', 'KTL'):
         raise ValidationError(_('Not "saapuvat viitemaksut" (.SVM) file') + ': {}'.format(filename))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
