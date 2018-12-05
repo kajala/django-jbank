@@ -531,7 +531,7 @@ def parse_filename_suffix(filename: str) -> str:
     return a[len(a)-1]
 
 
-def parse_tiliote_statements_from_file(filename: str) -> dict:
+def parse_tiliote_statements_from_file(filename: str) -> list:
     if parse_filename_suffix(filename).upper() not in ('TO', 'TXT'):
         raise ValidationError(_('Not "tiliote" (.TO) file') + ': {}'.format(filename))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:

@@ -178,6 +178,7 @@ class StatementRecordAdmin(ModelAdminBase):
     readonly_fields = (
         'id',
         'statement',
+        'file_link',
         'record_number',
         'archive_identifier',
         'record_date',
@@ -271,6 +272,16 @@ class StatementRecordAdmin(ModelAdminBase):
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.statement.name)
     source_file_link.admin_order_field = 'statement'
     source_file_link.short_description = _('account entry source file')
+
+    def file_link(self, obj):
+        assert isinstance(obj, StatementRecord)
+        if not obj.statement or not obj.statement.file:
+            return ''
+        name = basename(obj.statement.file.file.name)
+        admin_url = reverse('admin:jbank_statementfile_change', args=(obj.statement.file.id, ))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
+    file_link.admin_order_field = 'file'
+    file_link.short_description = _("account statement file")
 
 
 class ReferencePaymentRecordAdmin(ModelAdminBase):

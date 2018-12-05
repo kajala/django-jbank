@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
-    help = 'Parses bank account statement .SVM (saapuvat viitemaksut) files'
+    help = 'Parses bank settlement .SVM (saapuvat viitemaksut) files'
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('path', type=str)
