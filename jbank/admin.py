@@ -178,6 +178,7 @@ class StatementRecordAdmin(ModelAdminBase):
     readonly_fields = (
         'id',
         'statement',
+        'line_number',
         'file_link',
         'record_number',
         'archive_identifier',
@@ -302,6 +303,7 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
     readonly_fields = (
         'id',
         'batch',
+        'line_number',
         'file_link',
         'record_type',
         'account_number',
