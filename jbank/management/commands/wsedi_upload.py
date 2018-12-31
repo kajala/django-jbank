@@ -43,6 +43,8 @@ class Command(SafeCommand):
 
         for p in list(payouts):
             assert isinstance(p, Payout)
+            response_code = ''
+            response_text = ''
             try:
                 # upload file
                 logger.info('Uploading payment id={} {} file {}'.format(p.id, file_type, p.full_path))
