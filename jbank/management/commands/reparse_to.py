@@ -25,11 +25,14 @@ class Command(SafeCommand):
     help = 'Re-parses old bank statement .TO (tiliote) files. Used for adding missing fields.'
 
     def add_arguments(self, parser: CommandParser):
-        pass
+        parser.add_argument('--file', type=str)
 
     def do(self, *args, **options):
         logger.info('Re-parsing TO files to update fields')
-        for file in StatementFile.objects.all().order_by('id'):
+        qs = StatementFile.objects.all()
+        if options['file']:
+            qs = qs.filter(file=options['file'])
+        for file in qs.order_by('id'):
             assert isinstance(file, StatementFile)
             logger.info('Processing {} BEGIN'.format(file))
             statements = parse_tiliote_statements_from_file(file.full_path)

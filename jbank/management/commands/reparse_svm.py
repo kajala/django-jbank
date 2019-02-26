@@ -24,11 +24,14 @@ class Command(SafeCommand):
     help = 'Re-parses old bank settlement .SVM (saapuvat viitemaksut) files. Used for adding missing fields.'
 
     def add_arguments(self, parser: CommandParser):
-        pass
+        parser.add_argument('--file', type=str)
 
     def do(self, *args, **options):
         logger.info('Re-parsing SVM files to update fields')
-        for file in ReferencePaymentBatchFile.objects.all().order_by('id'):
+        qs = ReferencePaymentBatchFile.objects.all()
+        if options['file']:
+            qs = qs.filter(file=options['file'])
+        for file in qs.order_by('id'):
             assert isinstance(file, ReferencePaymentBatchFile)
             logger.info('Processing {} BEGIN'.format(file))
             batches = parse_svm_batches_from_file(file.full_path)
