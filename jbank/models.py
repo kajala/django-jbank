@@ -150,6 +150,7 @@ class StatementRecord(AccountEntry):
     messages = models.TextField(_('messages'), blank=True, default='')
     client_messages = models.TextField(_('client messages'), blank=True, default='')
     bank_messages = models.TextField(_('bank messages'), blank=True, default='')
+    manually_settled = models.BooleanField(_('manually settled'), db_index=True, default=False, blank=True)
 
     class Meta:
         verbose_name = _('statement record')
@@ -222,6 +223,7 @@ class ReferencePaymentRecord(AccountEntry):
     correction_identifier = models.CharField(_('correction identifier'), max_length=1, choices=CORRECTION_IDENTIFIER)
     delivery_method = models.CharField(_('delivery method'), max_length=1, db_index=True, choices=DELIVERY_METHOD)
     receipt_code = models.CharField(_('receipt code'), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
+    manually_settled = models.BooleanField(_('manually settled'), db_index=True, default=False, blank=True)
 
     class Meta:
         verbose_name = _('reference payment records')

@@ -1,11 +1,11 @@
 import logging
 import traceback
 from os.path import basename, join
-
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.models import User
 from django.contrib.messages import add_message, ERROR
@@ -25,7 +25,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, AdminFileDownloadMixin
+from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class AccountEntryMatchedFilter(SimpleListFilter):
         if val:
             queryset = queryset.filter(type__is_settlement=True, parent=None)
             if val == '1':
-                return queryset.filter(child_set=None)
+                return queryset.filter(child_set=None).exclude(manually_settled=True)
             elif val == '2':
                 return queryset.exclude(child_set=None)
         return queryset
@@ -170,6 +170,28 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
     )
 
 
+def mark_as_manually_settled(modeladmin, request, qs):
+    user = request.user
+    for e in list(qs.filter(manually_settled=False)):
+        e.manually_settled = True
+        e.save(update_fields=['manually_settled'])
+        msg = 'User {user} marked {entry} as manually settled'.format(user=user, entry=e)
+        admin_log([user, e], msg, who=user)
+        messages.info(request, msg)
+mark_as_manually_settled.short_description = _('Mark as manually settled')
+
+
+def unmark_manually_settled_flag(modeladmin, request, qs):
+    user = request.user
+    for e in list(qs.filter(manually_settled=True)):
+        e.manually_settled = False
+        e.save(update_fields=['manually_settled'])
+        msg = 'User {user} unmarked {entry} manually settled flag'.format(user=user, entry=e)
+        admin_log([user, e], msg, who=user)
+        messages.info(request, msg)
+unmark_manually_settled_flag.short_description = _('Unmark manually settled flag')
+
+
 class StatementRecordAdmin(ModelAdminBase):
     exclude = ()
     list_per_page = 50
@@ -177,6 +199,7 @@ class StatementRecordAdmin(ModelAdminBase):
     date_hierarchy = 'record_date'
     readonly_fields = (
         'id',
+        'entry_type',
         'statement',
         'line_number',
         'file_link',
@@ -199,6 +222,8 @@ class StatementRecordAdmin(ModelAdminBase):
         'messages',
         'client_messages',
         'bank_messages',
+        'archived',
+        'manually_settled',
         # from AccountEntry
         'account',
         'timestamp',
@@ -249,6 +274,10 @@ class StatementRecordAdmin(ModelAdminBase):
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
+    )
+    actions = (
+        mark_as_manually_settled,
+        unmark_manually_settled_flag,
     )
 
     def get_urls(self):
@@ -318,6 +347,8 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         'correction_identifier',
         'delivery_method',
         'receipt_code',
+        'archived',
+        'manually_settled',
         # from AccountEntry
         'account',
         'timestamp',
@@ -352,6 +383,10 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         'payer_name',
         'remittance_info',
         'source_file_link',
+    )
+    actions = (
+        mark_as_manually_settled,
+        unmark_manually_settled_flag,
     )
 
     def file_link(self, obj):
