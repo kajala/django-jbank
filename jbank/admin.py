@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.http import HttpRequest
+from django.shortcuts import render
 from django.urls import ResolverMatch, reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -61,6 +62,7 @@ class AccountEntryMatchedFilter(SimpleListFilter):
         return [
             ('1', capfirst(_('account.entry.not.matched'))),
             ('2', capfirst(_('account.entry.is.matched'))),
+            ('3', capfirst(_('masked as settled'))),
         ]
 
     def queryset(self, request, queryset):
@@ -71,6 +73,8 @@ class AccountEntryMatchedFilter(SimpleListFilter):
                 return queryset.filter(child_set=None).exclude(manually_settled=True)
             elif val == '2':
                 return queryset.exclude(child_set=None)
+            elif val == '3':
+                return queryset.filter(manually_settled=True)
         return queryset
 
 
@@ -171,13 +175,28 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
 
 
 def mark_as_manually_settled(modeladmin, request, qs):
-    user = request.user
-    for e in list(qs.filter(manually_settled=False)):
-        e.manually_settled = True
-        e.save(update_fields=['manually_settled'])
-        msg = 'User {user} marked {entry} as manually settled'.format(user=user, entry=e)
-        admin_log([user, e], msg, who=user)
-        messages.info(request, msg)
+    try:
+        data = request.POST.dict()
+
+        if 'description' in data:
+            description = data['description']
+            user = request.user
+            for e in list(qs.filter(manually_settled=False)):
+                e.manually_settled = True
+                e.save(update_fields=['manually_settled'])
+                msg = '{}: {}'.format(capfirst(_('marked as manually settled')), description)
+                admin_log([e], msg, who=user)
+                messages.info(request, msg)
+        else:
+            cx = {
+                'qs': qs,
+            }
+            return render(request, 'admin/jbank/mark_as_manually_settled.html', context=cx)
+    except ValidationError as e:
+        messages.error(request, ' '.join(e.messages))
+    except Exception as e:
+        logger.error('mark_as_manually_settled: ' + traceback.format_exc())
+        messages.error(request, '{}'.format(e))
 mark_as_manually_settled.short_description = _('Mark as manually settled')
 
 
@@ -186,8 +205,8 @@ def unmark_manually_settled_flag(modeladmin, request, qs):
     for e in list(qs.filter(manually_settled=True)):
         e.manually_settled = False
         e.save(update_fields=['manually_settled'])
-        msg = 'User {user} unmarked {entry} manually settled flag'.format(user=user, entry=e)
-        admin_log([user, e], msg, who=user)
+        msg = capfirst(_('manually settled flag cleared'))
+        admin_log([e], msg, who=user)
         messages.info(request, msg)
 unmark_manually_settled_flag.short_description = _('Unmark manually settled flag')
 

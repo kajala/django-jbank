@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-04 19:22+0000\n"
+"POT-Creation-Date: 2019-03-07 00:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,61 +18,74 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: jbank/admin.py:37
+#: jbank/admin.py:38
 msgid "account entry types"
 msgstr "tilitapahtumien tyypit"
 
-#: jbank/admin.py:57
+#: jbank/admin.py:58
 msgid "account.entry.matched.filter"
 msgstr "kohdistaminen"
 
-#: jbank/admin.py:62
+#: jbank/admin.py:63
 msgid "account.entry.not.matched"
 msgstr "kohdistamaton"
 
-#: jbank/admin.py:63
+#: jbank/admin.py:64
 msgid "account.entry.is.matched"
 msgstr "kohdistettu"
 
-#: jbank/admin.py:127 jbank/admin.py:470
+#: jbank/admin.py:65
+msgid "masked as settled"
+msgstr "merkitty kohdistetuksi"
+
+#: jbank/admin.py:131 jbank/admin.py:489
 msgid "account entries"
 msgstr "tilitapahtumat"
 
-#: jbank/admin.py:136 jbank/admin.py:399 jbank/admin.py:479 jbank/models.py:248
+#: jbank/admin.py:140 jbank/admin.py:418 jbank/admin.py:498 jbank/models.py:248
 #: jbank/models.py:265
 msgid "file"
 msgstr "tiedosto"
 
-#: jbank/admin.py:181
+#: jbank/admin.py:187
+msgid "marked as manually settled"
+msgstr "merkitty manuaalisesti kohdistetuksi"
+
+#: jbank/admin.py:200
+#: jbank/templates/admin/jbank/mark_as_manually_settled.html:21
 msgid "Mark as manually settled"
 msgstr "Merkitse tapahtuma manuaalisesti kohdistetuksi"
 
-#: jbank/admin.py:192
+#: jbank/admin.py:208
+msgid "manually settled flag cleared"
+msgstr "merkintä manuaalisesta kohdistuksesta poistettu"
+
+#: jbank/admin.py:211
 msgid "Unmark manually settled flag"
 msgstr "Merkitse tapahtuma avoimeksi/kohdistamattomaksi"
 
-#: jbank/admin.py:304 jbank/admin.py:422
+#: jbank/admin.py:323 jbank/admin.py:441
 msgid "account entry source file"
 msgstr "lähdetiedosto"
 
-#: jbank/admin.py:314 jbank/models.py:252
+#: jbank/admin.py:333 jbank/models.py:252
 msgid "account statement file"
 msgstr "tiliote-tiedosto"
 
-#: jbank/admin.py:512 jbank/admin.py:588 jbank/helpers.py:103
+#: jbank/admin.py:531 jbank/admin.py:607 jbank/helpers.py:103
 #: jbank/helpers.py:106 jbank/helpers.py:185 jbank/helpers.py:188
 msgid "account.not.found"
 msgstr "Tiliä {account_number} ei löydy"
 
-#: jbank/admin.py:516 jbank/admin.py:592
+#: jbank/admin.py:535 jbank/admin.py:611
 msgid "Unhandled error"
 msgstr "Käsittelemätön virhe"
 
-#: jbank/admin.py:545 jbank/models.py:120
+#: jbank/admin.py:564 jbank/models.py:120
 msgid "statements"
 msgstr "tiliotteet"
 
-#: jbank/admin.py:625 jbank/models.py:204
+#: jbank/admin.py:644 jbank/models.py:204
 msgid "reference payment batches"
 msgstr "viitemaksuerät"
 
@@ -673,6 +686,12 @@ msgstr "Epäkelpo maksun viite: {}"
 #: jbank/sepa.py:177
 msgid "Invalid remittance info type: {}"
 msgstr "Maksuviitteen tyyppi epäkelpo: {}"
+
+#: jbank/templates/admin/jbank/mark_as_manually_settled.html:14
+#, fuzzy
+#| msgid "record description"
+msgid "description"
+msgstr "tietueen kuvaus"
 
 #: jbank/templates/admin/jbank/referencepaymentbatch/change_form.html:8
 #: jbank/templates/admin/jbank/statement/change_form.html:8
