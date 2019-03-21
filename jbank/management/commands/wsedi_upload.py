@@ -64,7 +64,8 @@ class Command(SafeCommand):
                 fd = {} if len(fds) == 0 else fds[0]
                 file_reference = fd.get('FileReference', '')
                 if not file_reference:
-                    raise Exception("FileReference missing from response")
+                    err_msg = "FileReference missing from response. Response was code {} ('{}')".format(response_code, response_text)
+                    raise Exception(err_msg)
                 p.file_reference = file_reference
                 p.save(update_fields=['file_reference'])
                 PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code, response_text=response_text, status_reason='File upload OK')
