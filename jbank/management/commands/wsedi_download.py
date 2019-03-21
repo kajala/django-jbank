@@ -78,6 +78,9 @@ class Command(SafeCommand):
                         if res.status_code >= 300:
                             raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
                         file_data = res.json()
+                        if 'Content' not in file_data:
+                            logger.error('WS-EDI {} HTTP {} but Content block missing: {}'.format(command, res.status_code, file_data))
+                            raise Exception("WS-EDI {} HTTP {} but Content block missing".format(command, res.status_code))
                         bcontent = base64.b64decode(file_data['Content'])
                         with open(file_path, 'wb') as fp:
                             fp.write(bcontent)
