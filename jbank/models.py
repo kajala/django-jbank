@@ -195,7 +195,7 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     objects = ReferencePaymentBatchManager()
     file = models.ForeignKey('ReferencePaymentBatchFile', blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_('record date'), db_index=True)
-    institution_identifier = models.CharField(_('institution identifier'), max_length=2)
+    institution_identifier = models.CharField(_('institution identifier'), max_length=2, blank=True)
     service_identifier = models.CharField(_('service identifier'), max_length=9, blank=True)
     currency_identifier = models.CharField(_('currency identifier'), max_length=3, choices=CURRENCY_IDENTIFIERS)
 
