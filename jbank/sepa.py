@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from jutil.format import dec2
 from jutil.parse import parse_datetime
 from jutil.validators import iban_filter, iban_validator, iso_payment_reference_validator, \
-    fi_payment_reference_validator
+    fi_payment_reference_validator, ascii_filter
 from jutil.xml import dict_to_element, xml_to_dict
 
 
@@ -225,7 +225,7 @@ class Pain001(object):
                         ])),
                     ])),
                     ('Cdtr', OrderedDict([
-                        ('Nm', p.creditor.name),
+                        ('Nm', ascii_filter(p.creditor.name)),
                     ])),
                     ('CdtrAcct', OrderedDict([
                         ('Id', OrderedDict([
