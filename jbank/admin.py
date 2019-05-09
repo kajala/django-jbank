@@ -43,6 +43,7 @@ class SettlementEntryTypesFilter(SimpleListFilter):
         for e in EntryType.objects.all().filter(is_settlement=True).order_by('name'):
             assert isinstance(e, EntryType)
             choices.append((e.id, capfirst(e.name)))
+        return choices
 
     def queryset(self, request, queryset):
         val = self.value()
