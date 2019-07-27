@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-27 00:27+0000\n"
+"POT-Creation-Date: 2019-07-27 14:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,8 +69,8 @@ msgstr ""
 msgid "Unmark manually settled flag"
 msgstr ""
 
-#: jbank/admin.py:372 jbank/admin.py:490
-msgid "account entry source file"
+#: jbank/admin.py:372
+msgid "source file"
 msgstr ""
 
 #: jbank/admin.py:382 jbank/models.py:314
@@ -78,6 +78,10 @@ msgstr ""
 #| msgid "account.entry.matched.filter"
 msgid "account statement file"
 msgstr "settled"
+
+#: jbank/admin.py:490
+msgid "account entry source file"
+msgstr ""
 
 #: jbank/admin.py:580 jbank/admin.py:656 jbank/camt.py:128 jbank/camt.py:131
 #: jbank/helpers.py:104 jbank/helpers.py:107 jbank/helpers.py:186
