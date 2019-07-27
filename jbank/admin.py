@@ -590,6 +590,8 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     exclude = ()
     form = StatementFileForm
 
+    date_hierarchy = 'created'
+
     list_display = (
         'id',
         'created',
