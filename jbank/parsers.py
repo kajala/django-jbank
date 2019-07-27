@@ -11,7 +11,10 @@ from pytz import timezone
 
 
 REGEX_SIMPLE_FIELD = re.compile(r'^(X|9)+$')
+
 REGEX_VARIABLE_FIELD = re.compile(r'^(X|9)\((\d+)\)$')
+
+TO_STATEMENT_SUFFIXES = ('TO', 'TXT')
 
 TO_FILE_HEADER_TYPES = ('T00', )
 
@@ -205,6 +208,8 @@ TO_SPECIAL_RECORD = (
     ('bank_group_identifier', 'X(3)', 'P'),
 )
 
+SVM_STATEMENT_SUFFIXES = ('SVM', 'TXT', 'KTL')
+
 SVM_FILE_HEADER_DATES = (
     ('record_date', 'record_time'),
 )
@@ -267,6 +272,7 @@ SVM_FILE_SUMMARY = (
     ('correction_amount', '9(11)', 'P'),
     ('pad01', 'X(5)', 'P'),
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -532,8 +538,8 @@ def parse_filename_suffix(filename: str) -> str:
 
 
 def parse_tiliote_statements_from_file(filename: str) -> list:
-    if parse_filename_suffix(filename).upper() not in ('TO', 'TXT'):
-        raise ValidationError(_('Not "tiliote" (.TO) file') + ': {}'.format(filename))
+    if parse_filename_suffix(filename).upper() not in TO_STATEMENT_SUFFIXES:
+        raise ValidationError(_('File {} has unrecognized ({}) suffix for file type "{}"').format(filename, ', '.join(TO_STATEMENT_SUFFIXES, 'tiliote')))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
         return parse_tiliote_statements(fp.read(), filename=basename(filename))
 
@@ -589,7 +595,7 @@ def parse_svm_batches(content: str, filename: str) -> list:
 
 
 def parse_svm_batches_from_file(filename: str) -> list:
-    if parse_filename_suffix(filename).upper() not in ('SVM', 'TXT', 'KTL'):
-        raise ValidationError(_('Not "saapuvat viitemaksut" (.SVM) file') + ': {}'.format(filename))
+    if parse_filename_suffix(filename).upper() not in SVM_STATEMENT_SUFFIXES:
+        raise ValidationError(_('File {} has unrecognized ({}) suffix for file type "{}"').format(filename, ', '.join(SVM_STATEMENT_SUFFIXES, 'saapuvat viitemaksut')))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
         return parse_svm_batches(fp.read(), filename=basename(filename))

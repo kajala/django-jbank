@@ -1,7 +1,5 @@
 import logging
 from os.path import basename
-from pprint import pprint
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -83,6 +81,7 @@ ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS = (
     'delivery_method',
     'receipt_code',
 )
+
 
 logger = logging.getLogger(__name__)
 

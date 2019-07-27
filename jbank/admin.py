@@ -23,7 +23,8 @@ from jacc.admin import AccountTypeAccountEntryFilter
 from jacc.models import Account, EntryType
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
-    ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty
+    ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
+    StatementRecordDetail, StatementRecordRemittanceInfo
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
 from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
@@ -155,11 +156,51 @@ class StatementAdmin(ModelAdminBase):
         return qs
 
 
+class StatementRecordDetailInlineAdmin(admin.StackedInline):
+    exclude = ()
+    model = StatementRecordDetail
+    can_delete = False
+    extra = 0
+
+    fields = (
+        'batch_identifier',
+        'amount',
+        'currency_code',
+        'instructed_amount',
+        'exchange',
+        'archive_identifier',
+        'end_to_end_identifier',
+        'creditor_name',
+        'debtor_name',
+        'ultimate_debtor_name',
+        'unstructured_remittance_info',
+        'paid_date',
+        'structured_remittance_info',
+    )
+    readonly_fields = fields
+    raw_id_fields = (
+    )
+
+    def structured_remittance_info(self, obj):
+        assert isinstance(obj, StatementRecordDetail)
+        lines = []
+        for rinfo in obj.remittanceinfo_set.all().order_by('id'):
+            assert isinstance(rinfo, StatementRecordRemittanceInfo)
+            lines.append(str(rinfo))
+        return mark_safe('<br>'.join(lines))
+    structured_remittance_info.short_description = _('structured remittance info')
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
     exclude = ()
     model = StatementRecordSepaInfo
     can_delete = False
     extra = 0
+    max_num = 1
+
     readonly_fields = (
         'record',
         'reference',
@@ -173,6 +214,9 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
     raw_id_fields = (
         'record',
     )
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 def mark_as_manually_settled(modeladmin, request, qs):
@@ -230,6 +274,9 @@ class StatementRecordAdmin(ModelAdminBase):
         'paid_date',
         'type',
         'record_code',
+        'record_domain',
+        'family_code',
+        'sub_family_code',
         'record_description',
         'amount',
         'receipt_code',
@@ -294,6 +341,7 @@ class StatementRecordAdmin(ModelAdminBase):
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
+        StatementRecordDetailInlineAdmin,
     )
     actions = (
         mark_as_manually_settled,
