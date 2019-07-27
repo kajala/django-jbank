@@ -209,7 +209,7 @@ class StatementRecordDetail(models.Model):
     creditor_account = models.CharField(_('creditor account'), max_length=35, blank=True)
     debtor_name = models.CharField(_('debtor name'), max_length=128, blank=True)
     ultimate_debtor_name = models.CharField(_('ultimate debtor name'), max_length=128, blank=True)
-    unstructured_remittance_info = models.CharField(_('unstructured remittance info'), max_length=512, blank=True)
+    unstructured_remittance_info = models.CharField(_('unstructured remittance info'), max_length=2048, blank=True)
     paid_date = models.DateTimeField(_('paid date'), db_index=True, blank=True, null=True, default=None)
 
 
