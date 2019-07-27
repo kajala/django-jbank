@@ -155,7 +155,7 @@ class StatementRecord(AccountEntry):
     value_date = models.DateField(_('value date'), db_index=True, blank=True, null=True, default=None)
     paid_date = models.DateField(_('paid date'), db_index=True, blank=True, null=True, default=None)
     entry_type = models.CharField(_('entry type'), max_length=1, choices=RECORD_ENTRY_TYPE, db_index=True)
-    record_code = models.CharField(_('record type'), max_length=4, choices=RECORD_CODES, db_index=True)
+    record_code = models.CharField(_('record type'), max_length=4, choices=RECORD_CODES, db_index=True, blank=True)
     record_domain = models.CharField(_('record domain'), max_length=4, choices=RECORD_DOMAIN, db_index=True, blank=True)
     family_code = models.CharField(_('family code'), max_length=4, db_index=True, blank=True, default='')
     sub_family_code = models.CharField(_('sub family code'), max_length=4, db_index=True, blank=True, default='')
