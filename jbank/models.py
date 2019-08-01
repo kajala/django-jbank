@@ -190,7 +190,7 @@ class CurrencyExchange(models.Model):
     source_currency = models.CharField(_('source currency'), max_length=3, blank=True)
     target_currency = models.CharField(_('target currency'), max_length=3, blank=True)
     unit_currency = models.CharField(_('unit currency'), max_length=3, blank=True)
-    exchange_rate = models.DecimalField(_('exchange rate'), decimal_places=2, max_digits=10, null=True, default=None, blank=True)
+    exchange_rate = models.DecimalField(_('exchange rate'), decimal_places=4, max_digits=12, null=True, default=None, blank=True)
 
     def __str__(self):
         return '{src} = {rate} {tgt}'.format(src=self.source_currency, tgt=self.target_currency, rate=self.exchange_rate)
