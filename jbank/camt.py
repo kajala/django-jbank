@@ -221,9 +221,10 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                 d_xchg = d_txamt.get('CcyXchg', None)
 
                 d.amount, d.currency_code = camt053_get_currency(d_txamt, 'Amt', required=False)
-                d.instructed_amount, source_currency = camt053_get_currency(d_amt_dtl.get('InstrdAmt', {}), 'Amt', required=False)
+                d.instructed_amount, source_currency = camt053_get_currency(d_amt_dtl.get('InstdAmt', {}), 'Amt', required=False)
                 if (not d_xchg and source_currency and source_currency != d.currency_code) or (d_xchg and not source_currency):
                     raise ValidationError(_('Inconsistent Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls'.format(archive_id, dtl_ix)))
+
                 if source_currency and source_currency != d.currency_code:
                     source_currency = camt053_get_val(d_xchg, 'SrcCcy', default=source_currency, required=False)
                     target_currency = camt053_get_val(d_xchg, 'TrgCcy', default=d.currency_code, required=False)
