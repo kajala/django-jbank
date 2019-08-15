@@ -12,7 +12,7 @@ from jutil.format import dec2, dec4
 from jutil.parse import parse_datetime
 
 from jbank.models import StatementFile, Statement, StatementRecord, DELIVERY_FROM_BANK_SYSTEM, \
-    StatementRecordDetail, CurrencyExchange, StatementRecordRemittanceInfo
+    StatementRecordDetail, CurrencyExchange, StatementRecordRemittanceInfo, CurrencyExchangeSource
 from jbank.parsers import parse_filename_suffix
 
 
@@ -231,7 +231,8 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                     unit_currency = camt053_get_val(d_xchg, 'UnitCcy', default='', required=False)
                     exchange_rate_str = camt053_get_val(d_xchg, 'XchgRate', default='', required=False)
                     exchange_rate = dec4(exchange_rate_str) if exchange_rate_str else None
-                    d.exchange, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency=source_currency, target_currency=target_currency, unit_currency=unit_currency, exchange_rate=exchange_rate)
+                    exchange_source, created = CurrencyExchangeSource.objects.get_or_create(name=account_number)
+                    d.exchange, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency=source_currency, target_currency=target_currency, unit_currency=unit_currency, exchange_rate=exchange_rate, source=exchange_source)
 
                 d_refs = dtl.get('Refs', {})
                 d.archive_identifier = d_refs.get('AcctSvcrRef', '')

@@ -185,12 +185,29 @@ class StatementRecord(AccountEntry):
             self.description = '{record_description}'.format(record_description=self.record_description)
 
 
+class CurrencyExchangeSource(models.Model):
+    name = models.CharField(_('name'), max_length=64)
+    created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _('currency exchange source')
+        verbose_name_plural = _('currency exchange sources')
+
+    def __str__(self):
+        return self.name
+
+
 class CurrencyExchange(models.Model):
     record_date = models.DateField(_('record date'), db_index=True)
     source_currency = models.CharField(_('source currency'), max_length=3, blank=True)
     target_currency = models.CharField(_('target currency'), max_length=3, blank=True)
     unit_currency = models.CharField(_('unit currency'), max_length=3, blank=True)
     exchange_rate = models.DecimalField(_('exchange rate'), decimal_places=4, max_digits=12, null=True, default=None, blank=True)
+    source = models.ForeignKey(CurrencyExchangeSource, verbose_name=_('currency exchange source'), blank=True, null=True, default=None, on_delete=models.PROTECT)
+
+    class Meta:
+        verbose_name = _('currency exchange')
+        verbose_name_plural = _('currency exchanges')
 
     def __str__(self):
         return '{src} = {rate} {tgt}'.format(src=self.source_currency, tgt=self.target_currency, rate=self.exchange_rate)

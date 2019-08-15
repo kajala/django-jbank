@@ -24,7 +24,7 @@ from jacc.models import Account, EntryType
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
-    StatementRecordDetail, StatementRecordRemittanceInfo
+    StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
 from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
@@ -830,6 +830,45 @@ class PayoutPartyAdmin(ModelAdminBase):
     )
 
 
+class CurrencyExchangeSourceAdmin(ModelAdminBase):
+    save_on_top = False
+    exclude = ()
+
+    fields = (
+        'id',
+        'created',
+        'name',
+    )
+
+    readonly_fields = (
+        'id',
+        'created',
+    )
+
+    list_display = fields
+
+
+class CurrencyExchangeAdmin(ModelAdminBase):
+    save_on_top = False
+    exclude = ()
+
+    fields = (
+        'record_date',
+        'source_currency',
+        'target_currency',
+        'unit_currency',
+        'exchange_rate',
+        'source',
+    )
+
+    date_hierarchy = 'record_date'
+    readonly_fields = list_display = fields
+    raw_id_fields = ('source', )
+    list_filter = ('source_currency', 'target_currency', 'source')
+
+
+admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
+admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
 admin.site.register(Payout, PayoutAdmin)
 admin.site.register(PayoutParty, PayoutPartyAdmin)
 admin.site.register(Refund, PayoutAdmin)
