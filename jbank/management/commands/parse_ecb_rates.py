@@ -40,16 +40,21 @@ class Command(SafeCommand):
             for record_date, currency, rate in rates:
                 print(record_date, currency, rate)
 
+        delete_old_date = None
+        delete_old_days = options['delete_older_than_days']
+        if delete_old_days:
+            delete_old_date = now().date() - timedelta(days=delete_old_days)
+
         source, created = CurrencyExchangeSource.objects.get_or_create(name='European Central Bank')
         for record_date, currency, rate in rates:
+            if delete_old_date and record_date < delete_old_date:
+                continue
             obj, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency='EUR', target_currency=currency, exchange_rate=rate, source=source)
             if created and verbose:
                 print('({}, {}, {}) created'.format(record_date, currency, rate))
 
-        delete_old_d = options['delete_older_than_days']
-        if delete_old_d:
-            old = now().date() - timedelta(days=delete_old_d)
-            qs = CurrencyExchange.objects.filter(record_date__lt=old, recorddetail_set=None)
+        if delete_old_date:
+            qs = CurrencyExchange.objects.filter(record_date__lt=delete_old_date, recorddetail_set=None)
             for e in qs:
                 try:
                     e.delete()
