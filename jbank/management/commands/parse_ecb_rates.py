@@ -49,7 +49,7 @@ class Command(SafeCommand):
         for record_date, currency, rate in rates:
             if delete_old_date and record_date < delete_old_date:
                 continue
-            obj, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency='EUR', target_currency=currency, exchange_rate=rate, source=source)
+            obj, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency='EUR', unit_currency='EUR', target_currency=currency, exchange_rate=rate, source=source)
             if created and verbose:
                 print('({}, {}, {}) created'.format(record_date, currency, rate))
 
