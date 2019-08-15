@@ -1,13 +1,12 @@
-import base64
 import logging
-import os
+from datetime import timedelta
 from django.core.management import CommandParser
+from django.utils.timezone import now
 from jutil.command import SafeCommand
-
 from jbank.ecb import download_euro_exchange_rates_xml, parse_euro_exchange_rates_xml
 from jutil.format import format_xml
-
 from jbank.models import CurrencyExchangeSource, CurrencyExchange
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +20,7 @@ class Command(SafeCommand):
         parser.add_argument('--file', type=str)
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--xml-only', action='store_true')
+        parser.add_argument('--delete-older-than-days', type=int)
 
     def do(self, *args, **options):
         if options['file']:
@@ -45,3 +45,13 @@ class Command(SafeCommand):
             obj, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency='EUR', target_currency=currency, exchange_rate=rate, source=source)
             if created and verbose:
                 print('({}, {}, {}) created'.format(record_date, currency, rate))
+
+        delete_old_d = options['delete_older_than_days']
+        if delete_old_d:
+            old = now().date() - timedelta(days=delete_old_d)
+            qs = CurrencyExchange.objects.filter(record_date__lt=old, recorddetail_set=None)
+            for e in qs:
+                try:
+                    e.delete()
+                except Exception as err:
+                    logger.error('Failed to delete {}: {}'.format(e, err))
