@@ -7,6 +7,8 @@ from pprint import pprint
 
 from django.conf import settings
 from django.test import TestCase
+
+from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jutil.format import format_xml
@@ -80,3 +82,15 @@ class Tests(TestCase):
         self.assertEqual(p.msg_id, 'V000000009726773')
         self.assertEqual(p.group_status, 'ACCP')
         self.assertEqual(p.is_accepted, True)
+
+    def test_ecb_rates(self):
+        filename = join(settings.BASE_DIR, 'data/ecb-rates-2019-08-15.xml')
+        with open(filename, 'rt') as fp:
+            content = fp.read()
+        rates = parse_euro_exchange_rates_xml(content)
+        # for record_date, currency, rate in rates[20:21]:
+            # print(record_date, currency, rate)
+        record_date, currency, rate = rates[20]
+        self.assertEqual(record_date, date(2019, 8, 15))
+        self.assertEqual(currency, 'HKD')
+        self.assertEqual(rate, Decimal('8.744'))
