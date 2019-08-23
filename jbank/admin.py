@@ -667,6 +667,7 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     save_on_top = False
     exclude = ()
     form = ReferencePaymentBatchFileForm
+    date_hierarchy = 'created'
 
     list_display = (
         'id',
