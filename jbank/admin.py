@@ -327,6 +327,7 @@ class StatementRecordAdmin(ModelAdminBase):
         'record_description',
         'name',
         'remittance_info',
+        'messages',
     )
     list_display = (
         'id',
