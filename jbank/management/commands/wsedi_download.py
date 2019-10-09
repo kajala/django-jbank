@@ -63,7 +63,7 @@ class Command(SafeCommand):
                     ...
         """
         if command == 'DownloadFileList':
-            if 'FileDescriptors' in data and 'FileDescriptor' in data['FileDescriptors']:
+            if 'FileDescriptors' in data and data['FileDescriptors'] is not None and 'FileDescriptor' in data['FileDescriptors']:
                 for fd in data['FileDescriptors']['FileDescriptor']:
                     file_reference = fd['FileReference']
                     file_type = fd['FileType']
