@@ -426,7 +426,8 @@ class Payout(AccountEntry):
                     raise ValidationError(_('File already uploaded') + ' ({})'.format(group_status))
 
     def generate_msg_id(self):
-        self.msg_id = re.sub(r'[^\d]', '', now().date().isoformat()) + 'P' + str(self.id)
+        from jbank.helpers import make_msg_id
+        self.msg_id = make_msg_id() + 'P' + str(self.id)
 
     @property
     def state_name(self):
