@@ -19,4 +19,4 @@ def list_dir_files(path: str, suffix: str= '') -> list:
             if Path(file_path).is_file():
                 if not suffix or f.lower().endswith(suffix):
                     files.append(file_path)
-    return files
+    return list(sorted(files))
