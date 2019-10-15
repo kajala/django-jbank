@@ -3,6 +3,7 @@ from os.path import basename
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from jacc.models import Account, AccountType, EntryType
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentBatch, \
@@ -238,3 +239,8 @@ def process_pain002_file_content(bcontent: bytes, filename: str):
             p.save(update_fields=['state', 'paid_date'])
             logger.info('{} marked as paid {}'.format(p, ps))
     return ps
+
+
+def make_msg_id():
+    import re
+    return re.sub(r'[^\d]', '', now().isoformat())[:-4]

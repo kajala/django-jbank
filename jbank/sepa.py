@@ -68,7 +68,6 @@ class Pain001(object):
     """
 
     pain_element_name = 'CstmrCdtTrfInitn'
-    # pain_element_name = 'pain.001.001.03'
     tz_str = 'Europe/Helsinki'
     tz = None
 
@@ -247,7 +246,7 @@ class Pain001(object):
         for p in self.payments:
             assert isinstance(p, Pain001Payment)
             pain.append(self._pmt_inf(p))
-        xml_bytes = ElementTree.tostring(doc, encoding='utf8', method='xml')
+        xml_bytes = ElementTree.tostring(doc, encoding='utf-8', method='xml')
         del doc
         return xml_bytes
 

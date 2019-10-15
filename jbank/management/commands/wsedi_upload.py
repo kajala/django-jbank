@@ -60,18 +60,21 @@ class Command(SafeCommand):
                 data = res.json()
                 response_code = data.get('ResponseCode', '')[:4]
                 response_text = data.get('ResponseText', '')[:255]
-                fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
-                fd = {} if len(fds) == 0 else fds[0]
-                file_reference = fd.get('FileReference', '')
-                if not file_reference:
-                    err_msg = "FileReference missing from response. Response was code {} ('{}')".format(response_code, response_text)
-                    raise Exception(err_msg)
-                p.file_reference = file_reference
-                p.save(update_fields=['file_reference'])
+                if response_code != '00':
+                    msg = 'WS-EDI file {} upload failed: {} ({})'.format(p.file_name, response_text, response_code)
+                    logger.error(msg)
+                    raise Exception('Response code {} ({})'.format(response_code, response_text))
+                if 'FileDescriptors' in data:
+                    fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
+                    fd = {} if len(fds) == 0 else fds[0]
+                    file_reference = fd.get('FileReference', '')
+                    if file_reference:
+                        p.file_reference = file_reference
+                        p.save(update_fields=['file_reference'])
                 PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code, response_text=response_text, status_reason='File upload OK')
 
             except Exception as e:
-                long_err = "File upload failed ({}): ".format(p.full_path) + traceback.format_exc()
+                long_err = "File upload failed ({}): ".format(p.file_name) + traceback.format_exc()
                 logger.error(long_err)
                 short_err = 'File upload failed: ' + str(e)
                 p.state = PAYOUT_ERROR
