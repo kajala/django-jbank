@@ -2,6 +2,8 @@ import base64
 import logging
 import os
 from django.core.management import CommandParser
+from django.utils.timezone import now
+
 from jbank.helpers import process_pain002_file_content
 from jbank.wsedi import wsedi_get
 from jutil.command import SafeCommand
@@ -29,6 +31,7 @@ class Command(SafeCommand):
     def do(self, *args, **options):
         path = options['path']
         command = 'DownloadFileList'
+        time_now = now()
         file_reference = options['file_reference']
         if file_reference:
             command = 'DownloadFile'
@@ -88,7 +91,7 @@ class Command(SafeCommand):
 
                         # process selected files immediately
                         if options['process_pain002'] and file_type in ['XP', 'pain.002.001.03', 'NDCORPAYL']:
-                            process_pain002_file_content(bcontent, file_path)
+                            process_pain002_file_content(bcontent, file_path, created=time_now)
                     else:
                         print('Skipping old file {}'.format(file_path))
             else:

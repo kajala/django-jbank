@@ -731,7 +731,7 @@ class PayoutStatusInlineAdmin(admin.TabularInline):
     model = PayoutStatus
     can_delete = False
     extra = 0
-    ordering = ('-id',)
+    ordering = ('-id', )
     readonly_fields = (
         'created',
         'file_name',

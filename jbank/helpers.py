@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from os.path import basename
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -206,12 +207,14 @@ def get_or_create_bank_account(account_number: str, currency: str='EUR') -> Acco
     return acc
 
 
-def process_pain002_file_content(bcontent: bytes, filename: str):
+def process_pain002_file_content(bcontent: bytes, filename: str, created: datetime or None = None):
     from jbank.sepa import Pain002
 
+    if not created:
+        created = now()
     s = Pain002(bcontent)
     p = Payout.objects.filter(msg_id=s.original_msg_id).first()
-    ps = PayoutStatus(payout=p, file_name=basename(filename), msg_id=s.msg_id, original_msg_id=s.original_msg_id, group_status=s.group_status, status_reason=s.status_reason[:255])
+    ps = PayoutStatus(payout=p, file_name=basename(filename), msg_id=s.msg_id, original_msg_id=s.original_msg_id, group_status=s.group_status, status_reason=s.status_reason[:255], created=created)
     ps.full_clean()
     fields = (
         'payout',

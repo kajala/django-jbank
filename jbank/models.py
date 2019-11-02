@@ -439,11 +439,14 @@ class Payout(AccountEntry):
 
     @property
     def is_accepted(self):
-        return self.group_status == 'ACCP'
+        return self.has_group_status('ACCP')
 
     @property
     def is_rejected(self):
-        return self.group_status == 'RJCT'
+        return self.has_group_status('RJCT')
+
+    def has_group_status(self, group_status: str) -> bool:
+        return PayoutStatus.objects.filter(payout=self, group_status=group_status).first() is not None
 
     @property
     def group_status(self):
