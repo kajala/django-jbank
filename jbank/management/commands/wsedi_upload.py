@@ -43,6 +43,10 @@ class Command(SafeCommand):
 
         for p in list(payouts):
             assert isinstance(p, Payout)
+            p.refresh_from_db()
+            if p.state != PAYOUT_WAITING_UPLOAD:
+                logger.info('Skipping {} since not in state PAYOUT_WAITING_UPLOAD'.format(p))
+                continue
             response_code = ''
             response_text = ''
             try:
