@@ -761,6 +761,7 @@ class PayoutAdmin(ModelAdminBase):
         'state',
         'payoutstatus_set__response_code',
         'payoutstatus_set__group_status',
+        'recipient__bic',
     )
 
     fields = (
@@ -801,6 +802,10 @@ class PayoutAdmin(ModelAdminBase):
         '=msg_id',
         '=file_name',
         '=file_reference',
+        'recipient__name',
+        '=recipient__account_number',
+        '=msg_id',
+        '=amount',
     )
 
     def save_model(self, request, obj, form, change):
