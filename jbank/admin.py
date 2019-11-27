@@ -24,7 +24,7 @@ from jacc.models import Account, EntryType
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
-    StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource
+    StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource, WsEdiConnection
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
 from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
@@ -858,7 +858,6 @@ class CurrencyExchangeSourceAdmin(ModelAdminBase):
 
 class CurrencyExchangeAdmin(ModelAdminBase):
     save_on_top = False
-    exclude = ()
 
     fields = (
         'record_date',
@@ -875,6 +874,32 @@ class CurrencyExchangeAdmin(ModelAdminBase):
     list_filter = ('source_currency', 'target_currency', 'source')
 
 
+class WsEdiConnectionAdmin(ModelAdminBase):
+    save_on_top = False
+
+    list_display = (
+        'id',
+        'created',
+        'customer',
+    )
+
+    raw_id_fields = (
+        'customer',
+    )
+
+    fields = (
+        'id',
+        'customer',
+        'signing_cert_file',
+        'created',
+    )
+
+    readonly_fields = (
+        'id',
+        'created',
+    )
+
+
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
 admin.site.register(Payout, PayoutAdmin)
@@ -886,3 +911,4 @@ admin.site.register(StatementFile, StatementFileAdmin)
 admin.site.register(ReferencePaymentRecord, ReferencePaymentRecordAdmin)
 admin.site.register(ReferencePaymentBatch, ReferencePaymentBatchAdmin)
 admin.site.register(ReferencePaymentBatchFile, ReferencePaymentBatchFileAdmin)
+admin.site.register(WsEdiConnection, WsEdiConnectionAdmin)

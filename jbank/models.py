@@ -1,19 +1,25 @@
 import logging
+import os
 import re
 from datetime import datetime, time, date
 from os.path import basename, join
+import cryptography
 import pytz
+from cryptography import x509
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
+from django.template.loader import get_template
 from django.utils.text import format_lazy
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
+from jutil.format import format_xml
 from jutil.validators import fi_iban_validator, iban_validator, iban_bic, iso_payment_reference_validator, \
     fi_payment_reference_validator
+
 
 logger = logging.getLogger(__name__)
 
@@ -492,3 +498,33 @@ class Refund(Payout):
     class Meta:
         verbose_name = _("refund")
         verbose_name_plural = _("refunds")
+
+
+class WsEdiConnection(models.Model):
+    customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)
+    signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')
+    created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
+
+    class Meta:
+        verbose_name = _("WS-EDI connection")
+        verbose_name_plural = _("WS-EDI connections")
+
+    @property
+    def signing_cert_full_path(self) -> str:
+        return self.signing_cert_file.file.name
+
+    @property
+    def signing_cert(self):
+        if hasattr(self, '_signing_cert'):
+            return self._signing_cert
+        pem_data = open(self.signing_cert_full_path, 'rb').read()
+        cert = x509.load_pem_x509_certificate(pem_data, cryptography.hazmat.backends.default_backend())
+        self._signing_cert = cert
+        return cert
+
+    def get_application_request(self, command: str) -> str:
+        return format_xml(get_template('jbank/application_request.xml').render({
+            'ws': self,
+            'command': command,
+            'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
+        }))

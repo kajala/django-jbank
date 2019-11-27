@@ -2,7 +2,6 @@ import base64
 import logging
 from os.path import basename
 from pprint import pprint
-
 import requests
 from django.conf import settings
 

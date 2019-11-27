@@ -2,6 +2,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_ROOT = BASE_DIR
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'jutil',
     'jacc',
     'jbank',
@@ -141,3 +143,7 @@ LATE_LIMIT_DAYS = 7
 
 WSEDI_URL = 'http://127.0.0.1:8081'
 WSEDI_TOKEN = '1234'
+
+# XML formatting
+
+XMLLINT_PATH = '/usr/bin/xmllint'

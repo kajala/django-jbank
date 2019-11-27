@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 00:44+0000\n"
+"POT-Creation-Date: 2019-11-27 01:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -496,7 +496,7 @@ msgid "statement records"
 msgstr "tiliotteen tietueet"
 
 #: jbank/models.py:190 jbank/models.py:326 jbank/models.py:343
-#: jbank/models.py:466
+#: jbank/models.py:466 jbank/models.py:500
 msgid "created"
 msgstr "luotu"
 
@@ -765,6 +765,24 @@ msgstr "palautus"
 #: jbank/models.py:494
 msgid "refunds"
 msgstr "palautukset"
+
+#: jbank/models.py:498
+#, fuzzy
+#| msgid "customer identifier"
+msgid "customer id"
+msgstr "asiakkaan tunniste"
+
+#: jbank/models.py:499
+msgid "signing cert"
+msgstr ""
+
+#: jbank/models.py:503
+msgid "WS-EDI connection"
+msgstr ""
+
+#: jbank/models.py:504
+msgid "WS-EDI connections"
+msgstr ""
 
 #: jbank/parsers.py:303 jbank/parsers.py:310 jbank/parsers.py:313
 #, python-brace-format
