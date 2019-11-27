@@ -891,6 +891,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
         'id',
         'customer',
         'signing_cert_file',
+        'signing_key_file',
         'created',
     )
 

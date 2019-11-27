@@ -144,6 +144,7 @@ LATE_LIMIT_DAYS = 7
 WSEDI_URL = 'http://127.0.0.1:8081'
 WSEDI_TOKEN = '1234'
 
-# XML formatting
+# Tool paths
 
 XMLLINT_PATH = '/usr/bin/xmllint'
+XMLSEC1_PATH = '/usr/bin/xmlsec1'

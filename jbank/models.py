@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+import subprocess
+import tempfile
 from datetime import datetime, time, date
 from os.path import basename, join
 import cryptography
@@ -503,6 +505,7 @@ class Refund(Payout):
 class WsEdiConnection(models.Model):
     customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)
     signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')
+    signing_key_file = models.FileField(_('signing key file'), blank=True, upload_to='certs')
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
 
     class Meta:
@@ -511,7 +514,11 @@ class WsEdiConnection(models.Model):
 
     @property
     def signing_cert_full_path(self) -> str:
-        return self.signing_cert_file.file.name
+        return self.signing_cert_file.file.name if self.signing_cert_file else ''
+
+    @property
+    def signing_key_full_path(self) -> str:
+        return self.signing_key_file.file.name if self.signing_key_file else ''
 
     @property
     def signing_cert(self):
@@ -528,3 +535,30 @@ class WsEdiConnection(models.Model):
             'command': command,
             'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
         }))
+
+    def verify_signature(self, content: str):
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(content.encode())
+            fp.flush()
+            out = subprocess.check_output([
+                settings.XMLSEC1_PATH,
+                '--verify',
+                '--pubkey-pem',
+                self.signing_key_full_path,
+                fp.name
+            ])
+
+    def sign_application_request(self, content: str) -> str:
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(content.encode())
+            fp.flush()
+            out = subprocess.check_output([
+                settings.XMLSEC1_PATH,
+                '--sign',
+                '--privkey-pem',
+                self.signing_key_full_path,
+                fp.name
+            ])
+        res = out.decode()
+        self.verify_signature(res)
+        return res

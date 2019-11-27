@@ -31,6 +31,9 @@ class Command(SafeCommand):
             content = open(options['file'], 'rb').read()
         else:
             content = ws.get_application_request(options['command']).encode()
+        print('------------------------------------------------- Application request')
         print(format_xml_bytes(content).decode())
         if options['xsd']:
             validate_xml(content, options['xsd'])
+        print('------------------------------------------------- Signed request')
+        print(ws.sign_application_request(content.decode()))
