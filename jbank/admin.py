@@ -766,16 +766,15 @@ class PayoutAdmin(ModelAdminBase):
 
     fields = (
         'account',
-        'parent',
         'payer',
         'recipient',
         'amount',
         'messages',
         'reference',
+        'due_date',
         'msg_id',
         'file_name',
         'timestamp',
-        'due_date',
         'paid_date',
         'state',
         'group_status',
@@ -793,6 +792,8 @@ class PayoutAdmin(ModelAdminBase):
 
     readonly_fields = (
         'created',
+        'paid_date',
+        'timestamp',
         'msg_id',
         'file_name',
         'group_status',

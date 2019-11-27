@@ -452,6 +452,7 @@ class Payout(AccountEntry):
     def group_status(self):
         status = PayoutStatus.objects.filter(payout=self).order_by('-id').first()
         return status.group_status if status else ''
+    group_status.fget.short_description = _('payment.group.status')
 
 
 class PayoutStatusManager(models.Manager):

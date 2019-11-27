@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-15 20:59+0000\n"
+"POT-Creation-Date: 2019-11-27 00:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,11 +39,11 @@ msgstr "matched"
 msgid "masked as settled"
 msgstr ""
 
-#: jbank/admin.py:133 jbank/admin.py:538
+#: jbank/admin.py:133 jbank/admin.py:539
 msgid "account entries"
 msgstr ""
 
-#: jbank/admin.py:142 jbank/admin.py:467 jbank/admin.py:547 jbank/models.py:327
+#: jbank/admin.py:142 jbank/admin.py:468 jbank/admin.py:548 jbank/models.py:327
 #: jbank/models.py:344
 msgid "file"
 msgstr ""
@@ -69,35 +69,35 @@ msgstr ""
 msgid "Unmark manually settled flag"
 msgstr ""
 
-#: jbank/admin.py:372
+#: jbank/admin.py:373
 msgid "source file"
 msgstr ""
 
-#: jbank/admin.py:382 jbank/models.py:331
+#: jbank/admin.py:383 jbank/models.py:331
 #, fuzzy
 #| msgid "account.entry.matched.filter"
 msgid "account statement file"
 msgstr "settled"
 
-#: jbank/admin.py:490
+#: jbank/admin.py:491
 msgid "account entry source file"
 msgstr ""
 
-#: jbank/admin.py:580 jbank/admin.py:658 jbank/camt.py:128 jbank/camt.py:131
-#: jbank/helpers.py:104 jbank/helpers.py:107 jbank/helpers.py:186
-#: jbank/helpers.py:189
+#: jbank/admin.py:581 jbank/admin.py:659 jbank/camt.py:128 jbank/camt.py:131
+#: jbank/helpers.py:106 jbank/helpers.py:109 jbank/helpers.py:188
+#: jbank/helpers.py:191
 msgid "account.not.found"
 msgstr "Account {account_number} not found"
 
-#: jbank/admin.py:584 jbank/admin.py:662
+#: jbank/admin.py:585 jbank/admin.py:663
 msgid "Unhandled error"
 msgstr ""
 
-#: jbank/admin.py:615 jbank/models.py:137
+#: jbank/admin.py:616 jbank/models.py:137
 msgid "statements"
 msgstr ""
 
-#: jbank/admin.py:695 jbank/models.py:283
+#: jbank/admin.py:697 jbank/models.py:283
 msgid "reference payment batches"
 msgstr ""
 
@@ -124,8 +124,8 @@ msgid ""
 "{statement_currency}"
 msgstr ""
 
-#: jbank/camt.py:166 jbank/camt.py:170 jbank/helpers.py:124
-#: jbank/helpers.py:126
+#: jbank/camt.py:166 jbank/camt.py:170 jbank/helpers.py:126
+#: jbank/helpers.py:128
 msgid "entry.type.missing"
 msgstr ""
 
@@ -137,7 +137,7 @@ msgstr ""
 msgid "Inconsistent Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls"
 msgstr ""
 
-#: jbank/helpers.py:203
+#: jbank/helpers.py:205
 msgid "bank account"
 msgstr ""
 
@@ -501,7 +501,7 @@ msgid "statement records"
 msgstr ""
 
 #: jbank/models.py:190 jbank/models.py:326 jbank/models.py:343
-#: jbank/models.py:461
+#: jbank/models.py:466
 msgid "created"
 msgstr ""
 
@@ -689,11 +689,11 @@ msgstr ""
 msgid "recipient reference"
 msgstr ""
 
-#: jbank/models.py:394 jbank/models.py:465
+#: jbank/models.py:394 jbank/models.py:470
 msgid "message id"
 msgstr ""
 
-#: jbank/models.py:395 jbank/models.py:462
+#: jbank/models.py:395 jbank/models.py:467
 msgid "file name"
 msgstr ""
 
@@ -713,7 +713,7 @@ msgstr ""
 msgid "state"
 msgstr ""
 
-#: jbank/models.py:403 jbank/models.py:460
+#: jbank/models.py:403 jbank/models.py:465
 msgid "payout"
 msgstr ""
 
@@ -731,39 +731,43 @@ msgstr ""
 msgid "File already uploaded"
 msgstr ""
 
-#: jbank/models.py:463
+#: jbank/models.py:455
+msgid "payment.group.status"
+msgstr "group status"
+
+#: jbank/models.py:468
 msgid "response code"
 msgstr ""
 
-#: jbank/models.py:464
+#: jbank/models.py:469
 msgid "response text"
 msgstr ""
 
-#: jbank/models.py:466
+#: jbank/models.py:471
 msgid "original message id"
 msgstr ""
 
-#: jbank/models.py:467
+#: jbank/models.py:472
 msgid "group status"
 msgstr ""
 
-#: jbank/models.py:468
+#: jbank/models.py:473
 msgid "status reason"
 msgstr ""
 
-#: jbank/models.py:471
+#: jbank/models.py:476
 msgid "payout status"
 msgstr ""
 
-#: jbank/models.py:472
+#: jbank/models.py:477
 msgid "payout statuses"
 msgstr ""
 
-#: jbank/models.py:488
+#: jbank/models.py:493
 msgid "refund"
 msgstr ""
 
-#: jbank/models.py:489
+#: jbank/models.py:494
 msgid "refunds"
 msgstr ""
 
@@ -832,7 +836,7 @@ msgstr ""
 msgid "Invalid payment reference: {}"
 msgstr ""
 
-#: jbank/sepa.py:177
+#: jbank/sepa.py:176
 msgid "Invalid remittance info type: {}"
 msgstr ""
 
