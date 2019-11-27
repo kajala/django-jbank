@@ -9,6 +9,7 @@ from django.conf import settings
 from django.test import TestCase
 
 from jbank.ecb import parse_euro_exchange_rates_xml
+from jbank.models import WsEdiConnection
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jutil.format import format_xml

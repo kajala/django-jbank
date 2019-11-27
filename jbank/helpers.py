@@ -247,3 +247,13 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: dateti
 def make_msg_id():
     import re
     return re.sub(r'[^\d]', '', now().isoformat())[:-4]
+
+
+def validate_xml(content: bytes, xsd_file_name: str):
+    """
+    Validates XML using XSD. Requires pip install lxml.
+    """
+    from lxml import etree, objectify
+    schema = etree.XMLSchema(file=xsd_file_name)
+    parser = objectify.makeparser(schema=schema)
+    objectify.fromstring(content, parser)

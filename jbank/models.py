@@ -16,7 +16,7 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
-from jutil.format import format_xml
+from jutil.format import format_xml, format_xml_bytes
 from jutil.validators import fi_iban_validator, iban_validator, iban_bic, iso_payment_reference_validator, \
     fi_payment_reference_validator
 
