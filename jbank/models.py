@@ -506,6 +506,8 @@ class WsEdiConnection(models.Model):
     customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)
     signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')
     signing_key_file = models.FileField(_('signing key file'), blank=True, upload_to='certs')
+    encryption_cert_file = models.FileField(_('encryption certificate file'), blank=True, upload_to='certs')
+    encryption_key_file = models.FileField(_('encryption key file'), blank=True, upload_to='certs')
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
 
     class Meta:
