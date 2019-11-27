@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.management import CommandParser
 from jacc.models import AccountType, Account
 from jutil.command import SafeCommand
+from jutil.format import format_xml_bytes
+
 from jbank.helpers import make_msg_id, validate_xml
 from jbank.models import Payout, WsEdiConnection
 import jbank
@@ -29,6 +31,6 @@ class Command(SafeCommand):
             content = open(options['file'], 'rb').read()
         else:
             content = ws.get_application_request(options['command']).encode()
-        if not options['xsd']:
-            return print('--xsd missing')
-        validate_xml(content, options['xsd'])
+        print(format_xml_bytes(content).decode())
+        if options['xsd']:
+            validate_xml(content, options['xsd'])
