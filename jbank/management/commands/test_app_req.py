@@ -18,9 +18,8 @@ class Command(SafeCommand):
     help = 'Makes test application request'
 
     def add_arguments(self, parser: CommandParser):
-        default_xsd = os.path.join(os.path.dirname(jbank.__file__), 'templates/jbank/application_request.xsd')
         parser.add_argument('--ws', type=int, default=1)
-        parser.add_argument('--xsd', type=str, default=default_xsd)
+        parser.add_argument('--xsd', type=str)
         parser.add_argument('--command', type=str, default='DownloadFileList')
         parser.add_argument('--file', type=str)
 
@@ -30,4 +29,6 @@ class Command(SafeCommand):
             content = open(options['file'], 'rb').read()
         else:
             content = ws.get_application_request(options['command']).encode()
+        if not options['xsd']:
+            return print('--xsd missing')
         validate_xml(content, options['xsd'])
