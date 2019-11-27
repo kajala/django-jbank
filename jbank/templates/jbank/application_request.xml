@@ -45,6 +45,7 @@
           <X509IssuerName>Issuer: {{ ws.signing_cert.issuer.rfc4514_string }}</X509IssuerName>
           <X509SerialNumber>{{ ws.signing_cert.serial_number }}</X509SerialNumber>
         </X509IssuerSerial>
+        <X509Certificate></X509Certificate>
       </X509Data>
     </KeyInfo>
     </Signature>

@@ -556,7 +556,7 @@ class WsEdiConnection(models.Model):
                 settings.XMLSEC1_PATH,
                 '--sign',
                 '--privkey-pem',
-                self.signing_key_full_path,
+                '{},{}'.format(self.signing_key_full_path, self.signing_cert_full_path),
                 fp.name
             ])
         res = out.decode()

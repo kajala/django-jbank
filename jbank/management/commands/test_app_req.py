@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management import CommandParser
 from jacc.models import AccountType, Account
 from jutil.command import SafeCommand
-from jutil.format import format_xml_bytes
+from jutil.format import format_xml_bytes, format_xml
 
 from jbank.helpers import make_msg_id, validate_xml
 from jbank.models import Payout, WsEdiConnection
@@ -36,4 +36,4 @@ class Command(SafeCommand):
         if options['xsd']:
             validate_xml(content, options['xsd'])
         print('------------------------------------------------- Signed request')
-        print(ws.sign_application_request(content.decode()))
+        print(format_xml(ws.sign_application_request(content.decode())))
