@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ApplicationRequest xmlns="http://bxd.fi/xmldata/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <CustomerId>{{ ws.customer_id }}</CustomerId>
+    <CustomerId>{{ ws.customer.org_id }}</CustomerId>
     <Command>{{ command }}</Command>
     <Timestamp>{{ timestamp }}</Timestamp>
     {% if start_date %}
