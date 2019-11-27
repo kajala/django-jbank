@@ -551,6 +551,12 @@ class WsEdiConnection(models.Model):
             ])
 
     def sign_application_request(self, content: str) -> str:
+        """
+        Sign application request.
+        See https://users.dcc.uchile.cl/~pcamacho/tutorial/web/xmlsec/xmlsec.html
+        :param content: XML application request
+        :return: str
+        """
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content.encode())
             fp.flush()
