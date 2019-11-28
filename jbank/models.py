@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 from datetime import datetime, time, date
 from os.path import basename, join
+from pathlib import Path
 import cryptography
 import pytz
 from cryptography import x509
@@ -25,6 +26,8 @@ from jutil.validators import fi_iban_validator, iban_validator, iban_bic, iso_pa
 
 logger = logging.getLogger(__name__)
 
+
+JBANK_BIN_PATH = Path(__file__).absolute().parent.joinpath('bin')
 
 RECORD_ENTRY_TYPE = (
     ('1', _('Deposit')),
@@ -508,6 +511,7 @@ class WsEdiConnection(models.Model):
     signing_key_file = models.FileField(_('signing key file'), blank=True, upload_to='certs')
     encryption_cert_file = models.FileField(_('encryption certificate file'), blank=True, upload_to='certs')
     encryption_key_file = models.FileField(_('encryption key file'), blank=True, upload_to='certs')
+    bank_encryption_cert_file = models.FileField(_('bank encryption cert file'), blank=True, upload_to='certs')
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
 
     class Meta:
@@ -521,6 +525,26 @@ class WsEdiConnection(models.Model):
     @property
     def signing_key_full_path(self) -> str:
         return self.signing_key_file.file.name if self.signing_key_file else ''
+
+    @property
+    def bank_encryption_cert_full_path(self) -> str:
+        return self.bank_encryption_cert_file.file.name if self.bank_encryption_cert_file else ''
+
+    @property
+    def bank_encryption_cert_with_public_key_full_path(self) -> str:
+        src_file = self.bank_encryption_cert_full_path
+        file = src_file[:-4] + '-with-pubkey.pem'
+        if not os.path.isfile(file):
+            out = subprocess.check_output([
+                settings.OPENSSL_PATH,
+                'x509',
+                '-pubkey',
+                '-in',
+                src_file,
+            ])
+            with open(file, 'wb') as fp:
+                fp.write(out)
+        return file
 
     @property
     def signing_cert(self):
@@ -570,3 +594,19 @@ class WsEdiConnection(models.Model):
         res = out.decode()
         self.verify_signature(res)
         return res
+
+    def encrypt_application_request(self, content: str) -> str:
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(content.encode())
+            fp.flush()
+            out = subprocess.check_output([
+                self._bin('encrypt3'),
+                fp.name,
+                self.bank_encryption_cert_with_public_key_full_path,
+                self.bank_encryption_cert_full_path
+            ])
+        return out.decode()
+
+    @staticmethod
+    def _bin(file: str) -> str:
+        return str(JBANK_BIN_PATH.joinpath(file))
