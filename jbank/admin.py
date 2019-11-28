@@ -24,7 +24,8 @@ from jacc.models import Account, EntryType
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
-    StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource, WsEdiConnection
+    StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource, WsEdiConnection, \
+    WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
 from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
@@ -881,6 +882,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
         'id',
         'created',
         'customer',
+        'receiver_identifier',
     )
 
     raw_id_fields = (
@@ -890,6 +892,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     fields = (
         'id',
         'customer',
+        'receiver_identifier',
         'signing_cert_file',
         'signing_key_file',
         'encryption_cert_file',
@@ -904,6 +907,46 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     )
 
 
+class WsEdiSoapCallAdmin(ModelAdminBase):
+    save_on_top = False
+
+    list_display = (
+        'id',
+        'created',
+        'connection',
+        'command',
+        'payout',
+    )
+
+    raw_id_fields = (
+    )
+
+    fields = (
+        'id',
+        'connection',
+        'command',
+        'payout',
+        'created',
+        'executed',
+        'error_fmt',
+    )
+
+    readonly_fields = (
+        'id',
+        'connection',
+        'command',
+        'payout',
+        'created',
+        'executed',
+        'error_fmt',
+    )
+
+    def error_fmt(self, obj):
+        assert isinstance(obj, WsEdiSoapCall)
+        return mark_safe(obj.error.replace('\n', '<br>'))
+    error_fmt.short_description = _('error')
+
+
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
 admin.site.register(Payout, PayoutAdmin)
@@ -916,3 +959,4 @@ admin.site.register(ReferencePaymentRecord, ReferencePaymentRecordAdmin)
 admin.site.register(ReferencePaymentBatch, ReferencePaymentBatchAdmin)
 admin.site.register(ReferencePaymentBatchFile, ReferencePaymentBatchFileAdmin)
 admin.site.register(WsEdiConnection, WsEdiConnectionAdmin)
+admin.site.register(WsEdiSoapCall, WsEdiSoapCallAdmin)

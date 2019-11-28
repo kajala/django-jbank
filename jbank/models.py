@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 import re
@@ -505,8 +506,34 @@ class Refund(Payout):
         verbose_name_plural = _("refunds")
 
 
+class WsEdiSoapCall(models.Model):
+    connection = models.ForeignKey('WsEdiConnection', verbose_name=_('WS-EDI connection'), on_delete=models.CASCADE)
+    command = models.CharField(_('command'), max_length=64, blank=True, db_index=True)
+    payout = models.ForeignKey(Payout, verbose_name=_('payout'), null=True, blank=True, db_index=True, related_name='+', on_delete=models.PROTECT)
+    created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
+    executed = models.DateTimeField(_('executed'), default=None, null=True, db_index=True, editable=False, blank=True)
+    error = models.TextField(_('error'), blank=True)
+
+    class Meta:
+        verbose_name = _("WS-EDI SOAP call")
+        verbose_name_plural = _("WS-EDI SOAP calls")
+
+    @property
+    def timestamp(self) -> datetime:
+        return self.created.astimezone(pytz.timezone('Europe/Helsinki'))
+
+    @property
+    def request_identifier(self) -> str:
+        return str(self.id)
+
+    @property
+    def command_camelcase(self) -> str:
+        return self.command[0:1].lower() + self.command[1:]
+
+
 class WsEdiConnection(models.Model):
     customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)
+    receiver_identifier = models.CharField(_('receiver identifier'), max_length=32)
     signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')
     signing_key_file = models.FileField(_('signing key file'), blank=True, upload_to='certs')
     encryption_cert_file = models.FileField(_('encryption certificate file'), blank=True, upload_to='certs')
@@ -517,6 +544,9 @@ class WsEdiConnection(models.Model):
     class Meta:
         verbose_name = _("WS-EDI connection")
         verbose_name_plural = _("WS-EDI connections")
+
+    def __str__(self):
+        return '{} / {}'.format(self.customer.name, self.receiver_identifier)
 
     @property
     def signing_cert_full_path(self) -> str:
@@ -556,7 +586,7 @@ class WsEdiConnection(models.Model):
         return cert
 
     def get_application_request(self, command: str) -> str:
-        return format_xml(get_template('jbank/application_request.xml').render({
+        return format_xml(get_template('jbank/application_request_template.xml').render({
             'ws': self,
             'command': command,
             'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
@@ -606,6 +636,10 @@ class WsEdiConnection(models.Model):
                 self.bank_encryption_cert_full_path
             ])
         return out.decode()
+
+    def encode_application_request(self, content: str) -> str:
+        content_without_xml_tag = '\n'.join(content.split('\n')[1:])
+        return base64.b64encode(content_without_xml_tag.encode())
 
     @staticmethod
     def _bin(file: str) -> str:
