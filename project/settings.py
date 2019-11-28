@@ -148,3 +148,4 @@ WSEDI_TOKEN = '1234'
 
 XMLLINT_PATH = '/usr/bin/xmllint'
 XMLSEC1_PATH = '/usr/bin/xmlsec1'
+OPENSSL_PATH = '/usr/bin/openssl'
