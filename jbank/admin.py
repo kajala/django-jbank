@@ -893,6 +893,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
         'id',
         'customer',
         'receiver_identifier',
+        'soap_endpoint',
         'signing_cert_file',
         'signing_key_file',
         'encryption_cert_file',

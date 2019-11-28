@@ -89,6 +89,17 @@ def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None):
             'payload': b64_app,
         })
         print(soap_body)
+        headers = {
+            'Connection': 'Close',
+            'Content-Type': 'text/xml',
+            'Method': 'POST',
+            'SOAPAction': '',
+            'User-Agent': 'Kajala WS',
+        }
+        body_bytes = soap_body.encode()
+        res = requests.post(ws.soap_endpoint, data=body_bytes, headers=headers)
+        logger.info('HTTP {}'.format(res.status_code))
+        logger.info(res.text)
     except Exception as e:
         soap_call.error = traceback.format_exc()
         soap_call.save(update_fields=['error'])
