@@ -20,4 +20,4 @@ class Command(SafeCommand):
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws'])
         cmd = options['cmd']
-        wsedi_execute(ws, cmd)
+        wsedi_execute(ws, cmd, verbose=True)

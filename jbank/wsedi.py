@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils.timezone import now
+from zeep.wsse import BinarySignature
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout
 
 
@@ -75,31 +76,53 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
     return res
 
 
-def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None):
+def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, verbose: bool = False):
+    from lxml import etree
+
     soap_call = WsEdiSoapCall(connection=ws, command=cmd, payout=payout)
     soap_call.full_clean()
     soap_call.save()
     try:
         app = ws.get_application_request(cmd)
+        if verbose:
+            print('------------------------------------------------------ app\n{}'.format(app))
         signed_app = ws.sign_application_request(app)
+        if verbose:
+            print('------------------------------------------------------ signed_app\n{}'.format(signed_app))
         enc_app = ws.encrypt_application_request(signed_app)
+        if verbose:
+            print('------------------------------------------------------ enc_app\n{}'.format(enc_app))
         b64_app = ws.encode_application_request(enc_app)
+        if verbose:
+            print('------------------------------------------------------ b64_app\n{}'.format(b64_app))
         soap_body = get_template('jbank/soap_template.xml').render({
             'soap_call': soap_call,
             'payload': b64_app,
         })
-        print(soap_body)
-        headers = {
+        if verbose:
+            print('------------------------------------------------------ soap_body\n{}'.format(soap_body))
+        body_bytes = soap_body.encode()
+        envelope = etree.fromstring(body_bytes)
+        binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
+        soap_headers = {
+        }
+        envelope, soap_headers = binary_signature.apply(envelope, soap_headers)
+        signed_body_bytes = etree.tostring(envelope)
+        if verbose:
+            print('------------------------------------------------------ signed_body_bytes\n{}'.format(signed_body_bytes))
+        http_headers = {
             'Connection': 'Close',
             'Content-Type': 'text/xml',
             'Method': 'POST',
             'SOAPAction': '',
             'User-Agent': 'Kajala WS',
         }
-        body_bytes = soap_body.encode()
-        res = requests.post(ws.soap_endpoint, data=body_bytes, headers=headers)
-        logger.info('HTTP {}'.format(res.status_code))
-        logger.info(res.text)
+        if verbose:
+            print('HTTP POST {}'.format(ws.soap_endpoint))
+        res = requests.post(ws.soap_endpoint, data=signed_body_bytes, headers=http_headers)
+        if verbose:
+            print('HTTP {}'.format(res.status_code))
+            print(res.text)
     except Exception as e:
         soap_call.error = traceback.format_exc()
         soap_call.save(update_fields=['error'])

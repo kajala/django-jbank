@@ -6,7 +6,7 @@
             <mod:RequestHeader>
                 <mod:SenderId>{{ soap_call.connection.customer.org_id }}</mod:SenderId>
                 <mod:RequestId>{{ soap_call.request_identifier }}</mod:RequestId>
-                <mod:Timestamp>{{ soap_call.timestamp }}</mod:Timestamp>
+                <mod:Timestamp>{{ soap_call.timestamp.isoformat }}</mod:Timestamp>
                 <mod:Language>FI</mod:Language>
                 <mod:UserAgent>Kajala WS</mod:UserAgent>
                 <mod:ReceiverId>{{ soap_call.connection.receiver_identifier }}</mod:ReceiverId>
