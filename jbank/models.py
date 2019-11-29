@@ -518,6 +518,9 @@ class WsEdiSoapCall(models.Model):
         verbose_name = _("WS-EDI SOAP call")
         verbose_name_plural = _("WS-EDI SOAP calls")
 
+    def __str__(self):
+        return 'WsEdiSoapCall({})'.format(self.id)
+
     @property
     def timestamp(self) -> datetime:
         return self.created.astimezone(pytz.timezone('Europe/Helsinki'))
@@ -557,6 +560,14 @@ class WsEdiConnection(models.Model):
     @property
     def signing_key_full_path(self) -> str:
         return self.signing_key_file.file.name if self.signing_key_file else ''
+
+    @property
+    def encryption_cert_full_path(self) -> str:
+        return self.encryption_cert_file.file.name if self.signing_cert_file else ''
+
+    @property
+    def encryption_key_full_path(self) -> str:
+        return self.encryption_key_file.file.name if self.signing_key_file else ''
 
     @property
     def bank_encryption_cert_full_path(self) -> str:
@@ -639,8 +650,25 @@ class WsEdiConnection(models.Model):
         return out
 
     def encode_application_request(self, content: bytes) -> bytes:
-        content_without_xml_tag = b'\n'.join(content.split(b'\n')[1:])
+        lines = content.split(b'\n')
+        if len(lines) > 0 and lines[0].startswith(b'<?xml'):
+            lines = lines[1:]
+        content_without_xml_tag = b'\n'.join(lines)
         return base64.b64encode(content_without_xml_tag)
+
+    def decode_application_response(self, content: bytes) -> bytes:
+        return base64.b64decode(content)
+
+    def decrypt_application_response(self, content: bytes) -> bytes:
+        with tempfile.NamedTemporaryFile() as fp:
+            fp.write(content)
+            fp.flush()
+            out = subprocess.check_output([
+                self._bin('decrypt3'),
+                fp.name,
+                self.encryption_key_full_path,
+            ])
+        return out
 
     @staticmethod
     def _bin(file: str) -> str:

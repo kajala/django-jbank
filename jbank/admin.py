@@ -916,6 +916,8 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
     list_display = (
         'id',
         'created',
+        'executed',
+        'execution_time',
         'connection',
         'command',
         'payout',
@@ -931,6 +933,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'payout',
         'created',
         'executed',
+        'execution_time',
         'error_fmt',
     )
 
@@ -941,8 +944,15 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'payout',
         'created',
         'executed',
+        'execution_time',
         'error_fmt',
     )
+
+    def execution_time(self, obj):
+        assert isinstance(obj, WsEdiSoapCall)
+        return obj.executed - obj.created if obj.executed else None
+
+    execution_time.short_description = _('execution time')
 
     def error_fmt(self, obj):
         assert isinstance(obj, WsEdiSoapCall)

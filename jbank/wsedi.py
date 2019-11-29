@@ -1,9 +1,9 @@
 import base64
 import logging
+import os
 import re
 import traceback
 from os.path import basename
-from pprint import pprint
 import pytz
 import requests
 from django.conf import settings
@@ -84,39 +84,43 @@ def dbg_write(filename: str, content: bytes):
     return open('/home/jani/Downloads/{}'.format(filename), 'wb').write(content)
 
 
-def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, verbose: bool = False):
+def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, verbose: bool = False) -> bytes:
     """
-    Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *
+    Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *; from lxml import etree
     :param ws:
     :param cmd:
     :param payout:
     :param verbose:
-    :return:
+    :return: str
     """
     from lxml import etree
 
     soap_call = WsEdiSoapCall(connection=ws, command=cmd, payout=payout)
     soap_call.full_clean()
     soap_call.save()
+    call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
         app = ws.get_application_request(cmd)
         if verbose:
-            print('------------------------------------------------------ app\n{}'.format(app))
+            logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app))
         signed_app = ws.sign_application_request(app)
         if verbose:
-            print('------------------------------------------------------ signed_app\n{}'.format(signed_app.decode()))
+            logger.info('------------------------------------------------------ {} signed_app\n{}'.format(call_str, signed_app.decode()))
         enc_app = ws.encrypt_application_request(signed_app)
         if verbose:
-            print('------------------------------------------------------ enc_app\n{}'.format(enc_app.decode()))
+            logger.info('------------------------------------------------------ {} enc_app\n{}'.format(call_str, enc_app.decode()))
+
         b64_app = ws.encode_application_request(enc_app)
         if verbose:
-            print('------------------------------------------------------ b64_app\n{}'.format(b64_app.decode()))
+            logger.info('------------------------------------------------------ {} b64_app\n{}'.format(call_str, b64_app.decode()))
+
         soap_body = get_template('jbank/soap_template2.xml').render({
             'soap_call': soap_call,
             'payload': b64_app.decode(),
         })
         if verbose:
-            print('------------------------------------------------------ soap_body\n{}'.format(soap_body))
+            logger.info('------------------------------------------------------ {} soap_body\n{}'.format(call_str, soap_body))
+
         body_bytes = soap_body.encode()
         envelope = etree.fromstring(body_bytes)
         binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
@@ -125,7 +129,8 @@ def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, 
         envelope, soap_headers = binary_signature.apply(envelope, soap_headers)
         signed_body_bytes = etree.tostring(envelope)
         if verbose:
-            print('------------------------------------------------------ signed_body_bytes\n{}'.format(signed_body_bytes))
+            logger.info('------------------------------------------------------ {} signed_body_bytes\n{}'.format(call_str, signed_body_bytes))
+
         http_headers = {
             'Connection': 'Close',
             'Content-Type': 'text/xml',
@@ -134,11 +139,31 @@ def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, 
             'User-Agent': 'Kajala WS',
         }
         if verbose:
-            print('HTTP POST {}'.format(ws.soap_endpoint))
+            logger.info('HTTP POST {}'.format(ws.soap_endpoint))
         res = requests.post(ws.soap_endpoint, data=signed_body_bytes, headers=http_headers)
         if verbose:
-            print('HTTP {}'.format(res.status_code))
-            print(res.text)
+            logger.info('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
+
+        envelope = etree.fromstring(res.content)
+        app_res_el = envelope.find('.//{http://model.bxd.fi}ApplicationResponse')
+        app_res_enc = ws.decode_application_response(app_res_el.text.encode())
+        if verbose:
+            logger.info('------------------------------------------------------ {} app_res_enc\n{}'.format(call_str, app_res_enc.decode()))
+
+        app_res = ws.decrypt_application_response(app_res_enc)
+        if verbose:
+            logger.info('------------------------------------------------------ {} app_res\n{}'.format(call_str, app_res.decode()))
+
+        soap_call.executed = now()
+        soap_call.save(update_fields=['executed'])
+
+        if hasattr(settings, 'WSEDI_LOG_PATH') and settings.WSEDI_LOG_PATH and os.path.isdir(settings.WSEDI_LOG_PATH):
+            with open(os.path.join(settings.WSEDI_LOG_PATH, '{:08}a.xml'.format(soap_call.id)), 'wb') as fp:
+                fp.write(app)
+            with open(os.path.join(settings.WSEDI_LOG_PATH, '{:08}r.xml'.format(soap_call.id)), 'wb') as fp:
+                fp.write(app_res)
+
+        return app_res
     except Exception as e:
         soap_call.error = traceback.format_exc()
         soap_call.save(update_fields=['error'])

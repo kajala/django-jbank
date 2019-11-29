@@ -1,6 +1,8 @@
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import sys
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA_ROOT = BASE_DIR
 
@@ -78,6 +80,52 @@ DATABASES = {
     }
 }
 
+# Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'ndebug': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%Y-%m-%d %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django.log'),
+            'formatter': 'verbose'
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+        }
+    },
+    'loggers': {
+        'jbank': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+        },
+        'jutil': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+        },
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',
+        },
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -143,6 +191,7 @@ LATE_LIMIT_DAYS = 7
 
 WSEDI_URL = 'http://127.0.0.1:8081'
 WSEDI_TOKEN = '1234'
+WSEDI_LOG_PATH = os.path.join(BASE_DIR, 'logs/ws')
 
 # Tool paths
 
