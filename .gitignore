@@ -11,4 +11,7 @@ __pycache__
 /certs
 /*.gz
 /tmp*.xml
-
+/jbank/bin/encrypt3
+/jbank/bin/sign3
+/jbank/bin/decrypt3
+/jbank/bin/verify3
