@@ -1,4 +1,5 @@
 import logging
+import os
 import traceback
 from os.path import basename, join
 from django import forms
@@ -12,8 +13,8 @@ from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
-from django.http import HttpRequest
-from django.shortcuts import render
+from django.http import HttpRequest, HttpResponse, Http404
+from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -21,6 +22,9 @@ from django.utils.text import format_lazy, capfirst
 from django.utils.translation import ugettext_lazy as _
 from jacc.admin import AccountTypeAccountEntryFilter
 from jacc.models import Account, EntryType
+from jutil.format import format_xml_file
+from jutil.responses import FileSystemFileResponse, FormattedXmlResponse
+
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
@@ -29,6 +33,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
 from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
+
 
 logger = logging.getLogger(__name__)
 
@@ -939,6 +944,8 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'executed',
         'execution_time',
         'error_fmt',
+        'admin_application_request',
+        'admin_application_response',
     )
 
     readonly_fields = (
@@ -949,7 +956,32 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'executed',
         'execution_time',
         'error_fmt',
+        'admin_application_request',
+        'admin_application_response',
     )
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields = fields[:-2]
+        return fields
+
+    def soap_download_view(self, request, object_id, file_type, form_url='', extra_context=None):
+        obj = get_object_or_404(self.get_queryset(request), id=object_id)
+        assert isinstance(obj, WsEdiSoapCall)
+        return FormattedXmlResponse(WsEdiSoapCall.debug_get_file_path(obj.debug_get_filename(file_type)))
+
+    def admin_application_request(self, obj):
+        assert isinstance(obj, WsEdiSoapCall)
+        download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'a'])
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_request_full_path)))
+    admin_application_request.short_description = _('application request')
+
+    def admin_application_response(self, obj):
+        assert isinstance(obj, WsEdiSoapCall)
+        download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'r'])
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_response_full_path)))
+    admin_application_response.short_description = _('application response')
 
     def execution_time(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
@@ -960,6 +992,12 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         assert isinstance(obj, WsEdiSoapCall)
         return mark_safe(obj.error.replace('\n', '<br>'))
     error_fmt.short_description = _('error')
+
+    def get_urls(self):
+        info = self.model._meta.app_label, self.model._meta.model_name
+        return [
+            url(r'^soap-download/(\d+)/(.+)$', self.soap_download_view, name='%s_%s_soap_download' % info),
+        ] + super().get_urls()
 
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)

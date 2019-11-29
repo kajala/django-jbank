@@ -1,12 +1,16 @@
 import logging
+import os
 from datetime import datetime
 from os.path import basename
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.http import HttpResponse
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from jacc.models import Account, AccountType, EntryType
+from jutil.format import format_xml_file
+
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentBatch, \
     ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile, Payout, PayoutStatus, PAYOUT_PAID
 

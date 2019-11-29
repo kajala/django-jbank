@@ -532,6 +532,21 @@ class WsEdiSoapCall(models.Model):
     def command_camelcase(self) -> str:
         return self.command[0:1].lower() + self.command[1:]
 
+    def debug_get_filename(self, file_type: str) -> str:
+        return '{:08}{}.xml'.format(self.id, file_type)
+
+    @property
+    def debug_application_request_full_path(self) -> str:
+        return self.debug_get_file_path(self.debug_get_filename('a'))
+
+    @property
+    def debug_application_response_full_path(self) -> str:
+        return self.debug_get_file_path(self.debug_get_filename('r'))
+
+    @staticmethod
+    def debug_get_file_path(filename: str) -> str:
+        return os.path.join(settings.WSEDI_LOG_PATH, filename) if hasattr(settings, 'WSEDI_LOG_PATH') and settings.WSEDI_LOG_PATH else ''
+
 
 class WsEdiConnection(models.Model):
     customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)

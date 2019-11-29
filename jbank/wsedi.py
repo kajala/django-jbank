@@ -159,9 +159,9 @@ def wsedi_execute(ws: WsEdiConnection, cmd: str, cls: callable = WsEdiSoapCall, 
         soap_call.save(update_fields=['executed'])
 
         if hasattr(settings, 'WSEDI_LOG_PATH') and settings.WSEDI_LOG_PATH and os.path.isdir(settings.WSEDI_LOG_PATH):
-            with open(os.path.join(settings.WSEDI_LOG_PATH, '{:08}a.xml'.format(soap_call.id)), 'wb') as fp:
+            with open(soap_call.debug_application_request_full_path, 'wb') as fp:
                 fp.write(app)
-            with open(os.path.join(settings.WSEDI_LOG_PATH, '{:08}r.xml'.format(soap_call.id)), 'wb') as fp:
+            with open(soap_call.debug_application_response_full_path, 'wb') as fp:
                 fp.write(app_res)
 
         return app_res
