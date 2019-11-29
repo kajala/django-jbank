@@ -43,6 +43,9 @@ def wsedi_get(command: str, file_type: str, status: str, file_reference: str = '
         logger.error("wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(command, file_type, status, file_reference, res.status_code) + res.text)
     elif verbose:
         logger.info("wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(command, file_type, status, file_reference, res.status_code) + res.text)
+
+    if res.status_code >= 300:
+        raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
     return res
 
 
@@ -71,6 +74,7 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
     res = requests.post(url, data=data, headers=headers)
     if res.status_code >= 300:
         logger.error("wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(command, file_type, file_name, res.status_code) + res.text)
+        raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
     elif verbose:
         logger.info("wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(command, file_type, file_name, res.status_code) + res.text)
     return res
@@ -84,7 +88,9 @@ def dbg_write(filename: str, content: bytes):
     return open('/home/jani/Downloads/{}'.format(filename), 'wb').write(content)
 
 
-def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '', verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
+def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',
+                  file_content: str = '', file_name: str = '',
+                  verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
     Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *; from lxml import etree
     :param ws:
@@ -92,6 +98,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     :param file_type:
     :param status:
     :param file_reference:
+    :param file_content:
+    :param file_name:
     :param verbose:
     :param cls:
     :return: str
@@ -146,6 +154,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         res = requests.post(ws.soap_endpoint, data=signed_body_bytes, headers=http_headers)
         if verbose:
             logger.info('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
+        if res.status_code >= 300:
+            raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
 
         envelope = etree.fromstring(res.content)
         app_res_el = envelope.find('.//{http://model.bxd.fi}ApplicationResponse')

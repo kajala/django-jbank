@@ -7,9 +7,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.move import file_move_safe
 from django.core.management import CommandParser
+from jutil.xml import xml_to_dict
+
 from jbank.files import list_dir_files
-from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_CANCELED, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED
-from jbank.wsedi import wsedi_get, wsedi_upload_file
+from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_CANCELED, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, \
+    WsEdiConnection
+from jbank.wsedi import wsedi_get, wsedi_upload_file, wsedi_execute
 from jutil.command import SafeCommand
 from jutil.email import send_email
 
@@ -29,8 +32,10 @@ class Command(SafeCommand):
         parser.add_argument('--file-type', type=str, help='E.g. XL, NDCORPAYS, pain.001.001.03')
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--force', action='store_true')
+        parser.add_argument('--ws', type=int)
 
     def do(self, *args, **options):
+        ws = WsEdiConnection.objects.get(id=options['ws']) if options['ws'] else None
         file_type = options['file_type']
         if not file_type:
             return print('--file-type required (e.g. XL, NDCORPAYS, pain.001.001.03)')
@@ -56,12 +61,16 @@ class Command(SafeCommand):
                     file_content = fp.read()
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=['state'])
-                res = wsedi_upload_file(file_content, file_type, p.file_name)
-                logger.info('HTTP response {}'.format(res.status_code))
-                logger.info(res.text)
+                if ws:
+                    content = wsedi_execute(file_content=file_content, file_type=file_type, file_name=p.file_name, verbose=options['verbose'])
+                    data = xml_to_dict(content)
+                else:
+                    res = wsedi_upload_file(file_content=file_content, file_type=file_type, file_name=p.file_name, verbose=options['verbose'])
+                    logger.info('HTTP response {}'.format(res.status_code))
+                    logger.info(res.text)
+                    data = res.json()
 
                 # parse response
-                data = res.json()
                 response_code = data.get('ResponseCode', '')[:4]
                 response_text = data.get('ResponseText', '')[:255]
                 if response_code != '00':

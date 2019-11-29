@@ -3,9 +3,10 @@ import logging
 import os
 from django.core.management import CommandParser
 from django.utils.timezone import now
+from jutil.xml import xml_to_dict
 from jbank.helpers import process_pain002_file_content
 from jbank.models import WsEdiConnection
-from jbank.wsedi import wsedi_get
+from jbank.wsedi import wsedi_get, wsedi_execute
 from jutil.command import SafeCommand
 
 
@@ -41,10 +42,12 @@ class Command(SafeCommand):
         file_type = options['file_type']
         if command == 'DownloadFileList' and not file_type:
             return print('--file-type required (e.g. TO, SVM, XP, NDCORPAYL, pain.002.001.03)')
-        res = wsedi_get(command=command, file_type=file_type, status=status, file_reference=file_reference, verbose=options['verbose'])
-        if res.status_code >= 300:
-            raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
-        data = res.json()
+        if ws:
+            content = wsedi_execute(ws, command=command, file_type=file_type, status=status, file_reference=file_reference, verbose=options['verbose'])
+            data = xml_to_dict(content, array_tags=['FileDescriptor'])
+        else:
+            res = wsedi_get(command=command, file_type=file_type, status=status, file_reference=file_reference, verbose=options['verbose'])
+            data = res.json()
         """
             "FileDescriptors": {
                 "FileDescriptor": [
@@ -79,10 +82,12 @@ class Command(SafeCommand):
                         continue
                     if options['overwrite'] or not os.path.isfile(file_path):
                         command = 'DownloadFile'
-                        res = wsedi_get(command=command, file_type=file_type, status='', file_reference=file_reference, verbose=options['verbose'])
-                        if res.status_code >= 300:
-                            raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
-                        file_data = res.json()
+                        if ws:
+                            content = wsedi_execute(ws, command=command, file_type=file_type, status='', file_reference=file_reference, verbose=options['verbose'])
+                            file_data = xml_to_dict(content)
+                        else:
+                            res = wsedi_get(command=command, file_type=file_type, status='', file_reference=file_reference, verbose=options['verbose'])
+                            file_data = res.json()
                         if 'Content' not in file_data:
                             logger.error('WS-EDI {} HTTP {} but Content block missing: {}'.format(command, res.status_code, file_data))
                             raise Exception("WS-EDI {} HTTP {} but Content block missing".format(command, res.status_code))
