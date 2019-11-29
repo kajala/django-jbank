@@ -84,18 +84,19 @@ def dbg_write(filename: str, content: bytes):
     return open('/home/jani/Downloads/{}'.format(filename), 'wb').write(content)
 
 
-def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, verbose: bool = False) -> bytes:
+def wsedi_execute(ws: WsEdiConnection, cmd: str, cls: callable = WsEdiSoapCall, verbose: bool = False, **kwargs) -> bytes:
     """
     Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *; from lxml import etree
     :param ws:
     :param cmd:
+    :param cls:
     :param payout:
     :param verbose:
     :return: str
     """
     from lxml import etree
 
-    soap_call = WsEdiSoapCall(connection=ws, command=cmd, payout=payout)
+    soap_call = cls(connection=ws, command=cmd, **kwargs)
     soap_call.full_clean()
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)

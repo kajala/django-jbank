@@ -509,7 +509,6 @@ class Refund(Payout):
 class WsEdiSoapCall(models.Model):
     connection = models.ForeignKey('WsEdiConnection', verbose_name=_('WS-EDI connection'), on_delete=models.CASCADE)
     command = models.CharField(_('command'), max_length=64, blank=True, db_index=True)
-    payout = models.ForeignKey(Payout, verbose_name=_('payout'), null=True, blank=True, db_index=True, related_name='+', on_delete=models.PROTECT)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     executed = models.DateTimeField(_('executed'), default=None, null=True, db_index=True, editable=False, blank=True)
     error = models.TextField(_('error'), blank=True)

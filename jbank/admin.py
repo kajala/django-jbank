@@ -920,7 +920,6 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'execution_time',
         'connection',
         'command',
-        'payout',
     )
 
     raw_id_fields = (
@@ -930,7 +929,6 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'id',
         'connection',
         'command',
-        'payout',
         'created',
         'executed',
         'execution_time',
@@ -941,7 +939,6 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'id',
         'connection',
         'command',
-        'payout',
         'created',
         'executed',
         'execution_time',
@@ -951,7 +948,6 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
     def execution_time(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
         return obj.executed - obj.created if obj.executed else None
-
     execution_time.short_description = _('execution time')
 
     def error_fmt(self, obj):
