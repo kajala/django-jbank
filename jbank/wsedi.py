@@ -16,7 +16,7 @@ from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout
 logger = logging.getLogger(__name__)
 
 
-def wsedi_get(command: str, file_type: str, status: str, file_reference: str='', verbose: bool=False) -> requests.Response:
+def wsedi_get(command: str, file_type: str, status: str, file_reference: str = '', verbose: bool = False) -> requests.Response:
     """
     Download Finnish bank files. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
     Uses project settings WSEDI_URL and WSEDI_TOKEN.
@@ -84,24 +84,26 @@ def dbg_write(filename: str, content: bytes):
     return open('/home/jani/Downloads/{}'.format(filename), 'wb').write(content)
 
 
-def wsedi_execute(ws: WsEdiConnection, cmd: str, cls: callable = WsEdiSoapCall, verbose: bool = False, **kwargs) -> bytes:
+def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '', verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
     Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *; from lxml import etree
     :param ws:
-    :param cmd:
-    :param cls:
-    :param payout:
+    :param command:
+    :param file_type:
+    :param status:
+    :param file_reference:
     :param verbose:
+    :param cls:
     :return: str
     """
     from lxml import etree
 
-    soap_call = cls(connection=ws, command=cmd, **kwargs)
+    soap_call = cls(connection=ws, command=command, **kwargs)
     soap_call.full_clean()
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        app = ws.get_application_request(cmd)
+        app = ws.get_application_request(command)
         if verbose:
             logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app))
         signed_app = ws.sign_application_request(app)
