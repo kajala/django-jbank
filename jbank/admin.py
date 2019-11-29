@@ -913,12 +913,18 @@ class WsEdiConnectionAdmin(ModelAdminBase):
 class WsEdiSoapCallAdmin(ModelAdminBase):
     save_on_top = False
 
+    date_hierarchy = 'created'
+
     list_display = (
         'id',
         'created',
+        'connection',
+        'command',
         'executed',
         'execution_time',
-        'connection',
+    )
+
+    list_filter = (
         'command',
     )
 
