@@ -76,6 +76,14 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
     return res
 
 
+def dbg_read(filename: str):
+    return open('/home/jani/Downloads/{}'.format(filename), 'rb').read()
+
+
+def dbg_write(filename: str, content: bytes):
+    return open('/home/jani/Downloads/{}'.format(filename), 'rb').write(content)
+
+
 def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, verbose: bool = False):
     from lxml import etree
 
@@ -88,16 +96,16 @@ def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, 
             print('------------------------------------------------------ app\n{}'.format(app))
         signed_app = ws.sign_application_request(app)
         if verbose:
-            print('------------------------------------------------------ signed_app\n{}'.format(signed_app))
+            print('------------------------------------------------------ signed_app\n{}'.format(signed_app.decode()))
         enc_app = ws.encrypt_application_request(signed_app)
         if verbose:
-            print('------------------------------------------------------ enc_app\n{}'.format(enc_app))
+            print('------------------------------------------------------ enc_app\n{}'.format(enc_app.decode()))
         b64_app = ws.encode_application_request(enc_app)
         if verbose:
-            print('------------------------------------------------------ b64_app\n{}'.format(b64_app))
+            print('------------------------------------------------------ b64_app\n{}'.format(b64_app.decode()))
         soap_body = get_template('jbank/soap_template.xml').render({
             'soap_call': soap_call,
-            'payload': b64_app,
+            'payload': b64_app.decode(),
         })
         if verbose:
             print('------------------------------------------------------ soap_body\n{}'.format(soap_body))

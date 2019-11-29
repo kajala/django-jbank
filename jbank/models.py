@@ -586,16 +586,16 @@ class WsEdiConnection(models.Model):
         self._signing_cert = cert
         return cert
 
-    def get_application_request(self, command: str) -> str:
+    def get_application_request(self, command: str) -> bytes:
         return format_xml(get_template('jbank/application_request_template.xml').render({
             'ws': self,
             'command': command,
             'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
-        }))
+        })).encode()
 
-    def verify_signature(self, content: str):
+    def verify_signature(self, content: bytes):
         with tempfile.NamedTemporaryFile() as fp:
-            fp.write(content.encode())
+            fp.write(content)
             fp.flush()
             out = subprocess.check_output([
                 settings.XMLSEC1_PATH,
@@ -605,7 +605,7 @@ class WsEdiConnection(models.Model):
                 fp.name
             ])
 
-    def sign_application_request(self, content: str) -> str:
+    def sign_application_request(self, content: bytes) -> bytes:
         """
         Sign application request.
         See https://users.dcc.uchile.cl/~pcamacho/tutorial/web/xmlsec/xmlsec.html
@@ -613,7 +613,7 @@ class WsEdiConnection(models.Model):
         :return: str
         """
         with tempfile.NamedTemporaryFile() as fp:
-            fp.write(content.encode())
+            fp.write(content)
             fp.flush()
             out = subprocess.check_output([
                 settings.XMLSEC1_PATH,
@@ -622,13 +622,12 @@ class WsEdiConnection(models.Model):
                 '{},{}'.format(self.signing_key_full_path, self.signing_cert_full_path),
                 fp.name
             ])
-        res = out.decode()
-        self.verify_signature(res)
-        return res
+        self.verify_signature(out)
+        return out
 
-    def encrypt_application_request(self, content: str) -> str:
+    def encrypt_application_request(self, content: bytes) -> bytes:
         with tempfile.NamedTemporaryFile() as fp:
-            fp.write(content.encode())
+            fp.write(content)
             fp.flush()
             out = subprocess.check_output([
                 self._bin('encrypt3'),
@@ -636,11 +635,11 @@ class WsEdiConnection(models.Model):
                 self.bank_encryption_cert_with_public_key_full_path,
                 self.bank_encryption_cert_full_path
             ])
-        return out.decode()
+        return out
 
-    def encode_application_request(self, content: str) -> str:
-        content_without_xml_tag = '\n'.join(content.split('\n')[1:])
-        return base64.b64encode(content_without_xml_tag.encode())
+    def encode_application_request(self, content: bytes) -> bytes:
+        content_without_xml_tag = b'\n'.join(content.split(b'\n')[1:])
+        return base64.b64encode(content_without_xml_tag)
 
     @staticmethod
     def _bin(file: str) -> str:
