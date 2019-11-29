@@ -882,6 +882,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
         'id',
         'created',
         'customer',
+        'sender_identifier',
         'receiver_identifier',
     )
 
@@ -892,6 +893,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     fields = (
         'id',
         'customer',
+        'sender_identifier',
         'receiver_identifier',
         'soap_endpoint',
         'signing_cert_file',

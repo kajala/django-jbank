@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-28 23:20+0000\n"
+"POT-Creation-Date: 2019-11-29 01:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,7 +101,7 @@ msgstr ""
 msgid "reference payment batches"
 msgstr ""
 
-#: jbank/admin.py:948 jbank/models.py:120 jbank/models.py:515
+#: jbank/admin.py:950 jbank/models.py:120 jbank/models.py:515
 msgid "error"
 msgstr ""
 
@@ -501,7 +501,7 @@ msgid "statement records"
 msgstr ""
 
 #: jbank/models.py:202 jbank/models.py:338 jbank/models.py:355
-#: jbank/models.py:478 jbank/models.py:513 jbank/models.py:543
+#: jbank/models.py:478 jbank/models.py:513 jbank/models.py:544
 msgid "created"
 msgstr ""
 
@@ -771,7 +771,7 @@ msgstr ""
 msgid "refunds"
 msgstr ""
 
-#: jbank/models.py:510 jbank/models.py:546
+#: jbank/models.py:510 jbank/models.py:547
 msgid "WS-EDI connection"
 msgstr ""
 
@@ -798,34 +798,40 @@ msgstr ""
 #: jbank/models.py:536
 #, fuzzy
 #| msgid "account.entry.matched.filter"
-msgid "receiver identifier"
+msgid "sender identifier"
 msgstr "settled"
 
 #: jbank/models.py:537
+#, fuzzy
+#| msgid "account.entry.matched.filter"
+msgid "receiver identifier"
+msgstr "settled"
+
+#: jbank/models.py:538
 msgid "SOAP endpoint"
 msgstr ""
 
-#: jbank/models.py:538
+#: jbank/models.py:539
 msgid "signing certificate file"
 msgstr ""
 
-#: jbank/models.py:539
+#: jbank/models.py:540
 msgid "signing key file"
 msgstr ""
 
-#: jbank/models.py:540
+#: jbank/models.py:541
 msgid "encryption certificate file"
 msgstr ""
 
-#: jbank/models.py:541
+#: jbank/models.py:542
 msgid "encryption key file"
 msgstr ""
 
-#: jbank/models.py:542
+#: jbank/models.py:543
 msgid "bank encryption cert file"
 msgstr ""
 
-#: jbank/models.py:547
+#: jbank/models.py:548
 msgid "WS-EDI connections"
 msgstr ""
 

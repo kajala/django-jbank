@@ -533,6 +533,7 @@ class WsEdiSoapCall(models.Model):
 
 class WsEdiConnection(models.Model):
     customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)
+    sender_identifier = models.CharField(_('sender identifier'), max_length=32)
     receiver_identifier = models.CharField(_('receiver identifier'), max_length=32)
     soap_endpoint = models.URLField(_('SOAP endpoint'))
     signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-28 23:20+0000\n"
+"POT-Creation-Date: 2019-11-29 01:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -98,7 +98,7 @@ msgstr "tiliotteet"
 msgid "reference payment batches"
 msgstr "viitemaksuerät"
 
-#: jbank/admin.py:948 jbank/models.py:120 jbank/models.py:515
+#: jbank/admin.py:950 jbank/models.py:120 jbank/models.py:515
 msgid "error"
 msgstr "virhe"
 
@@ -496,7 +496,7 @@ msgid "statement records"
 msgstr "tiliotteen tietueet"
 
 #: jbank/models.py:202 jbank/models.py:338 jbank/models.py:355
-#: jbank/models.py:478 jbank/models.py:513 jbank/models.py:543
+#: jbank/models.py:478 jbank/models.py:513 jbank/models.py:544
 msgid "created"
 msgstr "luotu"
 
@@ -766,7 +766,7 @@ msgstr "palautus"
 msgid "refunds"
 msgstr "palautukset"
 
-#: jbank/models.py:510 jbank/models.py:546
+#: jbank/models.py:510 jbank/models.py:547
 msgid "WS-EDI connection"
 msgstr "WS-EDI yhteys"
 
@@ -791,36 +791,40 @@ msgid "customer"
 msgstr "asiakas"
 
 #: jbank/models.py:536
+msgid "sender identifier"
+msgstr "lähettäjän tunniste"
+
+#: jbank/models.py:537
 msgid "receiver identifier"
 msgstr "vastaanottajan tunniste"
 
-#: jbank/models.py:537
+#: jbank/models.py:538
 msgid "SOAP endpoint"
 msgstr "SOAP yhteysosoite"
 
-#: jbank/models.py:538
+#: jbank/models.py:539
 msgid "signing certificate file"
 msgstr ""
 
-#: jbank/models.py:539
+#: jbank/models.py:540
 msgid "signing key file"
 msgstr ""
 
-#: jbank/models.py:540
+#: jbank/models.py:541
 msgid "encryption certificate file"
 msgstr ""
 
-#: jbank/models.py:541
+#: jbank/models.py:542
 msgid "encryption key file"
 msgstr ""
 
-#: jbank/models.py:542
+#: jbank/models.py:543
 #, fuzzy
 #| msgid "account entry source file"
 msgid "bank encryption cert file"
 msgstr "lähdetiedosto"
 
-#: jbank/models.py:547
+#: jbank/models.py:548
 msgid "WS-EDI connections"
 msgstr "WS-EDI yhteydet"
 

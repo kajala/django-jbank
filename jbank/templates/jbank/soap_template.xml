@@ -4,7 +4,7 @@
     <soapenv:Body>
         <cor:{{ soap_call.command_camelcase }}in>
             <mod:RequestHeader>
-                <mod:SenderId>{{ soap_call.connection.customer.org_id }}</mod:SenderId>
+                <mod:SenderId>{{ soap_call.connection.sender_identifier }}</mod:SenderId>
                 <mod:RequestId>{{ soap_call.request_identifier }}</mod:RequestId>
                 <mod:Timestamp>{{ soap_call.timestamp.isoformat }}</mod:Timestamp>
                 <mod:Language>FI</mod:Language>

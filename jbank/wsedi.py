@@ -81,10 +81,18 @@ def dbg_read(filename: str):
 
 
 def dbg_write(filename: str, content: bytes):
-    return open('/home/jani/Downloads/{}'.format(filename), 'rb').write(content)
+    return open('/home/jani/Downloads/{}'.format(filename), 'wb').write(content)
 
 
 def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, verbose: bool = False):
+    """
+    Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *
+    :param ws:
+    :param cmd:
+    :param payout:
+    :param verbose:
+    :return:
+    """
     from lxml import etree
 
     soap_call = WsEdiSoapCall(connection=ws, command=cmd, payout=payout)
@@ -103,7 +111,7 @@ def wsedi_execute(ws: WsEdiConnection, cmd: str, payout: Payout or None = None, 
         b64_app = ws.encode_application_request(enc_app)
         if verbose:
             print('------------------------------------------------------ b64_app\n{}'.format(b64_app.decode()))
-        soap_body = get_template('jbank/soap_template.xml').render({
+        soap_body = get_template('jbank/soap_template2.xml').render({
             'soap_call': soap_call,
             'payload': b64_app.decode(),
         })
