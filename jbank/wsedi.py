@@ -126,9 +126,15 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         signed_app = ws.sign_application_request(app)
         if verbose:
             logger.info('------------------------------------------------------ {} signed_app\n{}'.format(call_str, signed_app.decode()))
-        enc_app = ws.encrypt_application_request(signed_app)
-        if verbose:
-            logger.info('------------------------------------------------------ {} enc_app\n{}'.format(call_str, enc_app.decode()))
+
+        if ws.bank_encryption_cert_file:
+            enc_app = ws.encrypt_application_request(signed_app)
+            if verbose:
+                logger.info('------------------------------------------------------ {} enc_app\n{}'.format(call_str, enc_app.decode()))
+        else:
+            enc_app = signed_app
+            if verbose:
+                logger.info('------------------------------------------------------ {} enc_app\n(no bank_encryption_cert_file, not encrypting)'.format(call_str))
 
         b64_app = ws.encode_application_request(enc_app)
         if verbose:
@@ -172,9 +178,14 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         if verbose:
             logger.info('------------------------------------------------------ {} app_res_enc\n{}'.format(call_str, app_res_enc.decode()))
 
-        app_res = ws.decrypt_application_response(app_res_enc)
-        if verbose:
-            logger.info('------------------------------------------------------ {} app_res\n{}'.format(call_str, app_res.decode()))
+        if ws.encryption_key_file:
+            app_res = ws.decrypt_application_response(app_res_enc)
+            if verbose:
+                logger.info('------------------------------------------------------ {} app_res\n{}'.format(call_str, app_res.decode()))
+        else:
+            app_res = app_res_enc
+            if verbose:
+                logger.info('------------------------------------------------------ {} app_res\n(no encryption_key_file, assuming decrypted content)'.format(call_str))
 
         soap_call.executed = now()
         soap_call.save(update_fields=['executed'])
