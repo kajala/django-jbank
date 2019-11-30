@@ -21,6 +21,7 @@ class Command(SafeCommand):
 
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws'])
+        assert isinstance(ws, WsEdiConnection)
         cmd = options['cmd']
         file_reference = options['file_reference']
         file_type = options['file_type']

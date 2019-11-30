@@ -32,6 +32,7 @@ class Command(SafeCommand):
 
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws']) if options['ws'] else None
+        assert ws is None or isinstance(ws, WsEdiConnection)
         path = options['path']
         command = 'DownloadFileList'
         time_now = now()

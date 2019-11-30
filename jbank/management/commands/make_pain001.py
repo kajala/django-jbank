@@ -7,7 +7,8 @@ from os.path import join
 from django.conf import settings
 from django.core.management import CommandParser
 from django.db import transaction
-from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD
+from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD, \
+    WsEdiConnection
 from jbank.sepa import Pain001, PAIN001_REMITTANCE_INFO_MSG, PAIN001_REMITTANCE_INFO_OCR_ISO, \
     PAIN001_REMITTANCE_INFO_OCR
 from jutil.command import SafeCommand
@@ -28,16 +29,20 @@ class Command(SafeCommand):
         parser.add_argument('dir', type=str)
         parser.add_argument('--payout', type=int)
         parser.add_argument('--verbose', action='store_true')
+        parser.add_argument('--ws', type=int)
 
     def do(self, *args, **options):
+        target_dir = options['dir']
         if options['verbose']:
-            logger.info('Writing pain.001 files to {}'.format(options['dir']))
+            logger.info('Writing pain.001 files to {}'.format(target_dir))
 
         payouts = Payout.objects.all()
         if options['payout']:
             payouts = Payout.objects.filter(id=options['payout'])
         else:
             payouts = payouts.filter(state=PAYOUT_WAITING_PROCESSING)
+        if options['ws']:
+            payouts = payouts.filter(connection_id=options['ws'])
 
         for p in list(payouts):
             assert isinstance(p, Payout)
@@ -59,7 +64,7 @@ class Command(SafeCommand):
                     remittance_info_type = PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == 'RF' else PAIN001_REMITTANCE_INFO_OCR
                 pain001.add_payment(p.id, p.recipient.name, p.recipient.account_number, p.recipient.bic, p.amount, remittance_info, remittance_info_type, p.due_date)
 
-                p.full_path = full_path = os.path.join(options['dir'], p.file_name)
+                p.full_path = full_path = os.path.join(target_dir, p.file_name)
                 if options['verbose']:
                     print(p, 'written to', full_path)
                 pain001.render_to_file(full_path)

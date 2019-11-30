@@ -32,10 +32,11 @@ class Command(SafeCommand):
         parser.add_argument('--file-type', type=str, help='E.g. XL, NDCORPAYS, pain.001.001.03')
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--force', action='store_true')
-        parser.add_argument('--ws', type=int)
+        parser.add_argument('--default-ws', type=int)
 
     def do(self, *args, **options):
-        ws = WsEdiConnection.objects.get(id=options['ws']) if options['ws'] else None
+        default_ws = WsEdiConnection.objects.get(id=options['default_ws']) if options['default_ws'] else None
+        assert default_ws is None or isinstance(default_ws, WsEdiConnection)
         file_type = options['file_type']
         if not file_type:
             return print('--file-type required (e.g. XL, NDCORPAYS, pain.001.001.03)')
@@ -61,8 +62,9 @@ class Command(SafeCommand):
                     file_content = fp.read()
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=['state'])
-                if ws:
-                    content = wsedi_execute(ws, 'UploadFile', file_content=file_content, file_type=file_type, verbose=options['verbose'])
+                ws_connection = p.connection or default_ws
+                if ws_connection:
+                    content = wsedi_execute(ws_connection, 'UploadFile', file_content=file_content, file_type=file_type, verbose=options['verbose'])
                     data = xml_to_dict(content)
                 else:
                     res = wsedi_upload_file(file_content=file_content, file_type=file_type, file_name=p.file_name, verbose=options['verbose'])
