@@ -65,7 +65,7 @@ class Command(SafeCommand):
                 ws_connection = p.connection or default_ws
                 if ws_connection:
                     content = wsedi_execute(ws_connection, 'UploadFile', file_content=file_content, file_type=file_type, verbose=options['verbose'])
-                    data = xml_to_dict(content)
+                    data = xml_to_dict(content, array_tags=['FileDescriptor'])
                 else:
                     res = wsedi_upload_file(file_content=file_content, file_type=file_type, file_name=p.file_name, verbose=options['verbose'])
                     logger.info('HTTP response {}'.format(res.status_code))

@@ -934,6 +934,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
     )
 
     list_filter = (
+        'connection',
         'command',
     )
 
