@@ -11,6 +11,12 @@ Features
 * Parsing pain.002.001.03 files
 * Generating pain.001.001.03 files
 
+
+Pre-Requisities
+===============
+
+* apt install -y xmlsec1 libxmlsec1-dev libssl-dev libffi-dev
+
 Tested Banks
 ============
 
