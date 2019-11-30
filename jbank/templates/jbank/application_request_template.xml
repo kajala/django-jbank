@@ -4,27 +4,34 @@
     <Command>{{ command }}</Command>
     <Timestamp>{{ timestamp }}</Timestamp>
     {% if start_date %}
-        <StartDate>{{ start_date }}</StartDate>
+        <StartDate>{{ start_date.isoformat }}</StartDate>
     {% endif %}
     {% if end_date %}
-        <EndDate>{{ end_date }}</EndDate>
+        <EndDate>{{ end_date.isoformat }}</EndDate>
     {% endif %}
     {% if status %}
         <Status>{{ status }}</Status>
     {% endif %}
     <Environment>PRODUCTION</Environment>
-    {% if file_references %}
-        {% for file_reference in file_references %}
-            <FileReference>{{ file_reference }}</FileReference>
-        {% endfor %}
+    {% if file_reference or file_references %}
+        <FileReferences>
+            {% if file_reference %}
+                <FileReference>{{ file_reference }}</FileReference>
+            {% endif %}
+            {% if file_references %}
+                {% for f in file_references %}
+                    <FileReference>{{ f }}</FileReference>
+                {% endfor %}
+            {% endif %}
+        </FileReferences>
     {% endif %}
     <TargetId>{{ target_id|default:'1' }}</TargetId>
     <SoftwareId>Kajala WS</SoftwareId>
     {% if file_type %}
         <FileType>{{ file_type }}</FileType>
     {% endif %}
-    {% if content %}
-        <Content>{{ content }}</Content>
+    {% if file_content %}
+        <Content>{{ file_content }}</Content>
     {% endif %}
     <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
     <SignedInfo>

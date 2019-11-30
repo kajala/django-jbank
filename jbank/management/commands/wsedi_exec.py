@@ -16,8 +16,12 @@ class Command(SafeCommand):
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('--ws', type=int, default=1)
         parser.add_argument('--cmd', type=str, default='DownloadFileList')
+        parser.add_argument('--file-reference', type=str)
+        parser.add_argument('--file-type', type=str)
 
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws'])
         cmd = options['cmd']
-        wsedi_execute(ws, cmd, verbose=True)
+        file_reference = options['file_reference']
+        file_type = options['file_type']
+        wsedi_execute(ws, command=cmd, file_reference=file_reference, file_type=file_type, verbose=True)

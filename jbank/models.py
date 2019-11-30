@@ -612,11 +612,12 @@ class WsEdiConnection(models.Model):
         self._signing_cert = cert
         return cert
 
-    def get_application_request(self, command: str) -> bytes:
+    def get_application_request(self, command: str, **kwargs) -> bytes:
         return format_xml(get_template('jbank/application_request_template.xml').render({
             'ws': self,
             'command': command,
             'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
+            **kwargs
         })).encode()
 
     def verify_signature(self, content: bytes):

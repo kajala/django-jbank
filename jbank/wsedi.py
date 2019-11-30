@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import traceback
+from datetime import date
 from os.path import basename
 import pytz
 import requests
@@ -89,7 +90,7 @@ def dbg_write(filename: str, content: bytes):
 
 
 def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',
-                  file_content: str = '', file_name: str = '',
+                  file_content: str = '', start_date: date or None = None, end_date: date or None = None,
                   verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
     Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *; from lxml import etree
@@ -99,7 +100,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     :param status:
     :param file_reference:
     :param file_content:
-    :param file_name:
+    :param start_date:
+    :param end_date:
     :param verbose:
     :param cls:
     :return: str
@@ -111,9 +113,12 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        app = ws.get_application_request(command)
+        app = ws.get_application_request(command, file_type=file_type, status=status, file_reference=file_reference, file_content=file_content, start_date=start_date, end_date=end_date)
         if verbose:
             logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app))
+        with open(soap_call.debug_application_request_full_path, 'wb') as fp:
+            fp.write(app)
+
         signed_app = ws.sign_application_request(app)
         if verbose:
             logger.info('------------------------------------------------------ {} signed_app\n{}'.format(call_str, signed_app.decode()))
@@ -170,11 +175,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         soap_call.executed = now()
         soap_call.save(update_fields=['executed'])
 
-        if hasattr(settings, 'WSEDI_LOG_PATH') and settings.WSEDI_LOG_PATH and os.path.isdir(settings.WSEDI_LOG_PATH):
-            with open(soap_call.debug_application_request_full_path, 'wb') as fp:
-                fp.write(app)
-            with open(soap_call.debug_application_response_full_path, 'wb') as fp:
-                fp.write(app_res)
+        with open(soap_call.debug_application_response_full_path, 'wb') as fp:
+            fp.write(app_res)
 
         return app_res
     except Exception as e:

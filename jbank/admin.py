@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 import traceback
@@ -23,7 +24,8 @@ from django.utils.translation import ugettext_lazy as _
 from jacc.admin import AccountTypeAccountEntryFilter
 from jacc.models import Account, EntryType
 from jutil.format import format_xml_file
-from jutil.responses import FileSystemFileResponse, FormattedXmlResponse
+from jutil.responses import FileSystemFileResponse, FormattedXmlResponse, FormattedXmlFileResponse
+from jutil.xml import xml_to_dict
 
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
@@ -946,6 +948,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'error_fmt',
         'admin_application_request',
         'admin_application_response',
+        'admin_application_response_file',
     )
 
     readonly_fields = (
@@ -958,6 +961,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'error_fmt',
         'admin_application_request',
         'admin_application_response',
+        'admin_application_response_file',
     )
 
     def get_fields(self, request, obj=None):
@@ -969,7 +973,12 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
     def soap_download_view(self, request, object_id, file_type, form_url='', extra_context=None):
         obj = get_object_or_404(self.get_queryset(request), id=object_id)
         assert isinstance(obj, WsEdiSoapCall)
-        return FormattedXmlResponse(WsEdiSoapCall.debug_get_file_path(obj.debug_get_filename(file_type)))
+        if file_type == 'f':
+            with open(obj.debug_application_response_full_path, 'rb') as fb:
+                data = xml_to_dict(fb.read())
+                content = base64.b64decode(data.get('Content', ''))
+                return FormattedXmlResponse(content, filename=obj.debug_get_filename(file_type))
+        return FormattedXmlFileResponse(WsEdiSoapCall.debug_get_file_path(obj.debug_get_filename(file_type)))
 
     def admin_application_request(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
@@ -982,6 +991,13 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'r'])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_response_full_path)))
     admin_application_response.short_description = _('application response')
+
+    def admin_application_response_file(self, obj):
+        assert isinstance(obj, WsEdiSoapCall)
+        file_type = 'f'
+        download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), file_type])
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, obj.debug_get_filename(file_type))) if obj.command == 'DownloadFile' else ''
+    admin_application_response_file.short_description = _('file')
 
     def execution_time(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
