@@ -62,7 +62,7 @@ class Command(SafeCommand):
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=['state'])
                 if ws:
-                    content = wsedi_execute(file_content=file_content, file_type=file_type, file_name=p.file_name, verbose=options['verbose'])
+                    content = wsedi_execute(ws, 'UploadFile', file_content=file_content, file_type=file_type, verbose=options['verbose'])
                     data = xml_to_dict(content)
                 else:
                     res = wsedi_upload_file(file_content=file_content, file_type=file_type, file_name=p.file_name, verbose=options['verbose'])

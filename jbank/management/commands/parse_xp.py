@@ -18,9 +18,10 @@ class Command(SafeCommand):
         parser.add_argument('path', type=str)
         parser.add_argument('--test', action='store_true')
         parser.add_argument('--verbose', action='store_true')
+        parser.add_argument('--suffix', type=str, default='XP')
 
     def do(self, *args, **options):
-        files = list_dir_files(options['path'], '.XP')
+        files = list_dir_files(options['path'], '.' + options['suffix'])
         for f in files:
             if PayoutStatus.objects.is_file_processed(f):
                 if options['verbose']:

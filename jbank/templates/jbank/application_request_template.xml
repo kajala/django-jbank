@@ -30,8 +30,8 @@
     {% if file_type %}
         <FileType>{{ file_type }}</FileType>
     {% endif %}
-    {% if file_content %}
-        <Content>{{ file_content }}</Content>
+    {% if content %}
+        <Content>{{ content }}</Content>
     {% endif %}
     <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
     <SignedInfo>

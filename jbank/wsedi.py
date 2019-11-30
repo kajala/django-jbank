@@ -113,7 +113,11 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        app = ws.get_application_request(command, file_type=file_type, status=status, file_reference=file_reference, file_content=file_content, start_date=start_date, end_date=end_date)
+        content = ''
+        if file_content:
+            content = base64.b64encode(file_content.encode()).decode('ascii')
+
+        app = ws.get_application_request(command, file_type=file_type, status=status, file_reference=file_reference, content=content, start_date=start_date, end_date=end_date)
         if verbose:
             logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app))
         with open(soap_call.debug_application_request_full_path, 'wb') as fp:
