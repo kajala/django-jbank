@@ -16,4 +16,6 @@ __pycache__
 /jbank/bin/decrypt3
 /jbank/bin/verify3
 /logs
+/downloads
+/uploads
 
