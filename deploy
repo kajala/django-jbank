@@ -13,11 +13,13 @@ FILE="$PROJECT-$REL"
 echo $FILE
 cd dist
 tar xvf "$FILE.tar.gz"
-rm -rf "$FILE/venv"
+foreach DIR_TO_BE_DELETED in venv uploads downloads certs jbank/bin/encrypt3 jbank/bin/decrypt3 jbank/bin/verify3 jbank/bin/sign3; do
+    rm -rf "$FILE/$DIR_TO_BE_DELETED"
+done
 find . -name "__pycache__" -type d -exec rm -r "{}" \;
 rm "$FILE.tar.gz"
 tar zcvf "$FILE.tar.gz" $FILE
 rm -rf $FILE
 cd ..
 
-twine upload dist/$FILE.tar.gz
+# twine upload dist/$FILE.tar.gz
