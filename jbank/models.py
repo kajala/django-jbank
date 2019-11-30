@@ -399,7 +399,7 @@ class PayoutParty(models.Model):
 
 
 class Payout(AccountEntry):
-    connection = models.ForeignKey('WsEdiConnection', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    connection = models.ForeignKey('WsEdiConnection', verbose_name=_('WS-EDI connection'), on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     payer = models.ForeignKey(PayoutParty, verbose_name=_('payer'), related_name='+', on_delete=models.PROTECT)
     recipient = models.ForeignKey(PayoutParty, verbose_name=_('recipient'), related_name='+', on_delete=models.PROTECT)
     messages = models.TextField(_('recipient messages'), blank=True, default='')
