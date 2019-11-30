@@ -982,12 +982,16 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
 
     def admin_application_request(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
+        if not os.path.isfile(obj.debug_application_request_full_path):
+            return ''
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'a'])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_request_full_path)))
     admin_application_request.short_description = _('application request')
 
     def admin_application_response(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
+        if not os.path.isfile(obj.debug_application_response_full_path):
+            return ''
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'r'])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_response_full_path)))
     admin_application_response.short_description = _('application response')
@@ -1003,7 +1007,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
 
     def execution_time(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
-        return obj.executed - obj.created if obj.executed else None
+        return obj.executed - obj.created if obj.executed else ''
     execution_time.short_description = _('execution time')
 
     def error_fmt(self, obj):
