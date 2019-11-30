@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-30 19:27+0000\n"
+"POT-Creation-Date: 2019-11-30 20:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -43,7 +43,7 @@ msgstr ""
 msgid "account entries"
 msgstr ""
 
-#: jbank/admin.py:150 jbank/admin.py:476 jbank/admin.py:556 jbank/admin.py:1007
+#: jbank/admin.py:150 jbank/admin.py:476 jbank/admin.py:556 jbank/admin.py:1009
 #: jbank/models.py:339 jbank/models.py:356
 msgid "file"
 msgstr ""
@@ -101,19 +101,19 @@ msgstr ""
 msgid "reference payment batches"
 msgstr ""
 
-#: jbank/admin.py:990
+#: jbank/admin.py:992
 msgid "application request"
 msgstr ""
 
-#: jbank/admin.py:998
+#: jbank/admin.py:1000
 msgid "application response"
 msgstr ""
 
-#: jbank/admin.py:1012
+#: jbank/admin.py:1014
 msgid "execution time"
 msgstr ""
 
-#: jbank/admin.py:1017 jbank/models.py:120 jbank/models.py:515
+#: jbank/admin.py:1019 jbank/models.py:120 jbank/models.py:515
 msgid "error"
 msgstr ""
 
@@ -513,7 +513,7 @@ msgid "statement records"
 msgstr ""
 
 #: jbank/models.py:202 jbank/models.py:338 jbank/models.py:355
-#: jbank/models.py:479 jbank/models.py:513 jbank/models.py:562
+#: jbank/models.py:479 jbank/models.py:513 jbank/models.py:564
 msgid "created"
 msgstr ""
 
@@ -685,7 +685,7 @@ msgstr ""
 msgid "payout parties"
 msgstr ""
 
-#: jbank/models.py:402 jbank/models.py:511 jbank/models.py:565
+#: jbank/models.py:402 jbank/models.py:511 jbank/models.py:567
 msgid "WS-EDI connection"
 msgstr ""
 
@@ -820,30 +820,40 @@ msgid "receiver identifier"
 msgstr "settled"
 
 #: jbank/models.py:556
-msgid "SOAP endpoint"
-msgstr ""
+#, fuzzy
+#| msgid "account.entry.matched.filter"
+msgid "target identifier"
+msgstr "settled"
 
 #: jbank/models.py:557
-msgid "signing certificate file"
+msgid "environment"
 msgstr ""
 
 #: jbank/models.py:558
-msgid "signing key file"
+msgid "SOAP endpoint"
 msgstr ""
 
 #: jbank/models.py:559
-msgid "encryption certificate file"
+msgid "signing certificate file"
 msgstr ""
 
 #: jbank/models.py:560
-msgid "encryption key file"
+msgid "signing key file"
 msgstr ""
 
 #: jbank/models.py:561
+msgid "encryption certificate file"
+msgstr ""
+
+#: jbank/models.py:562
+msgid "encryption key file"
+msgstr ""
+
+#: jbank/models.py:563
 msgid "bank encryption cert file"
 msgstr ""
 
-#: jbank/models.py:566
+#: jbank/models.py:568
 msgid "WS-EDI connections"
 msgstr ""
 

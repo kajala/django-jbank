@@ -12,7 +12,7 @@
     {% if status %}
         <Status>{{ status }}</Status>
     {% endif %}
-    <Environment>PRODUCTION</Environment>
+    <Environment>{{ ws.environment }}</Environment>
     {% if file_reference or file_references %}
         <FileReferences>
             {% if file_reference %}
@@ -25,7 +25,7 @@
             {% endif %}
         </FileReferences>
     {% endif %}
-    <TargetId>{{ target_id|default:'1' }}</TargetId>
+    <TargetId>{{ ws.target_identifier|default:'1' }}</TargetId>
     <SoftwareId>Kajala WS</SoftwareId>
     {% if file_type %}
         <FileType>{{ file_type }}</FileType>

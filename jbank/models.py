@@ -550,9 +550,11 @@ class WsEdiSoapCall(models.Model):
 
 
 class WsEdiConnection(models.Model):
-    customer = models.ForeignKey(PayoutParty, verbose_name=_('customer'), on_delete=models.PROTECT)
+    name = models.CharField(_('name'), max_length=64)
     sender_identifier = models.CharField(_('sender identifier'), max_length=32)
     receiver_identifier = models.CharField(_('receiver identifier'), max_length=32)
+    target_identifier = models.CharField(_('target identifier'), max_length=32)
+    environment = models.CharField(_('environment'), max_length=32, default='PRODUCTION')
     soap_endpoint = models.URLField(_('SOAP endpoint'))
     signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')
     signing_key_file = models.FileField(_('signing key file'), blank=True, upload_to='certs')
@@ -566,7 +568,7 @@ class WsEdiConnection(models.Model):
         verbose_name_plural = _("WS-EDI connections")
 
     def __str__(self):
-        return '{} / {}'.format(self.customer.name, self.receiver_identifier)
+        return '{} / {}'.format(self.name, self.receiver_identifier)
 
     @property
     def signing_cert_full_path(self) -> str:

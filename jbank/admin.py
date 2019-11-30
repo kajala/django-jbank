@@ -889,20 +889,21 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     list_display = (
         'id',
         'created',
-        'customer',
+        'name',
         'sender_identifier',
         'receiver_identifier',
     )
 
     raw_id_fields = (
-        'customer',
     )
 
     fields = (
         'id',
-        'customer',
+        'name',
         'sender_identifier',
         'receiver_identifier',
+        'target_identifier',
+        'environment',
         'soap_endpoint',
         'signing_cert_file',
         'signing_key_file',
