@@ -994,9 +994,11 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
 
     def admin_application_response_file(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
+        if obj.command != 'DownloadFile' or not obj.executed:
+            return ''
         file_type = 'f'
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), file_type])
-        return mark_safe(format_html('<a href="{}">{}</a>', download_url, obj.debug_get_filename(file_type))) if obj.command == 'DownloadFile' else ''
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, obj.debug_get_filename(file_type)))
     admin_application_response_file.short_description = _('file')
 
     def execution_time(self, obj):
