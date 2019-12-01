@@ -9,12 +9,15 @@ class Command(SafeCommand):
     help = 'Compiles xmlsec1-examples'
 
     def add_arguments(self, parser: CommandParser):
-        pass
+        parser.add_argument('--clean', action='store_true')
+        parser.add_argument('--clean-only', action='store_true')
 
     def do(self, *args, **options):
         package_path = os.path.dirname(jbank.__file__)
         xmlsec1_examples_path = os.path.join(package_path, 'xmlsec1-examples')
         print('xmlsec1-examples @ {}'.format(xmlsec1_examples_path))
         os.chdir(xmlsec1_examples_path)
-        subprocess.run(['make', 'clean'])
-        subprocess.run(['make'])
+        if options['clean'] or options['clean_only']:
+            subprocess.run(['make', 'clean'])
+        if not options['clean_only']:
+            subprocess.run(['make'])
