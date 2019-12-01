@@ -660,7 +660,7 @@ class WsEdiConnection(models.Model):
             fp.write(content)
             fp.flush()
             out = subprocess.check_output([
-                self._bin('encrypt3'),
+                self._xmlsec1_example_bin('encrypt3'),
                 fp.name,
                 self.bank_encryption_cert_with_public_key_full_path,
                 self.bank_encryption_cert_full_path
@@ -682,12 +682,15 @@ class WsEdiConnection(models.Model):
             fp.write(content)
             fp.flush()
             out = subprocess.check_output([
-                self._bin('decrypt3'),
+                self._xmlsec1_example_bin('decrypt3'),
                 fp.name,
                 self.encryption_key_full_path,
             ])
         return out
 
     @staticmethod
-    def _bin(file: str) -> str:
-        return str(os.path.join(settings.XMLSEC1_EXAMPLES_PATH, file))
+    def _xmlsec1_example_bin(file: str) -> str:
+        xmlsec1_examples_path = settings.XMLSEC1_EXAMPLES_PATH if 'XMLSEC1_EXAMPLES_PATH' in settings and settings.XMLSEC1_EXAMPLES_PATH else ''
+        if not xmlsec1_examples_path:
+            xmlsec1_examples_path = os.path.join(os.getenv('HOME'), 'bin/xmlsec1-examples')
+        return str(os.path.join(xmlsec1_examples_path, file))

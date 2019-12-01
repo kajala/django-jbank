@@ -195,5 +195,4 @@ WSEDI_LOG_PATH = os.path.join(BASE_DIR, 'logs/ws')
 
 XMLLINT_PATH = '/usr/bin/xmllint'
 XMLSEC1_PATH = '/usr/bin/xmlsec1'
-XMLSEC1_EXAMPLES_PATH = os.path.join(BASE_DIR, 'jbank/bin')
 OPENSSL_PATH = '/usr/bin/openssl'
