@@ -10,6 +10,7 @@ Features
 * Parsing SVM files
 * Parsing pain.002.001.03 files
 * Generating pain.001.001.03 files
+* WS-EDI command execution
 
 
 Pre-Requisities
@@ -20,6 +21,6 @@ Pre-Requisities
 Tested Banks
 ============
 
-* Säästöpankki
 * POP-Pankki
 * Danskebank Finland
+* Säästöpankki
