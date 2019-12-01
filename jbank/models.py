@@ -690,4 +690,4 @@ class WsEdiConnection(models.Model):
 
     @staticmethod
     def _bin(file: str) -> str:
-        return str(JBANK_BIN_PATH.joinpath(file))
+        return str(os.path.join(settings.XMLSEC1_EXAMPLES_PATH, file))

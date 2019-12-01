@@ -1,6 +1,4 @@
 import os
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import sys
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -197,4 +195,5 @@ WSEDI_LOG_PATH = os.path.join(BASE_DIR, 'logs/ws')
 
 XMLLINT_PATH = '/usr/bin/xmllint'
 XMLSEC1_PATH = '/usr/bin/xmlsec1'
+XMLSEC1_EXAMPLES_PATH = os.path.join(BASE_DIR, 'jbank/bin')
 OPENSSL_PATH = '/usr/bin/openssl'
