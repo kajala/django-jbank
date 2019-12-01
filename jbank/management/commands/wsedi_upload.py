@@ -22,8 +22,7 @@ logger = logging.getLogger(__name__)
 
 class Command(SafeCommand):
     help = """
-        Upload Finnish bank files. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
-        Uses project settings WSEDI_URL and WSEDI_TOKEN.
+        Upload Finnish bank files.
         By default uploads files of Payouts in WAITING_UPLOAD state.
         """
 
