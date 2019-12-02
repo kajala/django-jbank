@@ -31,7 +31,7 @@ class Tests(TestCase):
         p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), 'vuokratilitys')
         p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), '302300', PAIN001_REMITTANCE_INFO_OCR)
         p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), 'RF92 1229', PAIN001_REMITTANCE_INFO_OCR_ISO)
-        xml_str = format_xml(p.render().decode())
+        xml_str = format_xml(p.render_to_bytes().decode())
         # print(xml_str)
 
         filename = '/tmp/pain001.xml'

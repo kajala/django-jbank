@@ -1,5 +1,5 @@
 Django>=2.2
-django-jutil>=2.2.39
+django-jutil>=2.2.40
 django-jacc>=3.0.3
 cryptography==2.8
 lxml>=4.4.2
