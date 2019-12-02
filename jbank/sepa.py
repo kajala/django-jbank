@@ -236,7 +236,7 @@ class Pain001(object):
             ]),
         })
 
-    def render(self) -> bytes:
+    def render_to_element(self) -> Element:
         if len(self.payments) == 0:
             raise ValidationError('No payments in pain.001.001.03')
         doc = Element('Document', xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03")
@@ -246,13 +246,17 @@ class Pain001(object):
         for p in self.payments:
             assert isinstance(p, Pain001Payment)
             pain.append(self._pmt_inf(p))
+        return pain
+
+    def render_to_bytes(self, doc: Element or None = None) -> bytes:
+        doc = doc or self.render_to_element()
         xml_bytes = ElementTree.tostring(doc, encoding='utf-8', method='xml')
-        del doc
         return xml_bytes
 
-    def render_to_file(self, filename: str):
+    def render_to_file(self, filename: str, xml_bytes: bytes or None = None):
+        xml_bytes = xml_bytes or self.render_to_bytes()
         with open(filename, 'wb') as fp:
-            fp.write(self.render())
+            fp.write(xml_bytes)
 
 
 class Pain002(object):
