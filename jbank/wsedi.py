@@ -140,7 +140,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         if verbose:
             logger.info('------------------------------------------------------ {} b64_app\n{}'.format(call_str, b64_app.decode()))
 
-        soap_body = get_template('jbank/soap_template2.xml').render({
+        soap_body = get_template('jbank/soap_template.xml').render({
             'soap_call': soap_call,
             'payload': b64_app.decode(),
         })

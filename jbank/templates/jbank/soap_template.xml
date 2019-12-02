@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cor="http://bxd.fi/CorporateFileService" xmlns:mod="http://model.bxd.fi">
-    <soapenv:Body>
-        <cor:{{ soap_call.command_camelcase }}in>
-            <mod:RequestHeader>
-                <mod:SenderId>{{ soap_call.connection.sender_identifier }}</mod:SenderId>
-                <mod:RequestId>{{ soap_call.request_identifier }}</mod:RequestId>
-                <mod:Timestamp>{{ soap_call.timestamp.isoformat }}</mod:Timestamp>
-                <mod:Language>FI</mod:Language>
-                <mod:UserAgent>Kajala WS</mod:UserAgent>
-                <mod:ReceiverId>{{ soap_call.connection.receiver_identifier }}</mod:ReceiverId>
-            </mod:RequestHeader>
-            <mod:ApplicationRequest>{{ payload }}</mod:ApplicationRequest>
-        </cor:{{ soap_call.command_camelcase }}in>
-    </soapenv:Body>
-</soapenv:Envelope>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://model.bxd.fi" xmlns:ns2="http://bxd.fi/CorporateFileService">
+  <SOAP-ENV:Body>
+    <ns2:{{ soap_call.command_camelcase }}in>
+      <ns1:RequestHeader>
+        <ns1:SenderId>{{ soap_call.connection.sender_identifier }}</ns1:SenderId>
+        <ns1:RequestId>{{ soap_call.request_identifier }}</ns1:RequestId>
+        <ns1:Timestamp>{{ soap_call.timestamp.isoformat }}</ns1:Timestamp>
+        <ns1:Language>FI</ns1:Language>
+        <ns1:UserAgent>Kajala WS</ns1:UserAgent>
+        <ns1:ReceiverId>{{ soap_call.connection.receiver_identifier }}</ns1:ReceiverId>
+      </ns1:RequestHeader>
+    <ns1:ApplicationRequest>{{ payload }}</ns1:ApplicationRequest>
+    </ns2:{{ soap_call.command_camelcase }}in>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
