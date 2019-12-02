@@ -246,7 +246,7 @@ class Pain001(object):
         for p in self.payments:
             assert isinstance(p, Pain001Payment)
             pain.append(self._pmt_inf(p))
-        return pain
+        return doc
 
     def render_to_bytes(self, doc: Element or None = None) -> bytes:
         doc = doc or self.render_to_element()
