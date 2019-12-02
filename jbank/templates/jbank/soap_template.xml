@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cor="http://bxd.fi/CorporateFileService" xmlns:mod="http://model.bxd.fi">
-    <soapenv:Header />
     <soapenv:Body>
         <cor:{{ soap_call.command_camelcase }}in>
             <mod:RequestHeader>
