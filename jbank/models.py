@@ -690,7 +690,7 @@ class WsEdiConnection(models.Model):
 
     @staticmethod
     def _xmlsec1_example_bin(file: str) -> str:
-        xmlsec1_examples_path = settings.XMLSEC1_EXAMPLES_PATH if 'XMLSEC1_EXAMPLES_PATH' in settings and settings.XMLSEC1_EXAMPLES_PATH else ''
+        xmlsec1_examples_path = settings.XMLSEC1_EXAMPLES_PATH if hasattr(settings, 'XMLSEC1_EXAMPLES_PATH') and settings.XMLSEC1_EXAMPLES_PATH else ''
         if not xmlsec1_examples_path:
             xmlsec1_examples_path = os.path.join(os.getenv('HOME'), 'bin/xmlsec1-examples')
         return str(os.path.join(xmlsec1_examples_path, file))

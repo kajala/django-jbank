@@ -1,19 +1,11 @@
 import logging
 import os
-import subprocess
 import traceback
-from decimal import Decimal
-from os.path import join
-from django.conf import settings
 from django.core.management import CommandParser
-from django.db import transaction
-from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD, \
-    WsEdiConnection
+from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD
 from jbank.sepa import Pain001, PAIN001_REMITTANCE_INFO_MSG, PAIN001_REMITTANCE_INFO_OCR_ISO, \
     PAIN001_REMITTANCE_INFO_OCR
 from jutil.command import SafeCommand
-from jutil.format import format_xml
-from jutil.validators import iban_bic
 
 
 logger = logging.getLogger(__name__)
