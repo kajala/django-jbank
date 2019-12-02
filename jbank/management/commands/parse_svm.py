@@ -14,7 +14,7 @@ from jbank.files import list_dir_files
 from jbank.models import Statement, ReferencePaymentBatch, ReferencePaymentBatchFile
 from jbank.parsers import parse_svm_batches_from_file
 from jutil.command import SafeCommand
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 logger = logging.getLogger(__name__)

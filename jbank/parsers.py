@@ -6,7 +6,7 @@ from pprint import pprint
 from datetime import time, datetime, date
 from decimal import Decimal
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from pytz import timezone
 
 

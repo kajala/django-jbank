@@ -17,7 +17,7 @@ from django.db import models
 from django.template.loader import get_template
 from django.utils.text import format_lazy
 from django.utils.timezone import now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
 from jutil.format import format_xml, format_xml_bytes

@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.dateparse import parse_date
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from jacc.models import Account, EntryType
 from jutil.format import dec2, dec4
 from jutil.parse import parse_datetime
