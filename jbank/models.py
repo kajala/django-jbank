@@ -693,7 +693,7 @@ class WsEdiConnection(models.Model):
 
     @property
     def debug_command_list(self) -> List[str]:
-        return re.sub(r'[^\w]+', ' ', self.debug_commands).strip().split(' ')
+        return [x for x in re.sub(r'[^\w]+', ' ', self.debug_commands).strip().split(' ') if x]
 
     @staticmethod
     def _xmlsec1_example_bin(file: str) -> str:
