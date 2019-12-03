@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime, timezone, date
 from xml.etree import ElementTree as ET
+from xml.etree.ElementTree import SubElement, ElementTree, Element
 from decimal import Decimal
 import pytz
 from django.core.exceptions import ValidationError
@@ -103,8 +104,8 @@ class Pain001(object):
             total += p.amount
         return total
 
-    def _append_simple(self, parent: ET.Element, tag: str, value):
-        e = ET.Element(tag)
+    def _append_simple(self, parent: Element, tag: str, value):
+        e = Element(tag)
         e.text = str(value)
         parent.append(e)
         return e
@@ -119,17 +120,17 @@ class Pain001(object):
     def _timestamp(self, t: datetime) -> str:
         return self._local_time(t).isoformat()
 
-    def _dict_to_element(self, doc: dict, value_key: str = '@', attribute_prefix: str = '@') -> ET.Element:
+    def _dict_to_element(self, doc: dict, value_key: str = '@', attribute_prefix: str = '@') -> Element:
         if len(doc) != 1:
             raise Exception('Invalid data dict for XML generation, document root must have single element')
         for tag, data in doc.items():
-            el = ET.Element(tag)
-            assert isinstance(el, ET.Element)
+            el = Element(tag)
+            assert isinstance(el, Element)
             _xml_element_set_data_r(el, data, value_key, attribute_prefix)
             return el
 
-    def _grp_hdr(self) -> ET.Element:
-        g = ET.Element('GrpHdr')
+    def _grp_hdr(self) -> Element:
+        g = Element('GrpHdr')
         self._append_simple(g, 'MsgId', self.msg_id)
         self._append_simple(g, 'CreDtTm', self._timestamp(now()))
         self._append_simple(g, 'NbOfTxs', len(self.payments))
@@ -147,7 +148,7 @@ class Pain001(object):
         }))
         return g
 
-    def _pmt_inf(self, p: Pain001Payment) -> ET.Element:
+    def _pmt_inf(self, p: Pain001Payment) -> Element:
         if p.remittance_info_type == PAIN001_REMITTANCE_INFO_MSG:
             rmt_inf = ['RmtInf', OrderedDict([
                 ('Ustrd', p.remittance_info),
@@ -243,11 +244,11 @@ class Pain001(object):
             ]),
         })
 
-    def render_to_element(self) -> ET.Element:
+    def render_to_element(self) -> Element:
         if len(self.payments) == 0:
             raise ValidationError('No payments in pain.001.001.03')
-        doc = ET.Element('Document', xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03")
-        pain = ET.Element(self.pain_element_name)
+        doc = Element('Document', xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03")
+        pain = Element(self.pain_element_name)
         doc.append(pain)
         pain.append(self._grp_hdr())
         for p in self.payments:
@@ -255,7 +256,7 @@ class Pain001(object):
             pain.append(self._pmt_inf(p))
         return doc
 
-    def render_to_bytes(self, doc: ET.Element or None = None) -> bytes:
+    def render_to_bytes(self, doc: Element or None = None) -> bytes:
         doc = doc or self.render_to_element()
         xml_bytes = ET.tostring(doc, encoding='utf-8', method='xml')
         return xml_bytes
