@@ -1,0 +1,34 @@
+<ApplicationRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://bxd.fi/xmldata/">
+    <CustomerId>061133</CustomerId>
+    <Timestamp>2012-02-20T08:50:59.4319012+01:00</Timestamp>
+    <Environment>TEST</Environment>
+    <FileReferences>
+    <FileReference>1202170046-1202171334</FileReference>
+    </FileReferences>
+    <SoftwareId>DBSEPAClient</SoftwareId>
+    <FileType>pain.002.001.02</FileType>
+    <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+        <SignedInfo>
+          <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+          <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+          <Reference URI="">
+            <Transforms>
+              <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+            </Transforms>
+            <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+            <DigestValue/>
+          </Reference>
+        </SignedInfo>
+        <SignatureValue/>
+        <KeyInfo>
+          <X509Data>
+            <X509IssuerSerial>
+              <X509IssuerName>Issuer: {{ ws.signing_cert.issuer.rfc4514_string }}</X509IssuerName>
+              <X509SerialNumber>{{ ws.signing_cert.serial_number }}</X509SerialNumber>
+            </X509IssuerSerial>
+            <X509Certificate></X509Certificate>
+          </X509Data>
+        </KeyInfo>
+    </Signature>
+</ApplicationRequest>
+
