@@ -22,6 +22,7 @@ class Command(SafeCommand):
         parser.add_argument('--payout', type=int)
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--ws', type=int)
+        parser.add_argument('--suffix', type=str, default='XL')
 
     def do(self, *args, **options):
         target_dir = options['dir']
@@ -42,10 +43,11 @@ class Command(SafeCommand):
                 if options['verbose']:
                     print(p)
 
-                if not p.msg_id or not p.file_name:
+                if not p.msg_id:
                     p.generate_msg_id()
-                    p.file_name = p.msg_id + '.XL'
-                    p.save(update_fields=['msg_id', 'file_name'])
+                if not p.file_name:
+                    p.file_name = p.msg_id + '.' + options['suffix']
+                    p.save(update_fields=['file_name'])
 
                 pain001 = Pain001(p.msg_id, p.payer.name, p.payer.account_number, p.payer.bic, p.payer.org_id, p.payer.address_lines, p.payer.country_code)
                 if p.messages:

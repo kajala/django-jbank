@@ -440,9 +440,11 @@ class Payout(AccountEntry):
                 if group_status != 'RJCT':
                     raise ValidationError(_('File already uploaded') + ' ({})'.format(group_status))
 
-    def generate_msg_id(self):
+    def generate_msg_id(self, commit: bool = True):
         from jbank.helpers import make_msg_id
         self.msg_id = make_msg_id() + 'P' + str(self.id)
+        if commit:
+            self.save(update_fields=['msg_id'])
 
     @property
     def state_name(self):
