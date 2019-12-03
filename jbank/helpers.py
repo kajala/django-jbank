@@ -257,9 +257,9 @@ def make_msg_id():
 
 def validate_xml(content: bytes, xsd_file_name: str):
     """
-    Validates XML using XSD. Requires pip install lxml.
+    Validates XML using XSD
     """
-    from lxml import etree, objectify
+    from lxml import etree, objectify  # local
     schema = etree.XMLSchema(file=xsd_file_name)
     parser = objectify.makeparser(schema=schema)
     objectify.fromstring(content, parser)

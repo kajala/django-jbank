@@ -93,7 +93,6 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
                   file_content: str = '', start_date: date or None = None, end_date: date or None = None,
                   verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
-    Debug: ws = WsEdiConnection.objects.first(); from jbank.wsedi import *; from lxml import etree
     :param ws:
     :param command:
     :param file_type:
@@ -106,7 +105,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     :param cls:
     :return: str
     """
-    from lxml import etree
+    from lxml import etree  # local
 
     soap_call = cls(connection=ws, command=command, **kwargs)
     soap_call.full_clean()
