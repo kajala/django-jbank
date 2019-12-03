@@ -54,7 +54,7 @@ class Command(SafeCommand):
                 else:
                     remittance_info = p.reference
                     remittance_info_type = PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == 'RF' else PAIN001_REMITTANCE_INFO_OCR
-                pain001.add_payment(p.id, p.recipient.name, p.recipient.account_number, p.recipient.bic, p.amount, remittance_info, remittance_info_type, p.due_date)
+                pain001.add_payment(p.msg_id, p.recipient.name, p.recipient.account_number, p.recipient.bic, p.amount, remittance_info, remittance_info_type, p.due_date)
 
                 p.full_path = full_path = os.path.join(target_dir, p.file_name)
                 if options['verbose']:
