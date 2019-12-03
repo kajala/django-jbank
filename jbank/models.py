@@ -7,6 +7,8 @@ import tempfile
 from datetime import datetime, time, date
 from os.path import basename, join
 from pathlib import Path
+from typing import List
+
 import cryptography
 import pytz
 from cryptography import x509
@@ -561,6 +563,7 @@ class WsEdiConnection(models.Model):
     encryption_cert_file = models.FileField(_('encryption certificate file'), blank=True, upload_to='certs')
     encryption_key_file = models.FileField(_('encryption key file'), blank=True, upload_to='certs')
     bank_encryption_cert_file = models.FileField(_('bank encryption cert file'), blank=True, upload_to='certs')
+    debug_commands = models.TextField(_('debug commands'), blank=True)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
 
     class Meta:
@@ -687,6 +690,10 @@ class WsEdiConnection(models.Model):
                 self.encryption_key_full_path,
             ])
         return out
+
+    @property
+    def debug_command_list(self) -> List[str]:
+        return re.sub(r'[^\w]+', ' ', self.debug_commands).strip().split(' ')
 
     @staticmethod
     def _xmlsec1_example_bin(file: str) -> str:
