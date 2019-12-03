@@ -1,10 +1,15 @@
 import base64
 import logging
 import os
+from datetime import date
+
+import pytz
 from django.core.management import CommandParser
+from django.utils.dateparse import parse_date
 from django.utils.timezone import now
+from jutil.parse import parse_datetime
 from jutil.xml import xml_to_dict
-from jbank.helpers import process_pain002_file_content
+from jbank.helpers import process_pain002_file_content, parse_start_and_end_date
 from jbank.models import WsEdiConnection
 from jbank.wsedi import wsedi_get, wsedi_execute
 from jutil.command import SafeCommand
@@ -28,11 +33,14 @@ class Command(SafeCommand):
         parser.add_argument('--file-reference', type=str, help='Download single file based on file reference')
         parser.add_argument('--list-only', action='store_true')
         parser.add_argument('--process-pain002', action='store_true')
+        parser.add_argument('--start-date', type=str)
+        parser.add_argument('--end-date', type=str)
         parser.add_argument('--ws', type=int)
 
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws']) if options['ws'] else None
         assert ws is None or isinstance(ws, WsEdiConnection)
+        start_date, end_date = parse_start_and_end_date(pytz.timezone('Europe/Helsinki'), **options)
         path = options['path']
         command = 'DownloadFileList'
         time_now = now()
@@ -44,7 +52,7 @@ class Command(SafeCommand):
         if command == 'DownloadFileList' and not file_type:
             return print('--file-type required (e.g. TO, SVM, XP, NDCORPAYL, pain.002.001.03)')
         if ws:
-            content = wsedi_execute(ws, command=command, file_type=file_type, status=status, file_reference=file_reference, verbose=options['verbose'])
+            content = wsedi_execute(ws, command=command, file_type=file_type, status=status, start_date=start_date, end_date=end_date, file_reference=file_reference, verbose=options['verbose'])
             data = xml_to_dict(content, array_tags=['FileDescriptor'])
         else:
             res = wsedi_get(command=command, file_type=file_type, status=status, file_reference=file_reference, verbose=options['verbose'])

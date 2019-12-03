@@ -1,7 +1,9 @@
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, date
 from os.path import basename
+
+import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -261,3 +263,22 @@ def validate_xml(content: bytes, xsd_file_name: str):
     schema = etree.XMLSchema(file=xsd_file_name)
     parser = objectify.makeparser(schema=schema)
     objectify.fromstring(content, parser)
+
+
+def parse_start_and_end_date(tz: pytz.tzinfo or None = None, **options) -> (date or None, date or None):
+    from jutil.parse import parse_datetime
+    start_date = None
+    end_date = None
+    time_now = now().astimezone(tz if tz else pytz.utc)
+    if options['start_date']:
+        if options['start_date'] == 'today':
+            start_date = time_now.date()
+        else:
+            start_date = parse_datetime(options['start_date']).date()
+        end_date = start_date
+    if options['end_date']:
+        if options['end_date'] == 'today':
+            end_date = time_now.date()
+        else:
+            end_date = parse_datetime(options['end_date']).date()
+    return start_date, end_date
