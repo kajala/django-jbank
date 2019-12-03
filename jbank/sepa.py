@@ -10,8 +10,7 @@ from jutil.format import dec2
 from jutil.parse import parse_datetime
 from jutil.validators import iban_filter, iban_validator, iso_payment_reference_validator, \
     fi_payment_reference_validator, ascii_filter
-from jutil.xml import dict_to_element, xml_to_dict
-
+from jutil.xml import dict_to_element, xml_to_dict, _xml_element_set_data_r
 
 PAIN001_REMITTANCE_INFO_MSG = 'M'
 PAIN001_REMITTANCE_INFO_OCR = 'O'
@@ -120,6 +119,15 @@ class Pain001(object):
     def _timestamp(self, t: datetime) -> str:
         return self._local_time(t).isoformat()
 
+    def _dict_to_element(self, doc: dict, value_key: str = '@', attribute_prefix: str = '@') -> ET.Element:
+        if len(doc) != 1:
+            raise Exception('Invalid data dict for XML generation, document root must have single element')
+        for tag, data in doc.items():
+            el = ET.Element(tag)
+            assert isinstance(el, ET.Element)
+            _xml_element_set_data_r(el, data, value_key, attribute_prefix)
+            return el
+
     def _grp_hdr(self) -> ET.Element:
         g = ET.Element('GrpHdr')
         self._append_simple(g, 'MsgId', self.msg_id)
@@ -128,7 +136,7 @@ class Pain001(object):
         self._append_simple(g, 'CtrlSum', self._ctrl_sum())
         # self._append_simple(g, 'BtchBookg', 'true')  # debit all at once
         # self._append_simple(g, 'Grpg', 'MIXD')
-        g.append(dict_to_element({
+        g.append(self._dict_to_element({
             'InitgPty': OrderedDict([
                 ('Nm', self.debtor.name),
                 ('PstlAdr', OrderedDict([
@@ -174,7 +182,7 @@ class Pain001(object):
         else:
             raise ValidationError(_('Invalid remittance info type: {}').format(p.remittance_info_type))
 
-        return dict_to_element({
+        return self._dict_to_element({
             'PmtInf': OrderedDict([
                 ('PmtInfId', str(p.payment_id)),
                 ('PmtMtd', 'TRF'),  # payment order
