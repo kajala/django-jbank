@@ -21,7 +21,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import format_lazy, capfirst
 from django.utils.translation import gettext_lazy as _
-from jacc.admin import AccountTypeAccountEntryFilter
+from jacc.admin import AccountTypeAccountEntryFilter, AccountEntryAdmin
 from jacc.models import Account, EntryType
 from jutil.format import format_xml_file
 from jutil.responses import FileSystemFileResponse, FormattedXmlResponse, FormattedXmlFileResponse
@@ -847,6 +847,34 @@ class PayoutPartyAdmin(ModelAdminBase):
     )
 
 
+class RefundAdmin(PayoutAdmin):
+    raw_id_fields = (
+        'account',
+        'parent',
+        'payer',
+        'recipient',
+    )
+
+    fields = (
+        'connection',
+        'account',
+        'payer',
+        'parent',
+        'recipient',
+        'amount',
+        'messages',
+        'reference',
+        'due_date',
+        'msg_id',
+        'file_name',
+        'timestamp',
+        'paid_date',
+        'state',
+        'group_status',
+        'created',
+    )
+
+
 class CurrencyExchangeSourceAdmin(ModelAdminBase):
     save_on_top = False
     exclude = ()
@@ -1030,7 +1058,7 @@ admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
 admin.site.register(Payout, PayoutAdmin)
 admin.site.register(PayoutParty, PayoutPartyAdmin)
-admin.site.register(Refund, PayoutAdmin)
+admin.site.register(Refund, RefundAdmin)
 admin.site.register(Statement, StatementAdmin)
 admin.site.register(StatementRecord, StatementRecordAdmin)
 admin.site.register(StatementFile, StatementFileAdmin)
