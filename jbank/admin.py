@@ -775,6 +775,7 @@ class PayoutAdmin(ModelAdminBase):
     fields = (
         'connection',
         'account',
+        'parent',
         'payer',
         'recipient',
         'amount',
