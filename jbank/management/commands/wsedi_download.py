@@ -20,8 +20,7 @@ logger = logging.getLogger(__name__)
 
 class Command(SafeCommand):
     help = """
-        Download Finnish bank files. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
-        Uses project settings WSEDI_URL and WSEDI_TOKEN.
+        Download Finnish bank files
         """
 
     def add_arguments(self, parser: CommandParser):
