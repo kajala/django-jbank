@@ -1,8 +1,9 @@
+#pylint: disable=too-many-arguments
 import base64
 import logging
 import os
 import traceback
-from os.path import basename, join
+from os.path import basename
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -14,17 +15,15 @@ from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
-from django.http import HttpRequest, HttpResponse, Http404
+from django.http import HttpRequest
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from django.utils.text import format_lazy, capfirst
+from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
-from jacc.admin import AccountTypeAccountEntryFilter, AccountEntryAdmin
 from jacc.models import Account, EntryType
-from jutil.format import format_xml_file
-from jutil.responses import FileSystemFileResponse, FormattedXmlResponse, FormattedXmlFileResponse
+from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
 
 from jbank.helpers import create_statement, create_reference_payment_batch
@@ -81,9 +80,9 @@ class AccountEntryMatchedFilter(SimpleListFilter):
             queryset = queryset.filter(type__is_settlement=True, parent=None)
             if val == '1':
                 return queryset.filter(child_set=None).exclude(manually_settled=True)
-            elif val == '2':
+            if val == '2':
                 return queryset.exclude(child_set=None)
-            elif val == '3':
+            if val == '3':
                 return queryset.filter(manually_settled=True)
         return queryset
 
@@ -248,9 +247,9 @@ def mark_as_manually_settled(modeladmin, request, qs):
     except ValidationError as e:
         messages.error(request, ' '.join(e.messages))
     except Exception as e:
-        logger.error('mark_as_manually_settled: ' + traceback.format_exc())
+        logger.error('mark_as_manually_settled: %s', traceback.format_exc())
         messages.error(request, '{}'.format(e))
-mark_as_manually_settled.short_description = _('Mark as manually settled')
+    return None
 
 
 def unmark_manually_settled_flag(modeladmin, request, qs):
@@ -261,7 +260,6 @@ def unmark_manually_settled_flag(modeladmin, request, qs):
         msg = capfirst(_('manually settled flag cleared'))
         admin_log([e], msg, who=user)
         messages.info(request, msg)
-unmark_manually_settled_flag.short_description = _('Unmark manually settled flag')
 
 
 class StatementRecordAdmin(ModelAdminBase):
@@ -359,7 +357,8 @@ class StatementRecordAdmin(ModelAdminBase):
 
     def get_urls(self):
         return [
-                url(r'^by-statement/(?P<statement_id>\d+)/$', self.admin_site.admin_view(self.kw_changelist_view), name='jbank_statementrecord_statement_changelist'),
+                url(r'^by-statement/(?P<statement_id>\d+)/$', self.admin_site.admin_view(self.kw_changelist_view),
+                    name='jbank_statementrecord_statement_changelist'),
             ] + super().get_urls()
 
     def get_queryset(self, request: HttpRequest):
@@ -477,7 +476,8 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
 
     def get_urls(self):
         return [
-                url(r'^by-batch/(?P<batch_id>\d+)/$', self.admin_site.admin_view(self.kw_changelist_view), name='jbank_referencepaymentrecord_batch_changelist'),
+                url(r'^by-batch/(?P<batch_id>\d+)/$', self.admin_site.admin_view(self.kw_changelist_view),
+                    name='jbank_referencepaymentrecord_batch_changelist'),
             ] + super().get_urls()
 
     def get_queryset(self, request: HttpRequest):
@@ -572,7 +572,9 @@ class ReferencePaymentBatchAdmin(ModelAdminBase):
 
 class StatementFileForm(forms.ModelForm):
     class Meta:
-        exclude = []
+        fields = [
+            'file',
+        ]
 
     def clean_file(self):
         file = self.cleaned_data['file']
@@ -649,7 +651,9 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
 
 class ReferencePaymentBatchFileForm(forms.ModelForm):
     class Meta:
-        exclude = []
+        fields = [
+            'file',
+        ]
 
     def clean_file(self):
         file = self.cleaned_data['file']
@@ -724,7 +728,7 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
                     msg = str(e)
                     if user.is_superuser:
                         msg = instance.errors
-                    logger.error('{}: '.format(plain_filename) + msg)
+                    logger.error('%s: %s', plain_filename, msg)
                     add_message(request, ERROR, msg)
                     instance.delete()
 
@@ -997,13 +1001,13 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         'admin_application_response_file',
     )
 
-    def get_fields(self, request, obj=None):
+    def get_fields(self, request, obj = None):
         fields = super().get_fields(request, obj)
         if not request.user.is_superuser:
             fields = fields[:-2]
         return fields
 
-    def soap_download_view(self, request, object_id, file_type, form_url='', extra_context=None):
+    def soap_download_view(self, request, object_id, file_type, form_url = '', extra_context = None):
         obj = get_object_or_404(self.get_queryset(request), id=object_id)
         assert isinstance(obj, WsEdiSoapCall)
         if file_type == 'f':
@@ -1054,6 +1058,9 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
             url(r'^soap-download/(\d+)/(.+)$', self.soap_download_view, name='%s_%s_soap_download' % info),
         ] + super().get_urls()
 
+
+mark_as_manually_settled.short_description = _('Mark as manually settled')
+unmark_manually_settled_flag.short_description = _('Unmark manually settled flag')
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)

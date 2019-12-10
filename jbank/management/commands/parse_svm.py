@@ -1,20 +1,15 @@
+#pylint: disable=too-many-branches,logging-format-interpolation
 import logging
 import os
-from copy import copy
-from pathlib import Path
 from pprint import pprint
-from django.conf import settings
 from django.core.files import File
 from django.core.management import CommandParser
 from django.db import transaction
-from django.utils import translation
-from jacc.models import Account, AccountType
-from jbank.helpers import create_statement, create_reference_payment_batch, get_or_create_bank_account
+from jbank.helpers import create_reference_payment_batch, get_or_create_bank_account
 from jbank.files import list_dir_files
-from jbank.models import Statement, ReferencePaymentBatch, ReferencePaymentBatchFile
+from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
 from jbank.parsers import parse_svm_batches_from_file
 from jutil.command import SafeCommand
-from django.utils.translation import gettext as _
 
 
 logger = logging.getLogger(__name__)

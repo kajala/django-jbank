@@ -4,27 +4,23 @@ import os
 import re
 import subprocess
 import tempfile
-from datetime import datetime, time, date
+from datetime import datetime, time
 from os.path import basename, join
 from pathlib import Path
 from typing import List
-
 import cryptography
 import pytz
 from cryptography import x509
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import models
 from django.template.loader import get_template
-from django.utils.text import format_lazy
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
-from jutil.format import format_xml, format_xml_bytes
-from jutil.validators import fi_iban_validator, iban_validator, iban_bic, iso_payment_reference_validator, \
-    fi_payment_reference_validator
+from jutil.format import format_xml
+from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
 
 
 logger = logging.getLogger(__name__)
@@ -441,8 +437,8 @@ class Payout(AccountEntry):
                     raise ValidationError(_('File already uploaded') + ' ({})'.format(group_status))
 
     def generate_msg_id(self, commit: bool = True):
-        from jbank.helpers import make_msg_id
-        self.msg_id = make_msg_id() + 'P' + str(self.id)
+        msg_id_base = re.sub(r'[^\d]', '', now().isoformat())[:-4]
+        self.msg_id = msg_id_base + 'P' + str(self.id)
         if commit:
             self.save(update_fields=['msg_id'])
 
@@ -567,6 +563,7 @@ class WsEdiConnection(models.Model):
     bank_encryption_cert_file = models.FileField(_('bank encryption cert file'), blank=True, upload_to='certs')
     debug_commands = models.TextField(_('debug commands'), blank=True)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
+    _signing_cert = None
 
     class Meta:
         verbose_name = _("WS-EDI connection")
@@ -613,7 +610,7 @@ class WsEdiConnection(models.Model):
 
     @property
     def signing_cert(self):
-        if hasattr(self, '_signing_cert'):
+        if hasattr(self, '_signing_cert') and self._signing_cert:
             return self._signing_cert
         pem_data = open(self.signing_cert_full_path, 'rb').read()
         cert = x509.load_pem_x509_certificate(pem_data, cryptography.hazmat.backends.default_backend())
@@ -632,7 +629,7 @@ class WsEdiConnection(models.Model):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
-            out = subprocess.check_output([
+            subprocess.check_output([
                 settings.XMLSEC1_PATH,
                 '--verify',
                 '--pubkey-pem',
@@ -674,7 +671,7 @@ class WsEdiConnection(models.Model):
 
     def encode_application_request(self, content: bytes) -> bytes:
         lines = content.split(b'\n')
-        if len(lines) > 0 and lines[0].startswith(b'<?xml'):
+        if lines and lines[0].startswith(b'<?xml'):
             lines = lines[1:]
         content_without_xml_tag = b'\n'.join(lines)
         return base64.b64encode(content_without_xml_tag)

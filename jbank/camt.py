@@ -1,16 +1,13 @@
 from datetime import datetime, date
 from decimal import Decimal
-from pprint import pprint
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import QuerySet
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext as _
 from jacc.models import Account, EntryType
 from jutil.format import dec2, dec4
 from jutil.parse import parse_datetime
-
 from jbank.models import StatementFile, Statement, StatementRecord, DELIVERY_FROM_BANK_SYSTEM, \
     StatementRecordDetail, CurrencyExchange, StatementRecordRemittanceInfo, CurrencyExchangeSource
 from jbank.parsers import parse_filename_suffix
@@ -42,7 +39,7 @@ def camt053_get_currency(data: dict, key: str, required: bool = True, name: str 
             amount = dec2(v['@'])
             currency_code = v['@Ccy']
             return amount, currency_code
-    except:
+    except Exception:
         pass
     if required:
         raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'currency'))
@@ -58,7 +55,7 @@ def camt053_get_int(data: dict, key: str, default: int or None = None, required:
     s = camt053_get_val(data, key, default, required, name)
     try:
         return int(s)
-    except:
+    except Exception:
         pass
     raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'int'))
 
@@ -67,16 +64,16 @@ def camt053_get_date(data: dict, key: str, default: date or None = None, require
     s = camt053_get_val(data, key, default, required, name)
     try:
         return parse_date(s)
-    except:
+    except Exception:
         pass
     raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'date'))
 
 
 def camt053_parse_statement_from_file(filename: str) -> dict:
     from jutil.xml import xml_to_dict
-
     if parse_filename_suffix(filename).upper() not in CAMT053_STATEMENT_SUFFIXES:
-        raise ValidationError(_('File {} has unrecognized ({}) suffix for file type "{}"').format(filename, ', '.join(CAMT053_STATEMENT_SUFFIXES, 'camt.053')))
+        raise ValidationError(_('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
+            filename=filename, suffixes=', '.join(CAMT053_STATEMENT_SUFFIXES), file_type='camt.053'))
     with open(filename, 'rb') as fp:
         data = xml_to_dict(fp.read(), array_tags=CAMT053_ARRAY_TAGS, int_tags=CAMT053_INT_TAGS)
         return data
@@ -94,7 +91,7 @@ def camt053_get_stmt_bal(d_stmt: dict, bal_type: str) -> (Decimal, date):
 def camt053_domain_from_record_code(record_domain: str) -> str:
     if record_domain == 'PMNT':
         return '700'
-    elif record_domain == 'LDAS':
+    if record_domain == 'LDAS':
         return '761'
     return ''
 
@@ -123,6 +120,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     :param file: Source statement file
     :return: Statement
     """
+    #pylint: disable=too-many-locals,too-many-statements,too-many-branches
     account_number = camt053_get_iban(statement_data)
     if not account_number:
         raise ValidationError('{name}: '.format(name=name) + _("account.not.found").format(account_number=''))
@@ -151,7 +149,8 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     stm.end_date = camt053_get_dt(d_frto, 'ToDtTm', name='Stmt.ToDtTm').date()
     stm.currency_code = camt053_get_val(d_acct, 'Ccy', name='Stmt.Acct.Ccy')
     if stm.currency_code != account.currency:
-        raise ValidationError(_('Account currency {account_currency} does not match statement entry currency {statement_currency}'.format(statement_currency=stm.currency_code, account_currency=account.currency)))
+        raise ValidationError(_('Account currency {account_currency} does not match statement entry currency {statement_currency}'.format(
+            statement_currency=stm.currency_code, account_currency=account.currency)))
     stm.owner_name = camt053_get_val(d_ownr, 'Nm', name='Stm.Acct.Ownr.Nm')
     stm.begin_balance, stm.begin_balance_date = camt053_get_stmt_bal(d_stmt, 'OPBD')
     stm.record_count = camt053_get_int(d_txsummary.get('TtlNtries', {}), 'NbOfNtries', name='Stmt.TxsSummry.TtlNtries.NbOfNtries')
@@ -182,7 +181,8 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         archive_id = ntry.get('AcctSvcrRef', '')
         amount, cur = camt053_get_currency(ntry, 'Amt', name='Stmt.Ntry[{}].Amt'.format(archive_id))
         if cur != account.currency:
-            raise ValidationError(_('Account currency {account_currency} does not match statement entry currency {statement_currency}'.format(statement_currency=cur, account_currency=account.currency)))
+            raise ValidationError(_('Account currency {account_currency} does not match statement entry currency {statement_currency}'.format(
+                statement_currency=cur, account_currency=account.currency)))
 
         cdt_dbt_ind = ntry['CdtDbtInd']
         e_type = e_types.get(cdt_dbt_ind, None)
@@ -231,8 +231,10 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                     unit_currency = camt053_get_val(d_xchg, 'UnitCcy', default='', required=False)
                     exchange_rate_str = camt053_get_val(d_xchg, 'XchgRate', default='', required=False)
                     exchange_rate = dec4(exchange_rate_str) if exchange_rate_str else None
-                    exchange_source, created = CurrencyExchangeSource.objects.get_or_create(name=account_number)
-                    d.exchange, created = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency=source_currency, target_currency=target_currency, unit_currency=unit_currency, exchange_rate=exchange_rate, source=exchange_source)
+                    exchange_source = CurrencyExchangeSource.objects.get_or_create(name=account_number)[0]
+                    d.exchange = CurrencyExchange.objects.get_or_create(record_date=record_date, source_currency=source_currency,
+                                                                        target_currency=target_currency, unit_currency=unit_currency,
+                                                                        exchange_rate=exchange_rate, source=exchange_source)[0]
 
                 d_refs = dtl.get('Refs', {})
                 d.archive_identifier = d_refs.get('AcctSvcrRef', '')
@@ -264,8 +266,10 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                     reference = strd.get('CdtrRefInf', {}).get('Ref', '')
 
                     # check if new remittance info record is needed
+                    #pylint: disable=too-many-boolean-expressions
                     if additional_info and st.additional_info or amount and st.amount or reference and st.reference:
                         st = StatementRecordRemittanceInfo(detail=d)
+                    #pylint: enable=too-many-boolean-expressions
 
                     if additional_info:
                         st.additional_info = additional_info
@@ -298,5 +302,5 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         rec.full_clean()
         rec.save()
 
+    #pylint: enable=too-many-locals,too-many-statements,too-many-branches
     return stm
-

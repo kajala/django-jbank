@@ -1,17 +1,13 @@
+#pylint: disable=too-many-locals,logging-format-interpolation,too-many-branches
 import json
 import logging
 import os
-import subprocess
 import zipfile
-from datetime import datetime, date
-from pprint import pprint
 from random import randint
-
 from django.conf import settings
 from django.core.management import CommandParser
 from django.utils.timezone import now
 from jutil.command import SafeCommand
-import jbank
 from jbank.models import WsEdiConnection
 
 
@@ -55,7 +51,8 @@ class Command(SafeCommand):
                     ws_data[k] = v
 
         if not ws_data:
-            return print("Nothing to import!")
+            print("Nothing to import!")
+            return
         if 'created' in ws_data:
             del ws_data['created']
         ws = WsEdiConnection.objects.create(**ws_data)

@@ -1,20 +1,11 @@
+#pylint: disable=logging-format-interpolation,too-many-locals,too-many-branches
 import logging
-import os
 import traceback
-import getpass
-from os.path import basename
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.core.files.move import file_move_safe
 from django.core.management import CommandParser
 from jutil.xml import xml_to_dict
-
-from jbank.files import list_dir_files
-from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_CANCELED, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, \
-    WsEdiConnection
-from jbank.wsedi import wsedi_get, wsedi_upload_file, wsedi_execute
+from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, WsEdiConnection
+from jbank.wsedi import wsedi_upload_file, wsedi_execute
 from jutil.command import SafeCommand
-from jutil.email import send_email
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +28,8 @@ class Command(SafeCommand):
         assert default_ws is None or isinstance(default_ws, WsEdiConnection)
         file_type = options['file_type']
         if not file_type:
-            return print('--file-type required (e.g. XL, NDCORPAYS, pain.001.001.03)')
+            print('--file-type required (e.g. XL, NDCORPAYS, pain.001.001.03)')
+            return
 
         payouts = Payout.objects.all()
         if options['payout']:
@@ -79,12 +71,13 @@ class Command(SafeCommand):
                     raise Exception('Response code {} ({})'.format(response_code, response_text))
                 if 'FileDescriptors' in data:
                     fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
-                    fd = {} if len(fds) == 0 else fds[0]
+                    fd = {} if not fds else fds[0]
                     file_reference = fd.get('FileReference', '')
                     if file_reference:
                         p.file_reference = file_reference
                         p.save(update_fields=['file_reference'])
-                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code, response_text=response_text, status_reason='File upload OK')
+                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code,
+                                            response_text=response_text, status_reason='File upload OK')
 
             except Exception as e:
                 long_err = "File upload failed ({}): ".format(p.file_name) + traceback.format_exc()
@@ -92,4 +85,5 @@ class Command(SafeCommand):
                 short_err = 'File upload failed: ' + str(e)
                 p.state = PAYOUT_ERROR
                 p.save(update_fields=['state'])
-                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code, response_text=response_text, status_reason=short_err[:255])
+                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code,
+                                            response_text=response_text, status_reason=short_err[:255])

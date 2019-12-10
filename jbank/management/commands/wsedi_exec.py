@@ -2,10 +2,10 @@ import logging
 import pytz
 from django.core.management import CommandParser
 from jutil.command import SafeCommand
-
 from jbank.helpers import parse_start_and_end_date
 from jbank.models import WsEdiConnection
 from jbank.wsedi import wsedi_execute
+
 
 logger = logging.getLogger(__name__)
 

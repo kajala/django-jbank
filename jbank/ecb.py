@@ -26,9 +26,7 @@ def download_euro_exchange_rates_xml() -> str:
     Downloads Euro currency exchange rates XML file from European Central Bank.
     Returns XML as str
     """
-    import xml.etree.ElementTree as ET
     from urllib import request
     with request.urlopen('http://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml') as conn:
         content = conn.read()
         return content
-    return ''

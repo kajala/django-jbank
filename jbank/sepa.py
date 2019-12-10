@@ -1,7 +1,8 @@
+#pylint: disable=too-many-arguments
 from collections import OrderedDict
-from datetime import datetime, timezone, date
+from datetime import datetime, date
 from xml.etree import ElementTree as ET
-from xml.etree.ElementTree import SubElement, ElementTree, Element
+from xml.etree.ElementTree import Element
 from decimal import Decimal
 import pytz
 from django.core.exceptions import ValidationError
@@ -11,7 +12,8 @@ from jutil.format import dec2
 from jutil.parse import parse_datetime
 from jutil.validators import iban_filter, iban_validator, iso_payment_reference_validator, \
     fi_payment_reference_validator, ascii_filter
-from jutil.xml import dict_to_element, xml_to_dict, _xml_element_set_data_r
+from jutil.xml import xml_to_dict, _xml_element_set_data_r
+
 
 PAIN001_REMITTANCE_INFO_MSG = 'M'
 PAIN001_REMITTANCE_INFO_OCR = 'O'
@@ -26,8 +28,10 @@ PAIN001_REMITTANCE_INFO_TYPE = (
 PAIN001_REMITTANCE_INFO_VALUES = [t[0] for t in PAIN001_REMITTANCE_INFO_TYPE]
 
 
-class Pain001Party(object):
-    def __init__(self, name: str, account: str, bic: str, org_id: str='', address_lines: list=list(), country_code: str=''):
+class Pain001Party:
+    def __init__(self, name: str, account: str, bic: str, org_id: str = '', address_lines: list or None = None, country_code: str = ''):
+        if address_lines is None:
+            address_lines = []
         account = iban_filter(account)
         iban_validator(account)
         self.name = name
@@ -38,7 +42,7 @@ class Pain001Party(object):
         self.country_code = country_code
 
 
-class Pain001Payment(object):
+class Pain001Payment:
     def __init__(self, payment_id, creditor: Pain001Party, amount: Decimal, remittance_info: str, remittance_info_type: str, due_date: date):
         self.payment_id = payment_id
         self.creditor = creditor
@@ -61,7 +65,7 @@ class Pain001Payment(object):
             iso_payment_reference_validator(self.remittance_info)
 
 
-class Pain001(object):
+class Pain001:
     """
     Class for generating pain.001.001.03 SEPA payment XML files.
     """
@@ -87,8 +91,8 @@ class Pain001(object):
                     creditor_bic: str,
                     amount: Decimal,
                     remittance_info: str,
-                    remittance_info_type: str=PAIN001_REMITTANCE_INFO_MSG,
-                    due_date: date=None,
+                    remittance_info_type: str = PAIN001_REMITTANCE_INFO_MSG,
+                    due_date: date = None,
                     ):
         if not due_date:
             due_date = self._local_time().date()
@@ -110,7 +114,7 @@ class Pain001(object):
         parent.append(e)
         return e
 
-    def _local_time(self, t: datetime=None) -> datetime:
+    def _local_time(self, t: datetime or None = None) -> datetime:
         if not t:
             t = now()
         if not self.tz:
@@ -245,7 +249,7 @@ class Pain001(object):
         })
 
     def render_to_element(self) -> Element:
-        if len(self.payments) == 0:
+        if not self.payments:
             raise ValidationError('No payments in pain.001.001.03')
         doc = Element('Document', xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03")
         pain = Element(self.pain_element_name)
@@ -267,7 +271,7 @@ class Pain001(object):
             fp.write(xml_bytes)
 
 
-class Pain002(object):
+class Pain002:
     """
     Class for parsing pain.002.001.03 SEPA payment status XML files.
     """

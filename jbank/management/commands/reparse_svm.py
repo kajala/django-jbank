@@ -1,20 +1,9 @@
+#pylint: disable=logging-format-interpolation
 import logging
-import os
-from copy import copy
-from pathlib import Path
-from pprint import pprint
-from django.conf import settings
-from django.core.files import File
 from django.core.management import CommandParser
-from django.db import transaction
-from django.utils import translation
-from jacc.models import Account, AccountType
-from jbank.helpers import create_statement, create_reference_payment_batch, get_or_create_bank_account
-from jbank.files import list_dir_files
-from jbank.models import Statement, ReferencePaymentBatch, ReferencePaymentBatchFile, ReferencePaymentRecord
+from jbank.models import ReferencePaymentBatchFile, ReferencePaymentRecord
 from jbank.parsers import parse_svm_batches_from_file
 from jutil.command import SafeCommand
-from django.utils.translation import gettext as _
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +27,8 @@ class Command(SafeCommand):
             for batch in batches:
                 for e in batch['records']:
                     # check missing line_number
-                    e2 = ReferencePaymentRecord.objects.filter(batch__file=file, line_number=0, record_type=e['record_type'], account_number=e['account_number'],
+                    e2 = ReferencePaymentRecord.objects.filter(batch__file=file, line_number=0, record_type=e['record_type'],
+                                                               account_number=e['account_number'],
                                                                paid_date=e['paid_date'], archive_identifier=e['archive_identifier'],
                                                                remittance_info=e['remittance_info'], payer_name=e['payer_name'],
                                                                currency_identifier=e['currency_identifier'], name_source=e['name_source'],

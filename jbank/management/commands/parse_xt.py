@@ -1,6 +1,5 @@
+#pylint: disable=too-many-branches
 import os
-from copy import copy
-from pathlib import Path
 from pprint import pprint
 from django.core.files import File
 from django.core.management import CommandParser

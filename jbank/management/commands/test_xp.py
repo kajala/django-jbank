@@ -1,4 +1,3 @@
-from pprint import pprint
 from django.core.management import CommandParser
 from jbank.files import list_dir_files
 from jbank.sepa import Pain002

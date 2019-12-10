@@ -1,13 +1,10 @@
 import json
 import os
-import subprocess
 import zipfile
-from datetime import datetime, date
-
+from datetime import datetime
 from django.conf import settings
 from django.core.management import CommandParser
 from jutil.command import SafeCommand
-import jbank
 from jbank.models import WsEdiConnection
 
 
@@ -30,7 +27,7 @@ class Command(SafeCommand):
         ws_data = {}
         for k, v in ws.__dict__.items():
             if not k.startswith('_') and k != 'id':
-                if isinstance(v, datetime) or isinstance(v, date):
+                if isinstance(v, (datetime, datetime)):
                     v = v.isoformat()
                 ws_data[k] = v
                 if k.endswith('_file'):

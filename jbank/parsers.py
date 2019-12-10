@@ -2,9 +2,10 @@ import logging
 import re
 from copy import copy
 from os.path import basename
-from pprint import pprint
 from datetime import time, datetime, date
 from decimal import Decimal
+from typing import List
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from pytz import timezone
@@ -314,29 +315,31 @@ def parse_record_value(data_type, data_len, data, name: str, line_number: int) -
     return value
 
 
-def parse_records(line: str, specs: tuple, line_number: int, check_record_length: bool=True, record_length: int=None) -> dict:
-    # print(line)
+def parse_records(line: str, specs: tuple, line_number: int, check_record_length: bool = True, record_length: int or None = None) -> dict:
     i = 0
     data = dict()
     data['line_number'] = line_number
+    #pylint: disable=unused-variable
     for name, fmt, req in specs:
         data_type, data_len = parse_record_format(fmt)
         value = parse_record_value(data_type, data_len, line[i:], name=name, line_number=line_number)
         # print('[{}:{}] {}="{}"'.format(i, i+data_len, name, value))
         data[name] = str(value).strip()
         i += data_len
+    #pylint: enable=unused-variable
     data['extra_data'] = line[i:]
 
-    if 'record_length' in data:
-        record_length = data['record_length']
+    record_length = data.get('record_length', record_length)
     if check_record_length and record_length:
         data['extra_data'] = data['extra_data'].strip()
         if i != record_length and data['extra_data'] != '':
-            raise ValidationError(_('Line {line}: Record length ({record_length}) does not match length of parsed data ({data_length}). Extra data: "{extra_data}"').format(line=line_number, data_length=i+len(data['extra_data']), record_length=record_length, extra_data=data['extra_data']))
+            raise ValidationError(_('Line {line}: Record length ({record_length}) does not match length of parsed data ({data_length}). '
+                                    'Extra data: "{extra_data}"').format(
+                line=line_number, data_length=i+len(data['extra_data']), record_length=record_length, extra_data=data['extra_data']))
     return data
 
 
-def parse_record_messages(extra_data: str) -> str:
+def parse_record_messages(extra_data: str) -> List[str]:
     msg = []
     while extra_data:
         msg.append(extra_data[:35])
@@ -344,8 +347,9 @@ def parse_record_messages(extra_data: str) -> str:
     return msg
 
 
-def parse_record_extra_info(record: dict, line: str, line_number: int) -> dict:
-    assert line[:3] in TO_FILE_RECORD_EXTRA_INFO_TYPES
+def parse_record_extra_info(record: dict, line: str, line_number: int):
+    if line[:3] not in TO_FILE_RECORD_EXTRA_INFO_TYPES:
+        raise ValidationError('SVM record extra info validation error on line {}'.format(line_number))
 
     header = parse_records(line, TO_FILE_RECORD_EXTRA_INFO_HEADER, line_number, check_record_length=False)
     extra_info_type = header['extra_info_type']
@@ -405,7 +409,7 @@ def convert_date_fields(data: dict, date_fields: tuple, tz: timezone):
                 data[k] = convert_date(v_date, k)
         elif isinstance(k, tuple):
             if len(k) != 2:
-                raise ValidationError(_("Date format error in field {}: {}").format(k, v))
+                raise ValidationError(_("Date format error in field {}").format(k))
             k_date, k_time = k
             v_date, v_time = data.get(k_date), data.get(k_time)
             # print('Converting {}'.format(k))
@@ -440,6 +444,7 @@ def convert_decimal_fields(data: dict, decimal_fields: tuple):
             raise ValidationError(_('Invalid decimal field format: {}').format(field))
 
 
+#pylint: disable=too-many-arguments
 def combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records) -> dict:
     data = {
         'header': header,
@@ -454,9 +459,11 @@ def combine_statement(header, records, balance, cumulative, cumulative_adjustmen
     if special_records:
         data['special_records'] = special_records
     return data
+#pylint: enable=too-many-arguments
 
 
 def parse_tiliote_statements(content: str, filename: str) -> list:
+    #pylint: disable=too-many-locals
     lines = content.split('\n')
     nlines = len(lines)
 
@@ -522,13 +529,14 @@ def parse_tiliote_statements(content: str, filename: str) -> list:
             convert_date_fields(cumulative_adjustment, TO_CUMULATIVE_RECORD_DATES, tz)
             convert_decimal_fields(cumulative_adjustment, TO_CUMULATIVE_RECORD_DECIMALS)
             line_number += 1
-        elif record_type == 'T60' or record_type == 'T70':
+        elif record_type in ('T60', 'T70'):
             special_records.append(parse_records(line, TO_SPECIAL_RECORD, line_number=line_number, check_record_length=False))
             line_number += 1
         else:
             raise ValidationError(_('Unknown record type on {}({}): {}').format(filename, line_number, record_type))
 
     statements.append(combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records))
+    #pylint: enable=too-many-locals
     return statements
 
 
@@ -539,7 +547,8 @@ def parse_filename_suffix(filename: str) -> str:
 
 def parse_tiliote_statements_from_file(filename: str) -> list:
     if parse_filename_suffix(filename).upper() not in TO_STATEMENT_SUFFIXES:
-        raise ValidationError(_('File {} has unrecognized ({}) suffix for file type "{}"').format(filename, ', '.join(TO_STATEMENT_SUFFIXES, 'tiliote')))
+        raise ValidationError(_('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
+            filename=filename, suffixes=', '.join(TO_STATEMENT_SUFFIXES), file_type='tiliote'))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
         return parse_tiliote_statements(fp.read(), filename=basename(filename))
 
@@ -596,6 +605,7 @@ def parse_svm_batches(content: str, filename: str) -> list:
 
 def parse_svm_batches_from_file(filename: str) -> list:
     if parse_filename_suffix(filename).upper() not in SVM_STATEMENT_SUFFIXES:
-        raise ValidationError(_('File {} has unrecognized ({}) suffix for file type "{}"').format(filename, ', '.join(SVM_STATEMENT_SUFFIXES, 'saapuvat viitemaksut')))
+        raise ValidationError(_('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
+            filename=filename, suffixes=', '.join(SVM_STATEMENT_SUFFIXES), file_type='saapuvat viitemaksut'))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
         return parse_svm_batches(fp.read(), filename=basename(filename))

@@ -1,17 +1,15 @@
+#pylint: disable=logging-format-interpolation,logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
 import base64
 import logging
-import os
-import re
 import traceback
 from datetime import date
 from os.path import basename
-import pytz
 import requests
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils.timezone import now
 from zeep.wsse import BinarySignature
-from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout
+from jbank.models import WsEdiConnection, WsEdiSoapCall
 
 
 logger = logging.getLogger(__name__)
@@ -41,16 +39,18 @@ def wsedi_get(command: str, file_type: str, status: str, file_reference: str = '
     }
     res = requests.get(url, headers=headers)
     if res.status_code >= 300:
-        logger.error("wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(command, file_type, status, file_reference, res.status_code) + res.text)
+        logger.error("wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(
+            command, file_type, status, file_reference, res.status_code) + res.text)
     elif verbose:
-        logger.info("wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(command, file_type, status, file_reference, res.status_code) + res.text)
+        logger.info("wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(
+            command, file_type, status, file_reference, res.status_code) + res.text)
 
     if res.status_code >= 300:
         raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
     return res
 
 
-def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose: bool=False) -> requests.Response:
+def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose: bool = False) -> requests.Response:
     """
     Upload Finnish bank file. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
     Uses project settings WSEDI_URL and WSEDI_TOKEN.
@@ -74,19 +74,13 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
     }
     res = requests.post(url, data=data, headers=headers)
     if res.status_code >= 300:
-        logger.error("wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(command, file_type, file_name, res.status_code) + res.text)
+        logger.error("wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(
+            command, file_type, file_name, res.status_code) + res.text)
         raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
-    elif verbose:
-        logger.info("wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(command, file_type, file_name, res.status_code) + res.text)
+    if verbose:
+        logger.info("wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(
+            command, file_type, file_name, res.status_code) + res.text)
     return res
-
-
-def dbg_read(filename: str):
-    return open('/home/jani/Downloads/{}'.format(filename), 'rb').read()
-
-
-def dbg_write(filename: str, content: bytes):
-    return open('/home/jani/Downloads/{}'.format(filename), 'wb').write(content)
 
 
 def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',
@@ -116,7 +110,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         if file_content:
             content = base64.b64encode(file_content.encode()).decode('ascii')
 
-        app = ws.get_application_request(command, file_type=file_type, status=status, file_reference=file_reference, content=content, start_date=start_date, end_date=end_date)
+        app = ws.get_application_request(command, file_type=file_type, status=status, file_reference=file_reference, content=content,
+                                         start_date=start_date, end_date=end_date)
         if verbose:
             logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app))
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
@@ -135,7 +130,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         else:
             enc_app = signed_app
             if verbose:
-                logger.info('------------------------------------------------------ {} enc_app\n(no bank_encryption_cert_file, not encrypting)'.format(call_str))
+                logger.info('------------------------------------------------------ '
+                            '{} enc_app\n(no bank_encryption_cert_file, not encrypting)'.format(call_str))
 
         b64_app = ws.encode_application_request(enc_app)
         if verbose:
@@ -186,7 +182,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         else:
             app_res = app_res_enc
             if verbose:
-                logger.info('------------------------------------------------------ {} app_res\n(no encryption_key_file, assuming decrypted content)'.format(call_str))
+                logger.info('------------------------------------------------------ '
+                            '{} app_res\n(no encryption_key_file, assuming decrypted content)'.format(call_str))
 
         soap_call.executed = now()
         soap_call.save(update_fields=['executed'])
@@ -196,7 +193,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
                 fp.write(app_res)
 
         return app_res
-    except Exception as e:
+    except Exception:
         soap_call.error = traceback.format_exc()
         soap_call.save(update_fields=['error'])
         raise

@@ -1,10 +1,8 @@
 import logging
-from os.path import basename
 from django.core.management import CommandParser
 from jbank.files import list_dir_files
 from jbank.helpers import process_pain002_file_content
-from jbank.models import Payout, PayoutStatus, PAYOUT_PAID
-from jbank.sepa import Pain002
+from jbank.models import PayoutStatus
 from jutil.command import SafeCommand
 
 

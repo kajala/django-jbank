@@ -1,18 +1,13 @@
 import logging
-import os
 from datetime import datetime, date
 from os.path import basename
-
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.http import HttpResponse
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, AccountType, EntryType
-from jutil.format import format_xml_file
-
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentBatch, \
     ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile, Payout, PayoutStatus, PAYOUT_PAID
 
@@ -103,6 +98,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     :param file: Source statement file
     :return: Statement
     """
+    #pylint: disable=too-many-locals,too-many-branches
     if 'header' not in statement_data or not statement_data['header']:
         raise ValidationError('Invalid header field in statement data {}: {}'.format(name, statement_data.get('header')))
     header = statement_data['header']
@@ -159,6 +155,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
             # pprint(rec_data['sepa'])
             sepa_info.full_clean()
             sepa_info.save()
+    # pylint: enable=too-many-locals,too-many-branches
 
 
 @transaction.atomic
@@ -207,9 +204,9 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
         rec.save()
 
 
-def get_or_create_bank_account(account_number: str, currency: str='EUR') -> Account:
-    a_type, created = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={'name': _('bank account')})
-    acc, created = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)
+def get_or_create_bank_account(account_number: str, currency: str = 'EUR') -> Account:
+    a_type = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={'name': _('bank account')})[0]
+    acc = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)[0]
     return acc
 
 
@@ -220,7 +217,8 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: dateti
         created = now()
     s = Pain002(bcontent)
     p = Payout.objects.filter(msg_id=s.original_msg_id).first()
-    ps = PayoutStatus(payout=p, file_name=basename(filename), msg_id=s.msg_id, original_msg_id=s.original_msg_id, group_status=s.group_status, status_reason=s.status_reason[:255], created=created)
+    ps = PayoutStatus(payout=p, file_name=basename(filename), msg_id=s.msg_id, original_msg_id=s.original_msg_id,
+                      group_status=s.group_status, status_reason=s.status_reason[:255], created=created)
     ps.full_clean()
     fields = (
         'payout',
@@ -240,13 +238,13 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: dateti
         ps = ps_old
     else:
         ps.save()
-        logger.info('{} status updated {}'.format(p, ps))
+        logger.info('%s status updated %s', p, ps)
     if p:
         if ps.is_accepted:
             p.state = PAYOUT_PAID
             p.paid_date = s.credit_datetime
             p.save(update_fields=['state', 'paid_date'])
-            logger.info('{} marked as paid {}'.format(p, ps))
+            logger.info('%s marked as paid %s', p, ps)
     return ps
 
 

@@ -1,13 +1,10 @@
+#pylint: disable=logging-format-interpolation,too-many-locals,too-many-branches
 import base64
 import logging
 import os
-from datetime import date
-
 import pytz
 from django.core.management import CommandParser
-from django.utils.dateparse import parse_date
 from django.utils.timezone import now
-from jutil.parse import parse_datetime
 from jutil.xml import xml_to_dict
 from jbank.helpers import process_pain002_file_content, parse_start_and_end_date
 from jbank.models import WsEdiConnection
@@ -49,35 +46,36 @@ class Command(SafeCommand):
         status = options['status']
         file_type = options['file_type']
         if command == 'DownloadFileList' and not file_type:
-            return print('--file-type required (e.g. TO, SVM, XP, NDCORPAYL, pain.002.001.03)')
+            print('--file-type required (e.g. TO, SVM, XP, NDCORPAYL, pain.002.001.03)')
+            return
         if ws:
-            content = wsedi_execute(ws, command=command, file_type=file_type, status=status, start_date=start_date, end_date=end_date, file_reference=file_reference, verbose=options['verbose'])
+            content = wsedi_execute(ws, command=command, file_type=file_type, status=status, start_date=start_date, end_date=end_date,
+                                    file_reference=file_reference, verbose=options['verbose'])
             data = xml_to_dict(content, array_tags=['FileDescriptor'])
         else:
             res = wsedi_get(command=command, file_type=file_type, status=status, file_reference=file_reference, verbose=options['verbose'])
             data = res.json()
-        """
-            "FileDescriptors": {
-                "FileDescriptor": [
-                    {
-                        "FileReference": "535283541",
-                        "TargetId": "NONE",
-                        "UserFilename": "STOL001.FMV80KT2.WEBSER.PS",
-                        "ParentFileReference": "1218",
-                        "FileType": "TO",
-                        "FileTimestamp": "2017-12-18T20:33:09.362+02:00",
-                        "Status": "DLD",
-                        "LastDownloadTimestamp": "2017-12-19T12:36:34.490+02:00",
-                        "ForwardedTimestamp": "2017-12-18T20:33:09.362+02:00",
-                        "Deletable": "false",
-                        "CustomerNumber": "06720106",
-                        "Modifier": "06720106",
-                        "ModifiedTimestamp": "2017-12-19T12:36:34.490+02:00",
-                        "SourceId": "A",
-                        "Environment": "PRODUCTION"
-                    },
-                    ...
-        """
+            # "FileDescriptors": {
+            #     "FileDescriptor": [
+            #         {
+            #             "FileReference": "535283541",
+            #             "TargetId": "NONE",
+            #             "UserFilename": "STOL001.FMV80KT2.WEBSER.PS",
+            #             "ParentFileReference": "1218",
+            #             "FileType": "TO",
+            #             "FileTimestamp": "2017-12-18T20:33:09.362+02:00",
+            #             "Status": "DLD",
+            #             "LastDownloadTimestamp": "2017-12-19T12:36:34.490+02:00",
+            #             "ForwardedTimestamp": "2017-12-18T20:33:09.362+02:00",
+            #             "Deletable": "false",
+            #             "CustomerNumber": "06720106",
+            #             "Modifier": "06720106",
+            #             "ModifiedTimestamp": "2017-12-19T12:36:34.490+02:00",
+            #             "SourceId": "A",
+            #             "Environment": "PRODUCTION"
+            #         },
+            #         ...
+
         if command == 'DownloadFileList':
             if 'FileDescriptors' in data and data['FileDescriptors'] is not None and 'FileDescriptor' in data['FileDescriptors']:
                 for fd in data['FileDescriptors']['FileDescriptor']:
@@ -86,12 +84,15 @@ class Command(SafeCommand):
                     file_basename = file_reference + '.' + file_type
                     file_path = os.path.join(path, file_basename)
                     if options['list_only']:
-                        print('{file_reference} ({file_type}/{status}): {user_filename} ({timestamp})'.format(file_reference=file_reference, file_type=file_type, status=fd.get('Status'), user_filename=fd.get('UserFilename'), timestamp=fd.get('FileTimestamp')))
+                        print('{file_reference} ({file_type}/{status}): {user_filename} ({timestamp})'.format(
+                            file_reference=file_reference, file_type=file_type, status=fd.get('Status'),
+                            user_filename=fd.get('UserFilename'), timestamp=fd.get('FileTimestamp')))
                         continue
                     if options['overwrite'] or not os.path.isfile(file_path):
                         command = 'DownloadFile'
                         if ws:
-                            content = wsedi_execute(ws, command=command, file_type=file_type, status='', file_reference=file_reference, verbose=options['verbose'])
+                            content = wsedi_execute(ws, command=command, file_type=file_type, status='', file_reference=file_reference,
+                                                    verbose=options['verbose'])
                             file_data = xml_to_dict(content)
                         else:
                             res = wsedi_get(command=command, file_type=file_type, status='', file_reference=file_reference, verbose=options['verbose'])
@@ -120,4 +121,3 @@ class Command(SafeCommand):
                 logger.info('Wrote file {}'.format(file_path))
             else:
                 print('Skipping old file {}'.format(file_path))
-
