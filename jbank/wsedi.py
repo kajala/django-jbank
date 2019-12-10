@@ -83,7 +83,7 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
     return res
 
 
-def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',
+def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',  # noqa
                   file_content: str = '', start_date: date or None = None, end_date: date or None = None,
                   verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
     """

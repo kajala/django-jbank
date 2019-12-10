@@ -213,7 +213,7 @@ class CurrencyExchange(models.Model):
     target_currency = models.CharField(_('target currency'), max_length=3, blank=True)
     unit_currency = models.CharField(_('unit currency'), max_length=3, blank=True)
     exchange_rate = models.DecimalField(_('exchange rate'), decimal_places=6, max_digits=12, null=True, default=None, blank=True)
-    source = models.ForeignKey(CurrencyExchangeSource, verbose_name=_('currency exchange source'), blank=True, null=True, default=None, on_delete=models.PROTECT)
+    source = models.ForeignKey(CurrencyExchangeSource, verbose_name=_('currency exchange source'), blank=True, null=True, default=None, on_delete=models.PROTECT)  # noqa
 
     class Meta:
         verbose_name = _('currency exchange')
@@ -228,8 +228,8 @@ class StatementRecordDetail(models.Model):
     batch_identifier = models.CharField(_('batch message id'), max_length=64, db_index=True, blank=True, default='')
     amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True)
     currency_code = models.CharField(_('currency code'), max_length=3)
-    instructed_amount = models.DecimalField(verbose_name=_('instructed amount'), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True)
-    exchange = models.ForeignKey(CurrencyExchange, verbose_name=_('currency exchange'), related_name='recorddetail_set', on_delete=models.PROTECT, null=True, default=None, blank=True)
+    instructed_amount = models.DecimalField(verbose_name=_('instructed amount'), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True)    # noqa
+    exchange = models.ForeignKey(CurrencyExchange, verbose_name=_('currency exchange'), related_name='recorddetail_set', on_delete=models.PROTECT, null=True, default=None, blank=True)  # noqa
     archive_identifier = models.CharField(_('archive identifier'), max_length=64, blank=True)
     end_to_end_identifier = models.CharField(_('end-to-end identifier'), max_length=64, blank=True)
     creditor_name = models.CharField(_('creditor name'), max_length=128, blank=True)
@@ -329,7 +329,8 @@ class ReferencePaymentRecord(AccountEntry):
     def clean(self):
         self.source_file = self.batch
         self.timestamp = pytz.utc.localize(datetime.combine(self.paid_date, time(0, 0)))
-        self.description = '{amount} {remittance_info} {payer_name}'.format(amount=self.amount, remittance_info=self.remittance_info, payer_name=self.payer_name)
+        self.description = '{amount} {remittance_info} {payer_name}'.format(amount=self.amount, remittance_info=self.remittance_info,
+                                                                            payer_name=self.payer_name)
 
 
 class StatementFile(models.Model):
@@ -475,7 +476,7 @@ class PayoutStatusManager(models.Manager):
 
 class PayoutStatus(models.Model):
     objects = PayoutStatusManager()
-    payout = models.ForeignKey(Payout, verbose_name=_('payout'), related_name='payoutstatus_set', on_delete=models.PROTECT, null=True, default=None, blank=True)
+    payout = models.ForeignKey(Payout, verbose_name=_('payout'), related_name='payoutstatus_set', on_delete=models.PROTECT, null=True, default=None, blank=True)  # noqa
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     file_name = models.CharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
     response_code = models.CharField(_('response code'), max_length=4, blank=True, db_index=True)

@@ -89,7 +89,7 @@ ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS = (
 logger = logging.getLogger(__name__)
 
 
-@transaction.atomic
+@transaction.atomic  # noqa
 def create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:
     """
     Creates Statement from statement data parsed by parse_tiliote_statements()
@@ -248,7 +248,7 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: dateti
     return ps
 
 
-def make_msg_id():
+def make_msg_id() -> str:
     import re
     return re.sub(r'[^\d]', '', now().isoformat())[:-4]
 

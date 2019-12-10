@@ -111,7 +111,7 @@ def camt053_get_unified_str(qs, k: str) -> str:
     return camt053_get_unified_val(qs, k, '')
 
 
-@transaction.atomic
+@transaction.atomic  # noqa
 def camt053_create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:
     """
     Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()
