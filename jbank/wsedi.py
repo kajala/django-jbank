@@ -171,6 +171,8 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
 
         envelope = etree.fromstring(res.content)
         app_res_el = envelope.find('.//{http://model.bxd.fi}ApplicationResponse')
+        if app_res_el is None:
+            raise Exception("WS-EDI {} failed, missing ApplicationResponse".format(command))
         app_res_enc = ws.decode_application_response(app_res_el.text.encode())
         if verbose:
             logger.info('------------------------------------------------------ {} app_res_enc\n{}'.format(call_str, app_res_enc.decode()))
