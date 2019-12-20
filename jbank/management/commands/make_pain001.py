@@ -3,7 +3,8 @@ import logging
 import os
 import traceback
 from django.core.management import CommandParser
-from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD
+from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD, \
+    WsEdiConnection
 from jbank.sepa import Pain001, PAIN001_REMITTANCE_INFO_MSG, PAIN001_REMITTANCE_INFO_OCR_ISO, \
     PAIN001_REMITTANCE_INFO_OCR
 from jutil.command import SafeCommand
@@ -36,7 +37,12 @@ class Command(SafeCommand):
         else:
             payouts = payouts.filter(state=PAYOUT_WAITING_PROCESSING)
         if options['ws']:
-            payouts = payouts.filter(connection_id=options['ws'])
+            ws = WsEdiConnection.objects.get(id=options['ws'])
+            assert isinstance(ws, WsEdiConnection)
+            if ws and not ws.enabled:
+                logger.info('WS connection %s not enabled, exiting', ws)
+                return
+            payouts = payouts.filter(connection=ws)
 
         for p in list(payouts):
             assert isinstance(p, Payout)
