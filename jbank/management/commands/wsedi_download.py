@@ -33,7 +33,7 @@ class Command(SafeCommand):
         parser.add_argument('--end-date', type=str)
         parser.add_argument('--ws', type=int)
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-statements
         ws = WsEdiConnection.objects.get(id=options['ws']) if options['ws'] else None
         assert ws is None or isinstance(ws, WsEdiConnection)
         if ws and not ws.enabled:
