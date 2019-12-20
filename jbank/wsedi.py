@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils.timezone import now
+from django.utils.translation import ugettext as _
 from zeep.wsse import BinarySignature
 from jbank.models import WsEdiConnection, WsEdiSoapCall
 
@@ -100,6 +101,9 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     :return: str
     """
     from lxml import etree  # local
+
+    if ws and not ws.enabled:
+        raise Exception(_('ws.edi.connection.not.enabled').format(ws=ws))
 
     soap_call = cls(connection=ws, command=command, **kwargs)
     soap_call.full_clean()

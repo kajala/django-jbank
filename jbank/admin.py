@@ -933,6 +933,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     fields = (
         'id',
         'name',
+        'enabled',
         'sender_identifier',
         'receiver_identifier',
         'target_identifier',

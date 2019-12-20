@@ -26,6 +26,10 @@ class Command(SafeCommand):
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws'])
         assert isinstance(ws, WsEdiConnection)
+        if ws and not ws.enabled:
+            logger.info('WS connection %s not enabled, exiting', ws)
+            return
+
         start_date, end_date = parse_start_and_end_date(pytz.timezone('Europe/Helsinki'), **options)
         cmd = options['cmd']
         file_reference = options['file_reference']

@@ -40,9 +40,15 @@ class Command(SafeCommand):
         for p in list(payouts):
             assert isinstance(p, Payout)
             p.refresh_from_db()
+            ws_connection = p.connection or default_ws
+
             if p.state != PAYOUT_WAITING_UPLOAD:
                 logger.info('Skipping {} since not in state PAYOUT_WAITING_UPLOAD'.format(p))
                 continue
+            if ws_connection and not ws_connection.enabled:
+                logger.info('WS connection %s not enabled, skipping payment %s', ws_connection, p)
+                continue
+
             response_code = ''
             response_text = ''
             try:
@@ -52,7 +58,6 @@ class Command(SafeCommand):
                     file_content = fp.read()
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=['state'])
-                ws_connection = p.connection or default_ws
                 if ws_connection:
                     content = wsedi_execute(ws_connection, 'UploadFile', file_content=file_content, file_type=file_type, verbose=options['verbose'])
                     data = xml_to_dict(content, array_tags=['FileDescriptor'])

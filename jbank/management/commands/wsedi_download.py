@@ -36,6 +36,10 @@ class Command(SafeCommand):
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options['ws']) if options['ws'] else None
         assert ws is None or isinstance(ws, WsEdiConnection)
+        if ws and not ws.enabled:
+            logger.info('WS connection %s not enabled, exiting', ws)
+            return
+
         start_date, end_date = parse_start_and_end_date(pytz.timezone('Europe/Helsinki'), **options)
         path = options['path']
         command = 'DownloadFileList'

@@ -552,6 +552,7 @@ class WsEdiSoapCall(models.Model):
 
 class WsEdiConnection(models.Model):
     name = models.CharField(_('name'), max_length=64)
+    enabled = models.BooleanField(_('enabled'), blank=True, default=True)
     sender_identifier = models.CharField(_('sender identifier'), max_length=32)
     receiver_identifier = models.CharField(_('receiver identifier'), max_length=32)
     target_identifier = models.CharField(_('target identifier'), max_length=32)
