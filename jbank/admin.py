@@ -836,6 +836,14 @@ class PayoutAdmin(ModelAdminBase):
 class PayoutPartyAdmin(ModelAdminBase):
     save_on_top = False
     exclude = ()
+    search_fields = (
+        'name',
+        '=account_number',
+        '=org_id',
+    )
+
+    actions = (
+    )
 
     list_display = (
         'id',
