@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-20 06:28+0000\n"
+"POT-Creation-Date: 2020-02-04 14:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,7 +42,7 @@ msgstr "merkitty kohdistetuksi"
 msgid "account entries"
 msgstr "tilitapahtumat"
 
-#: jbank/admin.py:149 jbank/admin.py:475 jbank/admin.py:556 jbank/admin.py:1044
+#: jbank/admin.py:149 jbank/admin.py:475 jbank/admin.py:556 jbank/admin.py:1052
 #: jbank/models.py:338 jbank/models.py:355
 msgid "file"
 msgstr "tiedosto"
@@ -89,28 +89,28 @@ msgstr "tiliotteet"
 msgid "reference payment batches"
 msgstr "viitemaksuerät"
 
-#: jbank/admin.py:1027
+#: jbank/admin.py:1035
 msgid "application request"
 msgstr "palvelupyyntö"
 
-#: jbank/admin.py:1035
+#: jbank/admin.py:1043
 msgid "application response"
 msgstr "palveluvastaus"
 
-#: jbank/admin.py:1049
+#: jbank/admin.py:1057
 msgid "execution time"
 msgstr "suoritetusaika"
 
-#: jbank/admin.py:1054 jbank/models.py:118 jbank/models.py:516
+#: jbank/admin.py:1062 jbank/models.py:118 jbank/models.py:516
 msgid "error"
 msgstr "virhe"
 
-#: jbank/admin.py:1063
+#: jbank/admin.py:1071
 #: jbank/templates/admin/jbank/mark_as_manually_settled.html:21
 msgid "Mark as manually settled"
 msgstr "Merkitse tapahtuma manuaalisesti kohdistetuksi"
 
-#: jbank/admin.py:1064
+#: jbank/admin.py:1072
 msgid "Unmark manually settled flag"
 msgstr "Merkitse tapahtuma avoimeksi/kohdistamattomaksi"
 
@@ -738,10 +738,8 @@ msgid "payouts"
 msgstr "ulosmaksut"
 
 #: jbank/models.py:424
-msgid ""
-"Both recipient messages and recipient reference cannot be defined "
-"simultaneously"
-msgstr "Maksussa ei voi käyttää viitenumeroa ja viestiä samaan aikaan"
+msgid "payment.must.have.reference.or.messages"
+msgstr "Ulosmaksulla pitää olla joko viite tai viesti mutta ei molempia."
 
 #: jbank/models.py:438
 msgid "File already uploaded"
@@ -961,6 +959,11 @@ msgstr "Tiliotteen tietueet"
 #: jbank/wsedi.py:106
 msgid "ws.edi.connection.not.enabled"
 msgstr "WS-EDI yhteys {ws} ei päällä"
+
+#~ msgid ""
+#~ "Both recipient messages and recipient reference cannot be defined "
+#~ "simultaneously"
+#~ msgstr "Maksussa ei voi käyttää viitenumeroa ja viestiä samaan aikaan"
 
 #~ msgid "customer"
 #~ msgstr "asiakas"
