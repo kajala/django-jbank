@@ -437,6 +437,14 @@ class Payout(AccountEntry):
                 if group_status != 'RJCT':
                     raise ValidationError(_('File already uploaded') + ' ({})'.format(group_status))
 
+        # save paid time if marking payout as paid manually
+        if self.state == PAYOUT_PAID and not self.paid_date:
+            self.paid_date = now()
+            status = self.payoutstatus_set.order_by('-created').first()
+            if status:
+                assert isinstance(status, PayoutStatus)
+                self.paid_date = status.created
+
     def generate_msg_id(self, commit: bool = True):
         msg_id_base = re.sub(r'[^\d]', '', now().isoformat())[:-4]
         self.msg_id = msg_id_base + 'P' + str(self.id)
