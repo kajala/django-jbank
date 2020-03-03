@@ -381,7 +381,7 @@ class PayoutParty(models.Model):
         verbose_name_plural = _("payout parties")
 
     def __str__(self):
-        return self.name
+        return '{} ({})'.format(self.name, self.account_number)
 
     def clean(self):
         if not self.bic:

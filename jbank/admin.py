@@ -841,6 +841,7 @@ class PayoutPartyAdmin(ModelAdminBase):
         '=account_number',
         '=org_id',
     )
+    ordering = ('name',)
 
     actions = (
     )
