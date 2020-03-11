@@ -22,6 +22,7 @@ class Command(SafeCommand):
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--force', action='store_true')
         parser.add_argument('--default-ws', type=int)
+        parser.add_argument('--ws', type=int)
 
     def do(self, *args, **options):
         default_ws = WsEdiConnection.objects.get(id=options['default_ws']) if options['default_ws'] else None
@@ -36,6 +37,8 @@ class Command(SafeCommand):
             payouts = Payout.objects.filter(id=options['payout'])
         else:
             payouts = payouts.filter(state=PAYOUT_WAITING_UPLOAD)
+            if options['ws']:
+                payouts = payouts.filter(connection_id=options['ws'])
 
         for p in list(payouts):
             assert isinstance(p, Payout)
