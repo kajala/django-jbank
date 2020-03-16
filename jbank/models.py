@@ -242,7 +242,7 @@ class StatementRecordDetail(models.Model):
 
 class StatementRecordRemittanceInfo(models.Model):
     detail = models.ForeignKey(StatementRecordDetail, related_name='remittanceinfo_set', on_delete=models.CASCADE)
-    additional_info = models.CharField(_('additional remittance info'), max_length=64, blank=True, db_index=True)
+    additional_info = models.CharField(_('additional remittance info'), max_length=256, blank=True, db_index=True)
     amount = models.DecimalField(_('amount'), decimal_places=2, max_digits=10, null=True, default=None, blank=True)
     currency_code = models.CharField(_('currency code'), max_length=3, blank=True)
     reference = models.CharField(_('reference'), max_length=35, blank=True, db_index=True)
