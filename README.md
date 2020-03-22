@@ -1,7 +1,7 @@
 django-jbank
 ============
 
-Basic Finnish bank file format support for Django projects
+Basic Finnish bank file format support for Django projects. Django 3.0 support and unit test coverage 49%.
 
 Features
 ========
@@ -16,6 +16,13 @@ Pre-Requisities
 ===============
 
 * sudo apt install -y xmlsec1 libxmlsec1-dev libssl-dev libffi-dev
+
+
+Install
+=======
+
+* pip install django-jbank
+
 
 Tested Banks
 ============
