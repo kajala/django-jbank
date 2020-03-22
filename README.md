@@ -30,3 +30,10 @@ Tested Banks
 * POP-Pankki
 * Danskebank Finland
 * Säästöpankki
+
+
+Changes
+=======
+
+3.2.0:
++ Django 3.0 support, prospector fixes
