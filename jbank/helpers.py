@@ -10,6 +10,10 @@ from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, AccountType, EntryType
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentBatch, \
     ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile, Payout, PayoutStatus, PAYOUT_PAID
+from jbank.sepa import Pain002
+import re
+from lxml import etree, objectify
+from jutil.parse import parse_datetime
 
 
 ASSIGNABLE_STATEMENT_HEADER_FIELDS = (
@@ -211,8 +215,6 @@ def get_or_create_bank_account(account_number: str, currency: str = 'EUR') -> Ac
 
 
 def process_pain002_file_content(bcontent: bytes, filename: str, created: datetime or None = None):
-    from jbank.sepa import Pain002
-
     if not created:
         created = now()
     s = Pain002(bcontent)
@@ -249,7 +251,6 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: dateti
 
 
 def make_msg_id() -> str:
-    import re
     return re.sub(r'[^\d]', '', now().isoformat())[:-4]
 
 
@@ -257,14 +258,12 @@ def validate_xml(content: bytes, xsd_file_name: str):
     """
     Validates XML using XSD
     """
-    from lxml import etree, objectify  # local
     schema = etree.XMLSchema(file=xsd_file_name)
     parser = objectify.makeparser(schema=schema)
     objectify.fromstring(content, parser)
 
 
 def parse_start_and_end_date(tz: pytz.tzinfo or None = None, **options) -> (date or None, date or None):
-    from jutil.parse import parse_datetime
     start_date = None
     end_date = None
     time_now = now().astimezone(tz if tz else pytz.utc)

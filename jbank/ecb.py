@@ -1,5 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
+import xml.etree.ElementTree as ET
+from urllib import request
 
 
 def parse_euro_exchange_rates_xml(content: str):
@@ -8,7 +10,6 @@ def parse_euro_exchange_rates_xml(content: str):
     Format is XML from European Central Bank (http://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml).
     Returns list of (record_date: date, currency: str, rate: str) tuples of Euro exchange rates.
     """
-    import xml.etree.ElementTree as ET
     out = []
     root = ET.fromstring(content)
     cube_tag = '{http://www.ecb.int/vocabulary/2002-08-01/eurofxref}Cube'
@@ -26,7 +27,5 @@ def download_euro_exchange_rates_xml() -> str:
     Downloads Euro currency exchange rates XML file from European Central Bank.
     Returns XML as str
     """
-    from urllib import request
     with request.urlopen('http://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml') as conn:
-        content = conn.read()
-        return content
+        return conn.read()

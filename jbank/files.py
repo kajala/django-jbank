@@ -1,3 +1,7 @@
+import os
+from pathlib import Path
+
+
 def list_dir_files(path: str, suffix: str = '') -> list:
     """
     Lists all files (and only files) in a directory, or return [path] if path is a file itself.
@@ -5,9 +9,6 @@ def list_dir_files(path: str, suffix: str = '') -> list:
     :param suffix: Optional suffix to match (case insensitive). Default is none.
     :return: list of absolute paths to files
     """
-    import os
-    from pathlib import Path
-
     if suffix:
         suffix = suffix.lower()
     if Path(path).is_file():

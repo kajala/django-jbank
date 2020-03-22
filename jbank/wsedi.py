@@ -11,6 +11,7 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext as _
 from zeep.wsse import BinarySignature
 from jbank.models import WsEdiConnection, WsEdiSoapCall
+from lxml import etree
 
 
 logger = logging.getLogger(__name__)
@@ -100,8 +101,6 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     :param cls:
     :return: str
     """
-    from lxml import etree  # local
-
     if ws and not ws.enabled:
         raise Exception(_('ws.edi.connection.not.enabled').format(ws=ws))
 

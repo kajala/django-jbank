@@ -11,6 +11,7 @@ from jutil.parse import parse_datetime
 from jbank.models import StatementFile, Statement, StatementRecord, DELIVERY_FROM_BANK_SYSTEM, \
     StatementRecordDetail, CurrencyExchange, StatementRecordRemittanceInfo, CurrencyExchangeSource
 from jbank.parsers import parse_filename_suffix
+from jutil.xml import xml_to_dict
 
 
 CAMT053_STATEMENT_SUFFIXES = ('XML', 'XT', 'CAMT')
@@ -70,7 +71,6 @@ def camt053_get_date(data: dict, key: str, default: date or None = None, require
 
 
 def camt053_parse_statement_from_file(filename: str) -> dict:
-    from jutil.xml import xml_to_dict
     if parse_filename_suffix(filename).upper() not in CAMT053_STATEMENT_SUFFIXES:
         raise ValidationError(_('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
             filename=filename, suffixes=', '.join(CAMT053_STATEMENT_SUFFIXES), file_type='camt.053'))

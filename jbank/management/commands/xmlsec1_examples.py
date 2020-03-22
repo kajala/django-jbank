@@ -18,6 +18,6 @@ class Command(SafeCommand):
         print('xmlsec1-examples @ {}'.format(xmlsec1_examples_path))
         os.chdir(xmlsec1_examples_path)
         if options['clean'] or options['clean_only']:
-            subprocess.run(['make', 'clean'])
+            subprocess.run(['make', 'clean'], check=True)
         if not options['clean_only']:
-            subprocess.run(['make'])
+            subprocess.run(['make'], check=True)

@@ -25,7 +25,6 @@ from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
-
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
@@ -222,11 +221,11 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
         'record',
     )
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(self, request, obj=None):  # pylint: disable=unused-argument
         return False
 
 
-def mark_as_manually_settled(modeladmin, request, qs):
+def mark_as_manually_settled(modeladmin, request, qs):  # pylint: disable=unused-argument
     try:
         data = request.POST.dict()
 
@@ -252,7 +251,7 @@ def mark_as_manually_settled(modeladmin, request, qs):
     return None
 
 
-def unmark_manually_settled_flag(modeladmin, request, qs):
+def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=unused-argument
     user = request.user
     for e in list(qs.filter(manually_settled=True)):
         e.manually_settled = False
@@ -1017,7 +1016,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
             fields = fields[:-2]
         return fields
 
-    def soap_download_view(self, request, object_id, file_type, form_url = '', extra_context = None):
+    def soap_download_view(self, request, object_id, file_type, form_url = '', extra_context = None):  # pylint: disable=unused-argument
         obj = get_object_or_404(self.get_queryset(request), id=object_id)
         assert isinstance(obj, WsEdiSoapCall)
         if file_type == 'f':
