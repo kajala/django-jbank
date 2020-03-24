@@ -159,8 +159,6 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     stm.bank_specific_info_1 = camt053_get_val(d_stmt, 'AddtlStmtInf', required=False)[:1024]
     for k, v in kw.items():
         setattr(stm, k, v)
-    from pprint import pprint
-    pprint(stm.__dict__)
     stm.full_clean()
     stm.save()
 
