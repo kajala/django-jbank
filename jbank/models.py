@@ -140,7 +140,7 @@ class Statement(AccountEntrySourceFile):
     contact_info_2 = models.CharField(_('contact info (2)'), max_length=64, blank=True, default='')
     bank_specific_info_1 = models.CharField(_('bank specific info (1)'), max_length=1024, blank=True, default='')
     iban = models.CharField(_('IBAN'), max_length=32, db_index=True)
-    bic = models.CharField(_('BIC'), max_length=8, db_index=True)
+    bic = models.CharField(_('BIC'), max_length=11, db_index=True)
 
     class Meta:
         verbose_name = _('statement')

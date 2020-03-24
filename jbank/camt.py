@@ -153,10 +153,14 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
             statement_currency=stm.currency_code, account_currency=account.currency)))
     stm.owner_name = camt053_get_val(d_ownr, 'Nm', name='Stm.Acct.Ownr.Nm')
     stm.begin_balance, stm.begin_balance_date = camt053_get_stmt_bal(d_stmt, 'OPBD')
+    if stm.begin_balance_date is None:
+        stm.begin_balance_date = stm.begin_date
     stm.record_count = camt053_get_int(d_txsummary.get('TtlNtries', {}), 'NbOfNtries', name='Stmt.TxsSummry.TtlNtries.NbOfNtries')
     stm.bank_specific_info_1 = camt053_get_val(d_stmt, 'AddtlStmtInf', required=False)[:1024]
     for k, v in kw.items():
         setattr(stm, k, v)
+    from pprint import pprint
+    pprint(stm.__dict__)
     stm.full_clean()
     stm.save()
 
