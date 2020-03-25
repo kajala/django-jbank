@@ -612,6 +612,7 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         'created',
         'errors',
         'file_link',
+        'original_filename',
     )
 
     def file_link(self, obj):
@@ -695,6 +696,7 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         'created',
         'errors',
         'file_link',
+        'original_filename',
     )
 
     def file_link(self, obj):

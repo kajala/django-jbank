@@ -1,4 +1,5 @@
 #pylint: disable=too-many-branches
+import logging
 import os
 from pprint import pprint
 from django.core.files import File
@@ -11,6 +12,9 @@ from jbank.parsers import parse_tiliote_statements_from_file
 from jutil.command import SafeCommand
 
 
+logger = logging.getLogger(__name__)
+
+
 class Command(SafeCommand):
     help = 'Parses bank account statement .TO (tiliote) files'
 
@@ -20,11 +24,21 @@ class Command(SafeCommand):
         parser.add_argument('--test', action='store_true')
         parser.add_argument('--delete-old', action='store_true')
         parser.add_argument('--auto-create-accounts', action='store_true')
+        parser.add_argument('--resolve-original-filenames', action='store_true')
 
     def do(self, *args, **options):
         files = list_dir_files(options['path'])
         for filename in files:
             plain_filename = os.path.basename(filename)
+
+            if options['resolve_original_filenames']:
+                found = StatementFile.objects.filter(statement__name=plain_filename).first()
+                if found and not found.original_filename:
+                    assert isinstance(found, StatementFile)
+                    found.original_filename = filename
+                    found.save(update_fields=['original_filename'])
+                    logger.info('Original TO statement filename of %s resolved to %s', found, filename)
+
             if options['delete_old']:
                 Statement.objects.filter(name=plain_filename).delete()
 
@@ -34,7 +48,7 @@ class Command(SafeCommand):
                 continue
 
             if not Statement.objects.filter(name=plain_filename).first():
-                print('Importing statement file {}'.format(plain_filename))
+                print('Importing statement file {}'.format(filename))
 
                 statements = parse_tiliote_statements_from_file(filename)
                 if options['verbose']:
@@ -42,7 +56,7 @@ class Command(SafeCommand):
 
                 with transaction.atomic():
                     if not Statement.objects.filter(name=plain_filename).first():
-                        file = StatementFile()
+                        file = StatementFile(original_filename=filename)
                         file.save()
                         with open(filename, 'rb') as fp:
                             file.file.save(plain_filename, File(fp))

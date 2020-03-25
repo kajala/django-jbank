@@ -24,12 +24,22 @@ class Command(SafeCommand):
         parser.add_argument('--test', action='store_true')
         parser.add_argument('--delete-old', action='store_true')
         parser.add_argument('--auto-create-accounts', action='store_true')
+        parser.add_argument('--resolve-original-filenames', action='store_true')
 
     def do(self, *args, **options):
         files = list_dir_files(options['path'])
         # pprint(files)
         for filename in files:
             plain_filename = os.path.basename(filename)
+
+            if options['resolve_original_filenames']:
+                found = ReferencePaymentBatchFile.objects.filter(referencepaymentbatch__name=plain_filename).first()
+                if found and not found.original_filename:
+                    assert isinstance(found, ReferencePaymentBatchFile)
+                    found.original_filename = filename
+                    found.save(update_fields=['original_filename'])
+                    logger.info('Original SVM reference payment batch filename of %s resolved to %s', found, filename)
+
             if options['delete_old']:
                 ReferencePaymentBatch.objects.filter(name=plain_filename).delete()
 
@@ -39,7 +49,7 @@ class Command(SafeCommand):
                 continue
 
             if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
-                logger.info('Importing reference payment batch file {}'.format(plain_filename))
+                print('Importing statement file {}'.format(filename))
 
                 batches = parse_svm_batches_from_file(filename)
                 if options['verbose']:
@@ -47,7 +57,7 @@ class Command(SafeCommand):
 
                 with transaction.atomic():
                     if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
-                        file = ReferencePaymentBatchFile()
+                        file = ReferencePaymentBatchFile(original_filename=filename)
                         file.save()
                         with open(filename, 'rb') as fp:
                             file.file.save(plain_filename, File(fp))
@@ -61,4 +71,4 @@ class Command(SafeCommand):
 
                             create_reference_payment_batch(data, name=plain_filename, file=file)
             else:
-                print('Skipping reference payment batch file {}'.format(filename))
+                print('Skipping reference payment file {}'.format(filename))
