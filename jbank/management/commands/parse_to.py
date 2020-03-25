@@ -25,6 +25,7 @@ class Command(SafeCommand):
         parser.add_argument('--delete-old', action='store_true')
         parser.add_argument('--auto-create-accounts', action='store_true')
         parser.add_argument('--resolve-original-filenames', action='store_true')
+        parser.add_argument('--tag', type=str, default='')
 
     def do(self, *args, **options):
         files = list_dir_files(options['path'])
@@ -56,7 +57,7 @@ class Command(SafeCommand):
 
                 with transaction.atomic():
                     if not Statement.objects.filter(name=plain_filename).first():
-                        file = StatementFile(original_filename=filename)
+                        file = StatementFile(original_filename=filename, tag=options['tag'])
                         file.save()
                         with open(filename, 'rb') as fp:
                             file.file.save(plain_filename, File(fp))

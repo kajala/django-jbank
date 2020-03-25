@@ -337,6 +337,7 @@ class StatementFile(models.Model):
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
     file = models.FileField(_('file'), upload_to='uploads')
     original_filename = models.CharField(_('original filename'), blank=True, default='', max_length=256)
+    tag = models.CharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
     errors = models.TextField(_('errors'), max_length=4086, default='', blank=True)
 
     class Meta:
@@ -355,6 +356,7 @@ class ReferencePaymentBatchFile(models.Model):
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
     file = models.FileField(_('file'), upload_to='uploads')
     original_filename = models.CharField(_('original filename'), blank=True, default='', max_length=256)
+    tag = models.CharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
     errors = models.TextField(_('errors'), max_length=4086, default='', blank=True)
 
     class Meta:
