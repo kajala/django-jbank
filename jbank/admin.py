@@ -86,6 +86,27 @@ class AccountEntryMatchedFilter(SimpleListFilter):
         return queryset
 
 
+class AccountNameFilter(SimpleListFilter):
+    """
+    Filters account entries based on account name.
+    """
+    title = _('account.name.filter')
+    parameter_name = 'account-name'
+
+    def lookups(self, request, model_admin):
+        ops = []
+        qs = model_admin.get_queryset(request)
+        for e in qs.distinct('account__name'):
+            ops.append((e.account.name, e.account.name))
+        return sorted(ops, key=lambda x: x[0])
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val:
+            return queryset.filter(account__name=val)
+        return queryset
+
+
 class StatementAdmin(ModelAdminBase):
     exclude = ()
     list_per_page = 20
@@ -324,6 +345,7 @@ class StatementRecordAdmin(ModelAdminBase):
         AccountEntryMatchedFilter,
         SettlementEntryTypesFilter,
         'record_code',
+        AccountNameFilter,
     )
     search_fields = (
         '=archive_identifier',
@@ -442,6 +464,7 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         AccountEntryMatchedFilter,
         'correction_identifier',
         'receipt_code',
+        AccountNameFilter,
     )
     search_fields = (
         '=archive_identifier',
@@ -602,6 +625,14 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
 
     date_hierarchy = 'created'
 
+    search_fields = (
+        'original_filename__contains',
+    )
+
+    list_filter = (
+        'tag',
+    )
+
     list_display = (
         'id',
         'created',
@@ -686,6 +717,10 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         'id',
         'created',
         'file_link',
+    )
+
+    list_filter = (
+        'tag',
     )
 
     search_fields = (
