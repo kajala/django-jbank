@@ -342,10 +342,11 @@ class StatementRecordAdmin(ModelAdminBase):
         'settled_item',
     )
     list_filter = (
+        'statement__file__tag',
+        AccountNameFilter,
         AccountEntryMatchedFilter,
         SettlementEntryTypesFilter,
         'record_code',
-        AccountNameFilter,
     )
     search_fields = (
         '=archive_identifier',
@@ -461,10 +462,10 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
         'parent',
     )
     list_filter = (
+        'batch__file__tag',
+        AccountNameFilter,
         AccountEntryMatchedFilter,
         'correction_identifier',
-        'receipt_code',
-        AccountNameFilter,
     )
     search_fields = (
         '=archive_identifier',
