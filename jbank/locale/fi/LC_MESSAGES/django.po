@@ -817,10 +817,10 @@ msgstr "WS-EDI SOAP kutsut"
 #: jbank/models.py:569
 #, python-brace-format
 msgid ""
-"WS-EDI connection cannot be found by target identifier {target_identifier} "
+"WS-EDI connection cannot be found by receiver identifier {receiver_identifier} "
 "since there are {matches} matches"
 msgstr ""
-"Pankkiyhteyttä ei voida valita vastaanottajan tunnisteen {target_identifier} "
+"Pankkiyhteyttä ei voida valita vastaanottajan tunnisteen {receiver_identifier} "
 "perusteella koska täsmääviä yhteyksiä on {matches} kpl"
 
 #: jbank/models.py:576
