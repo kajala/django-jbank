@@ -566,7 +566,9 @@ class WsEdiConnectionManager(models.Manager):
     def get_by_target_identifier(self, target_identifier: str):
         objs = list(self.filter(target_identifier=target_identifier))
         if len(objs) != 1:
-            raise ValidationError(_('WS-EDI connection cannot be found by target identifier {target_identifier} since there are {matches} matches').format(target_identifier=target_identifier, matches=len(objs)))
+            raise ValidationError(_(
+                'WS-EDI connection cannot be found by target identifier {target_identifier} since there are {matches} matches').format(
+                target_identifier=target_identifier, matches=len(objs)))
         return objs[0]
 
 
