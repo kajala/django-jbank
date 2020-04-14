@@ -562,7 +562,16 @@ class WsEdiSoapCall(models.Model):
         return os.path.join(settings.WSEDI_LOG_PATH, filename) if hasattr(settings, 'WSEDI_LOG_PATH') and settings.WSEDI_LOG_PATH else ''
 
 
+class WsEdiConnectionManager(models.Manager):
+    def get_by_target_identifier(self, target_identifier: str):
+        objs = list(self.filter(target_identifier=target_identifier))
+        if len(objs) != 1:
+            raise ValidationError(_('WS-EDI connection cannot be found by target identifier {target_identifier} since there are {matches} matches').format(target_identifier=target_identifier, matches=len(objs)))
+        return objs[0]
+
+
 class WsEdiConnection(models.Model):
+    objects = WsEdiConnectionManager()
     name = models.CharField(_('name'), max_length=64)
     enabled = models.BooleanField(_('enabled'), blank=True, default=True)
     sender_identifier = models.CharField(_('sender identifier'), max_length=32)
