@@ -942,6 +942,9 @@ msgstr ""
 msgid "pain001.remittance.info.missing"
 msgstr "viestikenttä puuttuu"
 
+msgid "invalid value"
+msgstr "epäkelpo arvo"
+
 #: jbank/sepa.py:58
 msgid "pain001.remittance.info.type.invalid"
 msgstr "Pain001 tiedoston maksuviitteen tyyppi epäkelpo"

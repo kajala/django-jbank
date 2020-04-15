@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from jutil.format import dec2
 from jutil.parse import parse_datetime
 from jutil.validators import iban_filter, iban_validator, iso_payment_reference_validator, \
-    fi_payment_reference_validator, ascii_filter
+    fi_payment_reference_validator, ascii_filter, country_code_validator, bic_validator
 from jutil.xml import xml_to_dict, _xml_element_set_data_r
 
 
@@ -81,6 +81,16 @@ class Pain001:
                  debtor_org_id: str,
                  debtor_address_lines: list,
                  debtor_country_code: str):
+        if not debtor_org_id or len(debtor_org_id) < 5:
+            raise ValidationError({'debtor_org_id': _('invalid value')})
+        if not debtor_name or len(debtor_name) < 2:
+            raise ValidationError({'debtor_name': _('invalid value')})
+        if not debtor_address_lines:
+            raise ValidationError({'debtor_address_lines': _('invalid value')})
+        bic_validator(debtor_bic)
+        country_code_validator(debtor_country_code)
+        iban_validator(debtor_account)
+
         self.msg_id = msg_id
         self.debtor = Pain001Party(debtor_name, debtor_account, debtor_bic, debtor_org_id, debtor_address_lines, debtor_country_code)
         self.payments = []
