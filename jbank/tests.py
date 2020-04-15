@@ -8,12 +8,14 @@ from pprint import pprint
 
 import pytz
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.template.loader import get_template
 from django.test import TestCase
+from jacc.models import Account
 
 from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.helpers import validate_xml
-from jbank.models import WsEdiConnection, WsEdiSoapCall
+from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jutil.format import format_xml
@@ -146,3 +148,17 @@ class Tests(TestCase):
         xsd = os.path.join(settings.BASE_DIR, 'data/finvoice/xsd-test.xsd')
         with open(xml, 'rb') as fp:
             validate_xml(fp.read(), xsd)
+
+    def test_payout_validation(self):
+        payer = PayoutParty.objects.all().first()
+        recipient = PayoutParty.objects.all().last()
+        connection = WsEdiConnection.objects.all().first()
+        acc = Account.objects.all().first()
+        p = Payout(
+            connection=connection,
+            payer=payer,
+            recipient=recipient,
+            messages='testi',
+            account=acc)
+        with self.assertRaisesMessage(ValidationError, '> 0'):
+            p.full_clean()

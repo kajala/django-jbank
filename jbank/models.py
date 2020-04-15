@@ -5,6 +5,7 @@ import re
 import subprocess
 import tempfile
 from datetime import datetime, time
+from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
 from typing import List
@@ -448,6 +449,10 @@ class Payout(AccountEntry):
             if status:
                 assert isinstance(status, PayoutStatus)
                 self.paid_date = status.created
+
+        # always require amount
+        if self.amount is None or self.amount <= Decimal('0.00'):
+            raise ValidationError({'amount': _('value > 0 required')})
 
     def generate_msg_id(self, commit: bool = True):
         msg_id_base = re.sub(r'[^\d]', '', now().isoformat())[:-4]
