@@ -32,7 +32,8 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log, admin_obj_link
+from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
+
 
 logger = logging.getLogger(__name__)
 

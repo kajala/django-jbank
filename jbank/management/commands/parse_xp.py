@@ -23,33 +23,37 @@ class Command(SafeCommand):
         parser.add_argument('--test', action='store_true')
         parser.add_argument('--verbose', action='store_true')
         parser.add_argument('--suffix', type=str, default='XP')
-        parser.add_argument('--set-default-path', action='store_true')
+        parser.add_argument('--set-default-paths', action='store_true')
         parser.add_argument('--ignore-errors', action='store_true')
         parser.add_argument('--ws', type=int)
 
+    def _set_default_paths(self, options: dict):
+        default_path = os.path.abspath(options['path'])
+        qs = PayoutStatus.objects.all().filter(file_path='')
+        if options['ws']:
+            qs = qs.filter(payout__connection_id=options['ws'])
+        objs = list(qs)
+        print('Setting default path of {} status updates to {}'.format(len(objs), strip_media_root(default_path)))
+        for obj in objs:
+            assert isinstance(obj, PayoutStatus)
+            full_path = os.path.join(default_path, obj.file_name)
+            if not os.path.isfile(full_path):
+                msg = 'Error while updating file path of PayoutStatus id={}: File {} not found'.format(obj.id,
+                                                                                                       full_path)
+                if not options['ignore_errors']:
+                    raise Exception(msg)
+                logger.error(msg)
+                continue
+            file_path = strip_media_root(full_path)
+            logger.info('PayoutStatus.objects.filter(id=%s).update(file_path="%s")', obj.id, file_path)
+            if not options['test']:
+                PayoutStatus.objects.filter(id=obj.id).update(file_path=file_path)
+                admin_log([obj], 'File path set as "{}" from terminal (parse_xp)'.format(full_path))
+        print('Done')
+
     def do(self, *args, **options):
-        if options['set_default_path']:
-            default_path = os.path.abspath(options['path'])
-            qs = PayoutStatus.objects.all().filter(file_path='')
-            if options['ws']:
-                qs = qs.filter(payout__connection_id=options['ws'])
-            objs = list(qs)
-            print('Setting default path of {} status updates to {}'.format(len(objs), strip_media_root(default_path)))
-            for obj in objs:
-                assert isinstance(obj, PayoutStatus)
-                full_path = os.path.join(default_path, obj.file_name)
-                if not os.path.isfile(full_path):
-                    msg = 'Error while updating file path of PayoutStatus id={}: File {} not found'.format(obj.id, full_path)
-                    if not options['ignore_errors']:
-                        raise Exception(msg)
-                    logger.error(msg)
-                    continue
-                file_path = strip_media_root(full_path)
-                logger.info('PayoutStatus.objects.filter(id=%s).update(file_path="%s")', obj.id, file_path)
-                if not options['test']:
-                    PayoutStatus.objects.filter(id=obj.id).update(file_path=file_path)
-                    admin_log([obj], 'File path set as "{}" from terminal (parse_xp)'.format(full_path))
-            print('Done')
+        if options['set_default_paths']:
+            self._set_default_paths(options)
             return
 
         files = list_dir_files(options['path'], '.' + options['suffix'])
