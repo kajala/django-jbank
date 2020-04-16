@@ -15,6 +15,7 @@ import re
 from lxml import etree, objectify
 from jutil.parse import parse_datetime
 
+from jutil.format import strip_media_root
 
 ASSIGNABLE_STATEMENT_HEADER_FIELDS = (
     'account_number',
@@ -219,7 +220,9 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: dateti
         created = now()
     s = Pain002(bcontent)
     p = Payout.objects.filter(msg_id=s.original_msg_id).first()
-    ps = PayoutStatus(payout=p, file_name=basename(filename), msg_id=s.msg_id, original_msg_id=s.original_msg_id,
+
+    ps = PayoutStatus(payout=p, file_name=basename(filename), file_path=strip_media_root(filename),
+                      msg_id=s.msg_id, original_msg_id=s.original_msg_id,
                       group_status=s.group_status, status_reason=s.status_reason[:255], created=created)
     ps.full_clean()
     fields = (

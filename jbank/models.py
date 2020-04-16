@@ -20,7 +20,7 @@ from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account
 from jutil.dict import choices_label
-from jutil.format import format_xml
+from jutil.format import format_xml, get_media_full_path
 from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
 
 
@@ -495,7 +495,8 @@ class PayoutStatus(models.Model):
     objects = PayoutStatusManager()
     payout = models.ForeignKey(Payout, verbose_name=_('payout'), related_name='payoutstatus_set', on_delete=models.PROTECT, null=True, default=None, blank=True)  # noqa
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
-    file_name = models.CharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
+    file_name = models.CharField(_('file name'), max_length=128, blank=True, db_index=True, editable=False)
+    file_path = models.CharField(_('file path'), max_length=255, blank=True, db_index=True, editable=False)
     response_code = models.CharField(_('response code'), max_length=4, blank=True, db_index=True)
     response_text = models.CharField(_('response text'), max_length=128, blank=True)
     msg_id = models.CharField(_('message id'), max_length=64, blank=True, db_index=True)
@@ -509,6 +510,10 @@ class PayoutStatus(models.Model):
 
     def __str__(self):
         return self.group_status
+
+    @property
+    def full_path(self) -> str:
+        return get_media_full_path(self.file_path)
 
     @property
     def is_accepted(self):

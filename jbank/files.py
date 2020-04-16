@@ -12,12 +12,12 @@ def list_dir_files(path: str, suffix: str = '') -> list:
     if suffix:
         suffix = suffix.lower()
     if Path(path).is_file():
-        files = [path]
+        files = [os.path.abspath(path)]
     else:
         files = []
         for f in os.listdir(path):
             file_path = os.path.join(path, f)
             if Path(file_path).is_file():
                 if not suffix or f.lower().endswith(suffix):
-                    files.append(file_path)
+                    files.append(os.path.abspath(file_path))
     return list(sorted(files))

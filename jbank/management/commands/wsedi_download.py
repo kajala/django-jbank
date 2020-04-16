@@ -41,7 +41,7 @@ class Command(SafeCommand):
             return
 
         start_date, end_date = parse_start_and_end_date(pytz.timezone('Europe/Helsinki'), **options)
-        path = options['path']
+        path = os.path.abspath(options['path'])
         command = 'DownloadFileList'
         time_now = now()
         file_reference = options['file_reference']

@@ -15,7 +15,7 @@ from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
-from django.http import HttpRequest
+from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse
 from django.utils.html import format_html
@@ -32,8 +32,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
-
+from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log, admin_obj_link
 
 logger = logging.getLogger(__name__)
 
@@ -775,15 +774,11 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         return self.get_download_urls() + super().get_urls()
 
 
-class PayoutStatusInlineAdmin(admin.TabularInline):
-    exclude = ()
-    model = PayoutStatus
-    can_delete = False
-    extra = 0
-    ordering = ('-id', )
-    readonly_fields = (
+class PayoutStatusAdmin(ModelAdminBase):
+    fields = (
         'created',
-        'file_name',
+        'payout',
+        'file_name_link',
         'response_code',
         'response_text',
         'msg_id',
@@ -791,6 +786,58 @@ class PayoutStatusInlineAdmin(admin.TabularInline):
         'group_status',
         'status_reason',
     )
+    readonly_fields = fields
+    list_display = (
+        'id',
+        'created',
+        'payout',
+        'file_name_link',
+        'response_code',
+        'response_text',
+        'original_msg_id',
+        'group_status',
+    )
+
+    def file_download_view(self, request, pk, filename, form_url='', extra_context=None):  # pylint: disable=unused-argument
+        obj = get_object_or_404(self.get_queryset(request), pk=pk, file_name=filename)
+        assert isinstance(obj, PayoutStatus)
+        full_path = obj.full_path
+        if not os.path.isfile(full_path):
+            raise Http404(_('File {} not found').format(filename))
+        return FormattedXmlFileResponse(full_path)
+
+    def file_name_link(self, obj):
+        assert isinstance(obj, PayoutStatus)
+        if obj.id is None or not obj.full_path:
+            return obj.file_name
+        admin_url = reverse('admin:jbank_payoutstatus_file_download', args=(obj.id, obj.file_name,))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
+    file_name_link.short_description = _('file')
+    file_name_link.admin_order_field = 'file_name'
+
+    def get_urls(self):
+        urls = [
+            url(r'^(\d+)/change/status-downloads/(.+)/$', self.file_download_view, name='jbank_payoutstatus_file_download'),
+        ]
+        return urls + super().get_urls()
+
+
+class PayoutStatusInlineAdmin(admin.TabularInline):
+    model = PayoutStatus
+    can_delete = False
+    extra = 0
+    ordering = ('-id', )
+    fields = PayoutStatusAdmin.fields
+    readonly_fields = PayoutStatusAdmin.readonly_fields
+
+    def file_name_link(self, obj):
+        assert isinstance(obj, PayoutStatus)
+        if obj.id is None or not obj.full_path:
+            return obj.file_name
+        admin_url = reverse('admin:jbank_payoutstatus_file_download', args=(obj.id, obj.file_name,))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
+    file_name_link.short_description = _('file')
+    file_name_link.admin_order_field = 'file_name'
 
 
 class PayoutAdmin(ModelAdminBase):
@@ -1112,6 +1159,7 @@ unmark_manually_settled_flag.short_description = _('Unmark manually settled flag
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
 admin.site.register(Payout, PayoutAdmin)
+admin.site.register(PayoutStatus, PayoutStatusAdmin)
 admin.site.register(PayoutParty, PayoutPartyAdmin)
 admin.site.register(Refund, RefundAdmin)
 admin.site.register(Statement, StatementAdmin)
