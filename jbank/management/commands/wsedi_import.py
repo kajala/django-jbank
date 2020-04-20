@@ -23,7 +23,7 @@ class Command(SafeCommand):
 
     def do(self, *args, **options):
         zf = zipfile.ZipFile(options['file'])
-        ws_data = None
+        ws_data = {}
         today = now()
 
         for filename in zf.namelist():

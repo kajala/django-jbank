@@ -4,6 +4,8 @@ import logging
 import traceback
 from datetime import date
 from os.path import basename
+from typing import Callable
+
 import requests
 from django.conf import settings
 from django.template.loader import get_template
@@ -11,7 +13,7 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext as _
 from zeep.wsse import BinarySignature
 from jbank.models import WsEdiConnection, WsEdiSoapCall
-from lxml import etree
+from lxml import etree  # pytype: disable=import-error
 
 
 logger = logging.getLogger(__name__)
@@ -87,7 +89,7 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
 
 def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',  # noqa
                   file_content: str = '', start_date: date or None = None, end_date: date or None = None,
-                  verbose: bool = False, cls: callable = WsEdiSoapCall, **kwargs) -> bytes:
+                  verbose: bool = False, cls: Callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
     :param ws:
     :param command:

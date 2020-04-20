@@ -141,7 +141,7 @@ class Pain001:
             el = Element(tag)
             assert isinstance(el, Element)
             _xml_element_set_data_r(el, data, value_key, attribute_prefix)
-            return el
+            return el  # pytype: disable=bad-return-type
 
     def _grp_hdr(self) -> Element:
         g = Element('GrpHdr')

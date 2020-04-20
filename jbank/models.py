@@ -8,7 +8,7 @@ from datetime import datetime, time
 from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 import cryptography
 import pytz
 from cryptography import x509
@@ -271,7 +271,7 @@ class StatementRecordSepaInfo(models.Model):
 
 
 class ReferencePaymentBatchManager(models.Manager):
-    def latest_record_date(self) -> datetime:
+    def latest_record_date(self) -> Optional[datetime]:
         """
         :return: datetime of latest record available or None
         """
@@ -483,7 +483,7 @@ class Payout(AccountEntry):
     def group_status(self):
         status = PayoutStatus.objects.filter(payout=self).order_by('-id').first()
         return status.group_status if status else ''
-    group_status.fget.short_description = _('payment.group.status')
+    group_status.fget.short_description = _('payment.group.status')  # pytype: disable=attribute-error
 
 
 class PayoutStatusManager(models.Manager):

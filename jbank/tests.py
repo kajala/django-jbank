@@ -1,18 +1,14 @@
 import os
 import subprocess
 from datetime import date, datetime
-
 from decimal import Decimal
 from os.path import join
-from pprint import pprint
-
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.template.loader import get_template
 from django.test import TestCase
 from jacc.models import Account
-
 from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.helpers import validate_xml
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
@@ -103,7 +99,7 @@ class Tests(TestCase):
         self.assertEqual(rate, Decimal('8.744'))
 
     def normalize_soap_env(self, content: bytes) -> bytes:
-        from lxml import etree  # local
+        from lxml import etree  # pytype: disable=import-error
         doc = etree.fromstring(content)
         doc.find('.//{http://www.w3.org/2000/09/xmldsig#}DigestValue').text = 'x'
         doc.find('.//{http://www.w3.org/2000/09/xmldsig#}Reference').attrib['URI'] = 'x'
@@ -115,7 +111,7 @@ class Tests(TestCase):
         return etree.tostring(doc)
 
     def test_x509(self):
-        from lxml import etree  # local
+        from lxml import etree  # pytype: disable=import-error
         from zeep.wsse import BinarySignature
         print('MEDIA_ROOT = {}'.format(settings.MEDIA_ROOT))
         ws = WsEdiConnection(name='test', sender_identifier='12319203', receiver_identifier='123192031', target_identifier='1', environment='TEST', soap_endpoint='http://localhost')

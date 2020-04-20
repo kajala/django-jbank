@@ -1,5 +1,7 @@
 from datetime import datetime, date
 from decimal import Decimal
+from typing import Tuple, Any
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -79,7 +81,7 @@ def camt053_parse_statement_from_file(filename: str) -> dict:
         return data
 
 
-def camt053_get_stmt_bal(d_stmt: dict, bal_type: str) -> (Decimal, date):
+def camt053_get_stmt_bal(d_stmt: dict, bal_type: str) -> Tuple[Decimal, date]:
     for bal in d_stmt.get('Bal', []):
         if bal.get('Tp', {}).get('CdOrPrtry', {}).get('Cd', '') == bal_type:
             amt = Decimal(bal.get('Amt', {}).get('@', ''))
@@ -96,7 +98,7 @@ def camt053_domain_from_record_code(record_domain: str) -> str:
     return ''
 
 
-def camt053_get_unified_val(qs, k: str, default) -> str:
+def camt053_get_unified_val(qs, k: str, default: Any) -> Any:
     v = default
     for e in qs:
         v2 = getattr(e, k)
@@ -112,7 +114,8 @@ def camt053_get_unified_str(qs, k: str) -> str:
 
 
 @transaction.atomic  # noqa
-def camt053_create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:
+def camt053_create_statement(statement_data: dict,  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
+                             name: str, file: StatementFile, **kw) -> Statement:
     """
     Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()
     :param statement_data: XML data in form of dict
@@ -120,7 +123,6 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     :param file: Source statement file
     :return: Statement
     """
-    #pylint: disable=too-many-locals,too-many-statements,too-many-branches
     account_number = camt053_get_iban(statement_data)
     if not account_number:
         raise ValidationError('{name}: '.format(name=name) + _("account.not.found").format(account_number=''))
@@ -304,5 +306,4 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         rec.full_clean()
         rec.save()
 
-    #pylint: enable=too-many-locals,too-many-statements,too-many-branches
     return stm

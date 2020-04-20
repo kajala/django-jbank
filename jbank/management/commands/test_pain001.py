@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management import CommandParser
 from jbank.sepa import Pain001
 from jutil.command import SafeCommand
-from jutil.format import format_xml
+from jutil.format import format_xml, format_xml_bytes
 from jutil.validators import iban_bic
 
 
@@ -28,7 +28,7 @@ class Command(SafeCommand):
                     ['Koukkukankareentie 29', '20320 Turku'], 'FI')
         creditor_acc = 'FI8847304720017517'
         p.add_payment('201802071339A0001', 'Jani Kajala', creditor_acc, iban_bic(creditor_acc), Decimal('49.00'), 'vuokratilitys')
-        xml_str = format_xml(p.render().decode())
+        xml_str = format_xml_bytes(p.render_to_bytes()).decode()
         print(xml_str)
 
         filename = '/tmp/pain001.xml'

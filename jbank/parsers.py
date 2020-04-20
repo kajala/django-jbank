@@ -4,7 +4,7 @@ from copy import copy
 from os.path import basename
 from datetime import time, datetime, date
 from decimal import Decimal
-from typing import List
+from typing import List, Any
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -319,19 +319,17 @@ def parse_records(line: str, specs: tuple, line_number: int, check_record_length
     i = 0
     data = dict()
     data['line_number'] = line_number
-    #pylint: disable=unused-variable
-    for name, fmt, req in specs:
+    for name, fmt, req in specs:  # pylint: disable=unused-variable
         data_type, data_len = parse_record_format(fmt)
         value = parse_record_value(data_type, data_len, line[i:], name=name, line_number=line_number)
         # print('[{}:{}] {}="{}"'.format(i, i+data_len, name, value))
         data[name] = str(value).strip()
         i += data_len
-    #pylint: enable=unused-variable
     data['extra_data'] = line[i:]
 
     record_length = data.get('record_length', record_length)
     if check_record_length and record_length:
-        data['extra_data'] = data['extra_data'].strip()
+        data['extra_data'] = str(data['extra_data']).strip()
         if i != record_length and data['extra_data'] != '':
             raise ValidationError(_('Line {line}: Record length ({record_length}) does not match length of parsed data ({data_length}). '
                                     'Extra data: "{extra_data}"').format(
@@ -401,7 +399,7 @@ def convert_time(v: str, field_name: str) -> time:
     return time(int(v[0:2]), int(v[2:4]))
 
 
-def convert_date_fields(data: dict, date_fields: tuple, tz: timezone):
+def convert_date_fields(data: dict, date_fields: tuple, tz: Any):
     for k in date_fields:
         if isinstance(k, str):
             v_date = data.get(k)
@@ -444,8 +442,7 @@ def convert_decimal_fields(data: dict, decimal_fields: tuple):
             raise ValidationError(_('Invalid decimal field format: {}').format(field))
 
 
-#pylint: disable=too-many-arguments
-def combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records) -> dict:
+def combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records) -> dict:  # pylint: disable=too-many-arguments
     data = {
         'header': header,
         'records': records,
@@ -459,11 +456,9 @@ def combine_statement(header, records, balance, cumulative, cumulative_adjustmen
     if special_records:
         data['special_records'] = special_records
     return data
-#pylint: enable=too-many-arguments
 
 
-def parse_tiliote_statements(content: str, filename: str) -> list:
-    #pylint: disable=too-many-locals
+def parse_tiliote_statements(content: str, filename: str) -> list:  # pylint: disable=too-many-locals
     lines = content.split('\n')
     nlines = len(lines)
 
@@ -536,7 +531,6 @@ def parse_tiliote_statements(content: str, filename: str) -> list:
             raise ValidationError(_('Unknown record type on {}({}): {}').format(filename, line_number, record_type))
 
     statements.append(combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records))
-    #pylint: enable=too-many-locals
     return statements
 
 

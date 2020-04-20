@@ -21,4 +21,5 @@ __pycache__
 /local.*
 /project/settings.py
 /*.zip
+/.pytype
 

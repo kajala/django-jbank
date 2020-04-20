@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime, date
 from os.path import basename
+from typing import Any, Tuple, Optional
+
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -12,7 +14,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile, Payout, PayoutStatus, PAYOUT_PAID
 from jbank.sepa import Pain002
 import re
-from lxml import etree, objectify
+from lxml import etree, objectify  # pytype: disable=import-error
 from jutil.parse import parse_datetime
 
 from jutil.format import strip_media_root
@@ -95,7 +97,8 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic  # noqa
-def create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:
+def create_statement(statement_data: dict, name: str,  # pylint: disable=too-many-locals,too-many-branches
+                     file: StatementFile, **kw) -> Statement:
     """
     Creates Statement from statement data parsed by parse_tiliote_statements()
     :param statement_data: See parse_tiliote_statements
@@ -103,7 +106,6 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     :param file: Source statement file
     :return: Statement
     """
-    #pylint: disable=too-many-locals,too-many-branches
     if 'header' not in statement_data or not statement_data['header']:
         raise ValidationError('Invalid header field in statement data {}: {}'.format(name, statement_data.get('header')))
     header = statement_data['header']
@@ -160,7 +162,8 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
             # pprint(rec_data['sepa'])
             sepa_info.full_clean()
             sepa_info.save()
-    # pylint: enable=too-many-locals,too-many-branches
+
+    return stm
 
 
 @transaction.atomic
@@ -207,6 +210,8 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
         # pprint(rec_data)
         rec.full_clean()
         rec.save()
+
+    return batch
 
 
 def get_or_create_bank_account(account_number: str, currency: str = 'EUR') -> Account:
@@ -266,7 +271,7 @@ def validate_xml(content: bytes, xsd_file_name: str):
     objectify.fromstring(content, parser)
 
 
-def parse_start_and_end_date(tz: pytz.tzinfo or None = None, **options) -> (date or None, date or None):
+def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Optional[date]]:
     start_date = None
     end_date = None
     time_now = now().astimezone(tz if tz else pytz.utc)
