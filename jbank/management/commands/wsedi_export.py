@@ -1,7 +1,7 @@
 import json
 import os
 import zipfile
-from datetime import datetime
+from datetime import datetime, date
 from django.conf import settings
 from django.core.management import CommandParser
 from jutil.command import SafeCommand
@@ -27,7 +27,9 @@ class Command(SafeCommand):
         ws_data = {}
         for k, v in ws.__dict__.items():
             if not k.startswith('_') and k != 'id':
-                if isinstance(v, (datetime, datetime)):
+                if isinstance(v, datetime):
+                    v = v.isoformat()
+                elif isinstance(v, date):
                     v = v.isoformat()
                 ws_data[k] = v
                 if k.endswith('_file'):
