@@ -1,7 +1,7 @@
 #pylint: disable=too-many-locals,too-many-branches,logging-format-interpolation
 import logging
 from datetime import timedelta
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from django.utils.timezone import now
 from jutil.command import SafeCommand
 from jbank.ecb import download_euro_exchange_rates_xml, parse_euro_exchange_rates_xml

@@ -2,7 +2,7 @@
 import logging
 import os
 import traceback
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jbank.models import Payout, PAYOUT_ERROR, PAYOUT_WAITING_PROCESSING, PayoutStatus, PAYOUT_WAITING_UPLOAD, \
     WsEdiConnection
 from jbank.sepa import Pain001, PAIN001_REMITTANCE_INFO_MSG, PAIN001_REMITTANCE_INFO_OCR_ISO, \

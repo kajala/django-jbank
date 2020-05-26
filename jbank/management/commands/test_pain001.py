@@ -3,7 +3,7 @@ import subprocess
 from decimal import Decimal
 from os.path import join
 from django.conf import settings
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jbank.sepa import Pain001
 from jutil.command import SafeCommand
 from jutil.format import format_xml, format_xml_bytes

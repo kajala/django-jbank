@@ -1,5 +1,5 @@
 from pprint import pprint
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jbank.parsers import parse_tiliote_statements_from_file
 from jutil.command import SafeCommand
 

@@ -1,6 +1,6 @@
 import logging
 from decimal import Decimal
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
 from jbank.helpers import make_msg_id
 from jbank.models import Payout, PayoutParty

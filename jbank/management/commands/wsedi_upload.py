@@ -1,7 +1,7 @@
 #pylint: disable=logging-format-interpolation,too-many-locals,too-many-branches
 import logging
 import traceback
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.xml import xml_to_dict
 from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, WsEdiConnection
 from jbank.wsedi import wsedi_upload_file, wsedi_execute

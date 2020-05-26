@@ -1,4 +1,4 @@
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jbank.files import list_dir_files
 from jbank.sepa import Pain002
 from jutil.command import SafeCommand

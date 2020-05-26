@@ -157,7 +157,7 @@ class StatementAdmin(ModelAdminBase):
         assert isinstance(obj, Statement)
         admin_url = reverse('admin:jbank_statementrecord_statement_changelist', args=(obj.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), StatementRecord.objects.filter(statement=obj).count())
-    account_entry_list.short_description = _('account entries')
+    account_entry_list.short_description = _('account entries')  # type: ignore
 
     def file_link(self, obj):
         assert isinstance(obj, Statement)
@@ -165,8 +165,8 @@ class StatementAdmin(ModelAdminBase):
             return ''
         admin_url = reverse('admin:jbank_statementfile_change', args=(obj.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.name)
-    file_link.admin_order_field = 'file'
-    file_link.short_description = _('file')
+    file_link.admin_order_field = 'file'  # type: ignore
+    file_link.short_description = _('file')  # type: ignore
 
     def get_urls(self):
         return [
@@ -215,7 +215,7 @@ class StatementRecordDetailInlineAdmin(admin.StackedInline):
             assert isinstance(rinfo, StatementRecordRemittanceInfo)
             lines.append(str(rinfo))
         return mark_safe('<br>'.join(lines))
-    structured_remittance_info.short_description = _('structured remittance info')
+    structured_remittance_info.short_description = _('structured remittance info')  # type: ignore
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -398,8 +398,8 @@ class StatementRecordAdmin(ModelAdminBase):
             return ''
         admin_url = reverse('admin:jbank_statementfile_change', args=(obj.statement.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.statement.name)
-    source_file_link.admin_order_field = 'statement'
-    source_file_link.short_description = _('source file')
+    source_file_link.admin_order_field = 'statement'  # type: ignore
+    source_file_link.short_description = _('source file')  # type: ignore
 
     def file_link(self, obj):
         assert isinstance(obj, StatementRecord)
@@ -408,8 +408,8 @@ class StatementRecordAdmin(ModelAdminBase):
         name = basename(obj.statement.file.file.name)
         admin_url = reverse('admin:jbank_statementfile_change', args=(obj.statement.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
-    file_link.admin_order_field = 'file'
-    file_link.short_description = _("account statement file")
+    file_link.admin_order_field = 'file'  # type: ignore
+    file_link.short_description = _("account statement file")  # type: ignore
 
 
 class ReferencePaymentRecordAdmin(ModelAdminBase):
@@ -494,8 +494,8 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
             return ''
         admin_url = reverse('admin:jbank_referencepaymentbatchfile_change', args=(obj.batch.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.file)
-    file_link.admin_order_field = 'file'
-    file_link.short_description = _('file')
+    file_link.admin_order_field = 'file'  # type: ignore
+    file_link.short_description = _('file')  # type: ignore
 
     def get_urls(self):
         return [
@@ -518,8 +518,8 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
             return ''
         admin_url = reverse('admin:jbank_referencepaymentbatchfile_change', args=(obj.batch.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.name)
-    source_file_link.admin_order_field = 'batch'
-    source_file_link.short_description = _('account entry source file')
+    source_file_link.admin_order_field = 'batch'  # type: ignore
+    source_file_link.short_description = _('account entry source file')  # type: ignore
 
 
 class ReferencePaymentBatchAdmin(ModelAdminBase):
@@ -567,7 +567,7 @@ class ReferencePaymentBatchAdmin(ModelAdminBase):
         assert isinstance(obj, ReferencePaymentBatch)
         admin_url = reverse('admin:jbank_referencepaymentrecord_batch_changelist', args=(obj.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), ReferencePaymentRecord.objects.filter(batch=obj).count())
-    account_entry_list.short_description = _('account entries')
+    account_entry_list.short_description = _('account entries')  # type: ignore
 
     def file_link(self, obj):
         assert isinstance(obj, ReferencePaymentBatch)
@@ -575,8 +575,8 @@ class ReferencePaymentBatchAdmin(ModelAdminBase):
             return ''
         admin_url = reverse('admin:jbank_referencepaymentbatchfile_change', args=(obj.file.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file)
-    file_link.admin_order_field = 'file'
-    file_link.short_description = _('file')
+    file_link.admin_order_field = 'file'  # type: ignore
+    file_link.short_description = _('file')  # type: ignore
 
     def get_urls(self):
         return [
@@ -654,8 +654,8 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         name = basename(obj.file.name)
         admin_url = reverse('admin:jbank_statement_file_changelist', args=(obj.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
-    file_link.admin_order_field = 'file'
-    file_link.short_description = _('statements')
+    file_link.admin_order_field = 'file'  # type: ignore
+    file_link.short_description = _('statements')  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
         if add:
@@ -742,8 +742,8 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         name = basename(obj.file.name)
         admin_url = reverse('admin:jbank_referencepaymentbatch_file_changelist', args=(obj.id, ))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
-    file_link.admin_order_field = 'file'
-    file_link.short_description = _("reference payment batches")
+    file_link.admin_order_field = 'file'  # type: ignore
+    file_link.short_description = _("reference payment batches")  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
         if add:
@@ -813,8 +813,8 @@ class PayoutStatusAdmin(ModelAdminBase):
             return obj.file_name
         admin_url = reverse('admin:jbank_payoutstatus_file_download', args=(obj.id, obj.file_name,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
-    file_name_link.short_description = _('file')
-    file_name_link.admin_order_field = 'file_name'
+    file_name_link.short_description = _('file')  # type: ignore
+    file_name_link.admin_order_field = 'file_name'  # type: ignore
 
     def get_urls(self):
         urls = [
@@ -837,8 +837,8 @@ class PayoutStatusInlineAdmin(admin.TabularInline):
             return obj.file_name
         admin_url = reverse('admin:jbank_payoutstatus_file_download', args=(obj.id, obj.file_name,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
-    file_name_link.short_description = _('file')
-    file_name_link.admin_order_field = 'file_name'
+    file_name_link.short_description = _('file')  # type: ignore
+    file_name_link.admin_order_field = 'file_name'  # type: ignore
 
 
 class PayoutAdmin(ModelAdminBase):
@@ -1118,7 +1118,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
             return ''
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'a'])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_request_full_path)))
-    admin_application_request.short_description = _('application request')
+    admin_application_request.short_description = _('application request')  # type: ignore
 
     def admin_application_response(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
@@ -1126,7 +1126,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
             return ''
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'r'])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_response_full_path)))
-    admin_application_response.short_description = _('application response')
+    admin_application_response.short_description = _('application response')  # type: ignore
 
     def admin_application_response_file(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
@@ -1135,17 +1135,17 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         file_type = 'f'
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), file_type])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, obj.debug_get_filename(file_type)))
-    admin_application_response_file.short_description = _('file')
+    admin_application_response_file.short_description = _('file')  # type: ignore
 
     def execution_time(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
         return obj.executed - obj.created if obj.executed else ''
-    execution_time.short_description = _('execution time')
+    execution_time.short_description = _('execution time')  # type: ignore
 
     def error_fmt(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
         return mark_safe(obj.error.replace('\n', '<br>'))
-    error_fmt.short_description = _('error')
+    error_fmt.short_description = _('error')  # type: ignore
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
@@ -1154,8 +1154,8 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         ] + super().get_urls()
 
 
-mark_as_manually_settled.short_description = _('Mark as manually settled')
-unmark_manually_settled_flag.short_description = _('Unmark manually settled flag')
+mark_as_manually_settled.short_description = _('Mark as manually settled')  # type: ignore
+unmark_manually_settled_flag.short_description = _('Unmark manually settled flag')  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)

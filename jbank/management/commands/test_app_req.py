@@ -1,5 +1,5 @@
 import logging
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
 from jutil.format import format_xml_bytes, format_xml
 from jbank.helpers import validate_xml

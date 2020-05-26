@@ -1,11 +1,9 @@
 import logging
 import os
 import traceback
-
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.admin import admin_log
 from jutil.format import strip_media_root
-
 from jbank.files import list_dir_files
 from jbank.helpers import process_pain002_file_content
 from jbank.models import PayoutStatus

@@ -3,7 +3,7 @@ import logging
 import os
 from pprint import pprint
 from django.core.files import File
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from django.db import transaction
 from jbank.camt import camt053_get_iban, camt053_create_statement, camt053_parse_statement_from_file
 from jbank.helpers import get_or_create_bank_account

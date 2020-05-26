@@ -3,7 +3,7 @@ import os
 import zipfile
 from datetime import datetime, date
 from django.conf import settings
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
 from jbank.models import WsEdiConnection
 

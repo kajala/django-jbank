@@ -3,7 +3,7 @@ import logging
 import os
 from pprint import pprint
 from django.core.files import File
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from django.db import transaction
 from jbank.helpers import create_statement, get_or_create_bank_account
 from jbank.files import list_dir_files

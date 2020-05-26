@@ -3,7 +3,7 @@ import base64
 import logging
 import os
 import pytz
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from django.utils.timezone import now
 from jutil.xml import xml_to_dict
 from jbank.helpers import process_pain002_file_content, parse_start_and_end_date

@@ -4,7 +4,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
 
 

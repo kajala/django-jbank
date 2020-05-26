@@ -1,7 +1,6 @@
 import logging
 from pprint import pprint
-
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend

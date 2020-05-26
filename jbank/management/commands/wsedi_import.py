@@ -5,7 +5,7 @@ import os
 import zipfile
 from random import randint
 from django.conf import settings
-from django.core.management import CommandParser
+from django.core.management.base import CommandParser
 from django.utils.timezone import now
 from jutil.command import SafeCommand
 from jbank.models import WsEdiConnection
