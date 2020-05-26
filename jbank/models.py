@@ -18,7 +18,7 @@ from django.db import models
 from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
-from jacc.models import AccountEntry, AccountEntrySourceFile, Account
+from jacc.models import AccountEntry, AccountEntrySourceFile, Account, AccountEntryManager
 from jutil.dict import choices_label
 from jutil.format import format_xml, get_media_full_path
 from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
@@ -148,7 +148,7 @@ class Statement(AccountEntrySourceFile):
         verbose_name_plural = _('statements')
 
 
-class PaymentRecordManager(models.Manager):
+class PaymentRecordManager(AccountEntryManager):
     def filter_matched(self):
         return self.exclude(child_set=None)
 
@@ -157,7 +157,7 @@ class PaymentRecordManager(models.Manager):
 
 
 class StatementRecord(AccountEntry):
-    objects = PaymentRecordManager()
+    objects: models.Manager = PaymentRecordManager()  # type: ignore
     statement = models.ForeignKey(Statement, verbose_name=_('statement'), related_name='record_set', on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_('line number'), default=None, null=True, blank=True)
     record_number = models.IntegerField(_('record number'), default=None, null=True, blank=True)
@@ -298,7 +298,7 @@ class ReferencePaymentRecord(AccountEntry):
     """
     Reference payment record. See jacc.Invoice for date/time variable naming conventions.
     """
-    objects = PaymentRecordManager()
+    objects = PaymentRecordManager()  # type: ignore
     batch = models.ForeignKey(ReferencePaymentBatch, verbose_name=_('batch'), related_name='record_set', on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_('line number'), default=0, blank=True)
     record_type = models.CharField(_('record type'), max_length=1)
@@ -336,7 +336,7 @@ class ReferencePaymentRecord(AccountEntry):
 
 class StatementFile(models.Model):
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
-    file = models.FileField(_('file'), upload_to='uploads')
+    file = models.FileField(verbose_name=_('file'), upload_to='uploads')
     original_filename = models.CharField(_('original filename'), blank=True, default='', max_length=256)
     tag = models.CharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
     errors = models.TextField(_('errors'), max_length=4086, default='', blank=True)
@@ -355,7 +355,7 @@ class StatementFile(models.Model):
 
 class ReferencePaymentBatchFile(models.Model):
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
-    file = models.FileField(_('file'), upload_to='uploads')
+    file = models.FileField(verbose_name=_('file'), upload_to='uploads')
     original_filename = models.CharField(_('original filename'), blank=True, default='', max_length=256)
     tag = models.CharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
     errors = models.TextField(_('errors'), max_length=4086, default='', blank=True)
@@ -483,7 +483,7 @@ class Payout(AccountEntry):
     def group_status(self):
         status = PayoutStatus.objects.filter(payout=self).order_by('-id').first()
         return status.group_status if status else ''
-    group_status.fget.short_description = _('payment.group.status')  # pytype: disable=attribute-error
+    group_status.fget.short_description = _('payment.group.status')  # type: ignore  # pytype: disable=attribute-error
 
 
 class PayoutStatusManager(models.Manager):
@@ -591,11 +591,11 @@ class WsEdiConnection(models.Model):
     target_identifier = models.CharField(_('target identifier'), max_length=32)
     environment = models.CharField(_('environment'), max_length=32, default='PRODUCTION')
     soap_endpoint = models.URLField(_('SOAP endpoint'))
-    signing_cert_file = models.FileField(_('signing certificate file'), blank=True, upload_to='certs')
-    signing_key_file = models.FileField(_('signing key file'), blank=True, upload_to='certs')
-    encryption_cert_file = models.FileField(_('encryption certificate file'), blank=True, upload_to='certs')
-    encryption_key_file = models.FileField(_('encryption key file'), blank=True, upload_to='certs')
-    bank_encryption_cert_file = models.FileField(_('bank encryption cert file'), blank=True, upload_to='certs')
+    signing_cert_file = models.FileField(verbose_name=_('signing certificate file'), blank=True, upload_to='certs')
+    signing_key_file = models.FileField(verbose_name=_('signing key file'), blank=True, upload_to='certs')
+    encryption_cert_file = models.FileField(verbose_name=_('encryption certificate file'), blank=True, upload_to='certs')
+    encryption_key_file = models.FileField(verbose_name=_('encryption key file'), blank=True, upload_to='certs')
+    bank_encryption_cert_file = models.FileField(verbose_name=_('bank encryption cert file'), blank=True, upload_to='certs')
     debug_commands = models.TextField(_('debug commands'), blank=True)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     _signing_cert = None
@@ -731,7 +731,8 @@ class WsEdiConnection(models.Model):
 
     @staticmethod
     def _xmlsec1_example_bin(file: str) -> str:
-        xmlsec1_examples_path = settings.XMLSEC1_EXAMPLES_PATH if hasattr(settings, 'XMLSEC1_EXAMPLES_PATH') and settings.XMLSEC1_EXAMPLES_PATH else ''
-        if not xmlsec1_examples_path:
-            xmlsec1_examples_path = os.path.join(os.getenv('HOME'), 'bin/xmlsec1-examples')
+        if hasattr(settings, 'XMLSEC1_EXAMPLES_PATH') and settings.XMLSEC1_EXAMPLES_PATH:
+            xmlsec1_examples_path = settings.XMLSEC1_EXAMPLES_PATH
+        else:
+            xmlsec1_examples_path = os.path.join(str(os.getenv('HOME') or ''), 'bin/xmlsec1-examples')
         return str(os.path.join(xmlsec1_examples_path, file))

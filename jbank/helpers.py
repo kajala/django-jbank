@@ -97,7 +97,7 @@ logger = logging.getLogger(__name__)
 
 
 @transaction.atomic  # noqa
-def create_statement(statement_data: dict, name: str,  # pylint: disable=too-many-locals,too-many-branches
+def create_statement(statement_data: dict, name: str,  # noqa
                      file: StatementFile, **kw) -> Statement:
     """
     Creates Statement from statement data parsed by parse_tiliote_statements()

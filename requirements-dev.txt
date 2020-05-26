@@ -4,3 +4,7 @@ prospector
 bandit
 coverage
 codecov
+mypy
+djangorestframework-stubs
+django-stubs
+twine

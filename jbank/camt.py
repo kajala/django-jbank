@@ -114,7 +114,7 @@ def camt053_get_unified_str(qs, k: str) -> str:
 
 
 @transaction.atomic  # noqa
-def camt053_create_statement(statement_data: dict,  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
+def camt053_create_statement(statement_data: dict,  # noqa
                              name: str, file: StatementFile, **kw) -> Statement:
     """
     Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()

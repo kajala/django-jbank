@@ -4,8 +4,7 @@ from copy import copy
 from os.path import basename
 from datetime import time, datetime, date
 from decimal import Decimal
-from typing import List, Any
-
+from typing import List, Any, Tuple, Optional, Dict, Sequence, Union
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from pytz import timezone
@@ -315,9 +314,10 @@ def parse_record_value(data_type, data_len, data, name: str, line_number: int) -
     return value
 
 
-def parse_records(line: str, specs: tuple, line_number: int, check_record_length: bool = True, record_length: int or None = None) -> dict:
+def parse_records(line: str, specs: Sequence[Tuple[str, str, str]], line_number: int, check_record_length: bool = True,
+                  record_length: Optional[int] = None) -> Dict[str, Union[int, str]]:
     i = 0
-    data = dict()
+    data: Dict[str, Union[int, str]] = dict()
     data['line_number'] = line_number
     for name, fmt, req in specs:  # pylint: disable=unused-variable
         data_type, data_len = parse_record_format(fmt)
@@ -327,13 +327,14 @@ def parse_records(line: str, specs: tuple, line_number: int, check_record_length
         i += data_len
     data['extra_data'] = line[i:]
 
-    record_length = data.get('record_length', record_length)
-    if check_record_length and record_length:
+    rec_len = data.get('record_length', record_length)
+    if check_record_length and rec_len:
         data['extra_data'] = str(data['extra_data']).strip()
-        if i != record_length and data['extra_data'] != '':
-            raise ValidationError(_('Line {line}: Record length ({record_length}) does not match length of parsed data ({data_length}). '
-                                    'Extra data: "{extra_data}"').format(
-                line=line_number, data_length=i+len(data['extra_data']), record_length=record_length, extra_data=data['extra_data']))
+        if i != rec_len and data['extra_data'] != '':
+            raise ValidationError(_('Line {line}: Record length ({record_length}) does not match length of '
+                                    'parsed data ({data_length}). Extra data: "{extra_data}"').format(
+                line=line_number, data_length=i+len(str(data['extra_data'])),
+                record_length=rec_len, extra_data=data['extra_data']))
     return data
 
 
@@ -345,7 +346,7 @@ def parse_record_messages(extra_data: str) -> List[str]:
     return msg
 
 
-def parse_record_extra_info(record: dict, line: str, line_number: int):
+def parse_record_extra_info(record: Dict[str, Any], line: str, line_number: int):
     if line[:3] not in TO_FILE_RECORD_EXTRA_INFO_TYPES:
         raise ValidationError('SVM record extra info validation error on line {}'.format(line_number))
 
@@ -353,6 +354,7 @@ def parse_record_extra_info(record: dict, line: str, line_number: int):
     extra_info_type = header['extra_info_type']
     # print(line)
     extra_data = copy(header['extra_data'])
+    assert isinstance(extra_data, str)
     if extra_info_type == '00':
         record['messages'] = parse_record_messages(extra_data)
     elif extra_info_type == '01':
@@ -380,7 +382,7 @@ def parse_record_extra_info(record: dict, line: str, line_number: int):
         raise ValidationError(_('Line {line}: Invalid record extra info type "{extra_info_type}"').format(line=line_number, extra_info_type=extra_info_type))
 
 
-def convert_date(v: str, field_name: str) -> date:
+def convert_date(v: Optional[str], field_name: str) -> date:
     if v is None:
         raise ValidationError(_("Date field missing: {}").format(field_name))
     if len(v) != 6:
@@ -391,7 +393,7 @@ def convert_date(v: str, field_name: str) -> date:
     return date(year=year, month=month, day=day)
 
 
-def convert_time(v: str, field_name: str) -> time:
+def convert_time(v: Optional[str], field_name: str) -> time:
     if v is None:
         raise ValidationError(_("Time field missing: {}").format(field_name))
     if not re.match(r'^\d\d\d\d$', v):
@@ -413,6 +415,8 @@ def convert_date_fields(data: dict, date_fields: tuple, tz: Any):
             # print('Converting {}'.format(k))
             # pprint(data)
             if v_date or v_time:
+                assert v_date is None or isinstance(v_date, str)
+                assert v_time is None or isinstance(v_time, str)
                 v_date = convert_date(v_date, k_date)
                 v_time = convert_time(v_time, k_time)
                 v_datetime = datetime.combine(v_date, v_time)
@@ -489,7 +493,7 @@ def parse_tiliote_statements(content: str, filename: str) -> list:  # pylint: di
             header = parse_records(lines[line_number - 1], TO_FILE_HEADER, line_number=line_number)
             convert_date_fields(header, TO_FILE_HEADER_DATES, tz)
             convert_decimal_fields(header, TO_FILE_HEADER_DECIMALS)
-            iban_and_bic = header.get('iban_and_bic', '').split(' ')
+            iban_and_bic = str(header.get('iban_and_bic', '')).split(' ')
             if len(iban_and_bic) == 2:
                 header['iban'], header['bic'] = iban_and_bic
             line_number += 1
@@ -547,7 +551,8 @@ def parse_tiliote_statements_from_file(filename: str) -> list:
         return parse_tiliote_statements(fp.read(), filename=basename(filename))
 
 
-def combine_svm_batch(header: dict, records: list, summary: dict) -> dict:
+def combine_svm_batch(header: Optional[Dict[str, Any]], records: List[Dict[str, Union[int, str]]],
+                      summary: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     data = {'header': header, 'records': records}
     if summary is not None:
         data['summary'] = summary
@@ -562,9 +567,9 @@ def parse_svm_batches(content: str, filename: str) -> list:
     tz = timezone('Europe/Helsinki')
 
     batches = []
-    header = None
-    summary = None
-    records = []
+    header: Union[Dict[str, Union[int, str]], None] = None
+    summary: Union[Dict[str, Union[int, str]], None] = None
+    records: List[Dict[str, Union[int, str]]] = []
 
     while line_number <= nlines:
         line = lines[line_number-1]

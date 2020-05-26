@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from distutils.core import setup
-from setuptools import find_packages
+from setuptools import find_packages  # type: ignore
 
 
 def parse_requirements(filename, session=False):
@@ -13,7 +13,7 @@ install_requires = parse_requirements('requirements.txt', session=False)
 
 setup(
     name='django-jbank',
-    version='3.3.1',
+    version='3.4.0',
     author=u'Jani Kajala',
     author_email='kajala@gmail.com',
     packages=find_packages(exclude=['project', 'venv']),
@@ -22,6 +22,6 @@ setup(
     license='MIT licence, see LICENCE.txt',
     description='Finnish bank file format support for Django projects',
     long_description=open('README.md').read(),
-    zip_safe=True,
+    zip_safe=False,
     install_requires=install_requires
 )
