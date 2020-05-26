@@ -282,7 +282,8 @@ def camt053_create_statement(statement_data: dict,  # noqa
                     reference = strd.get('CdtrRefInf', {}).get('Ref', '')
 
                     # check if new remittance info record is needed
-                    if additional_info and st.additional_info or amount and st.amount or reference and st.reference:  # pylint: disable=too-many-boolean-expressions
+                    if additional_info and st.additional_info or amount and st.amount or \
+                            reference and st.reference:  # pylint: disable=too-many-boolean-expressions
                         st = StatementRecordRemittanceInfo(detail=d)
 
                     if additional_info:
