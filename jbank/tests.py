@@ -16,6 +16,8 @@ from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jutil.format import format_xml
 from jutil.validators import iban_bic
+from lxml import etree  # type: ignore  # pytype: disable=import-error
+from zeep.wsse import BinarySignature  # type: ignore
 
 
 class Tests(TestCase):
@@ -99,7 +101,6 @@ class Tests(TestCase):
         self.assertEqual(rate, Decimal('8.744'))
 
     def normalize_soap_env(self, content: bytes) -> bytes:
-        from lxml import etree  # pytype: disable=import-error
         doc = etree.fromstring(content)
         doc.find('.//{http://www.w3.org/2000/09/xmldsig#}DigestValue').text = 'x'
         doc.find('.//{http://www.w3.org/2000/09/xmldsig#}Reference').attrib['URI'] = 'x'
@@ -111,8 +112,6 @@ class Tests(TestCase):
         return etree.tostring(doc)
 
     def test_x509(self):
-        from lxml import etree  # pytype: disable=import-error
-        from zeep.wsse import BinarySignature
         print('MEDIA_ROOT = {}'.format(settings.MEDIA_ROOT))
         ws = WsEdiConnection(name='test', sender_identifier='12319203', receiver_identifier='123192031', target_identifier='1', environment='TEST', soap_endpoint='http://localhost')
         ws.signing_cert_file.name = 'data/x509/cert.pem'

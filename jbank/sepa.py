@@ -1,6 +1,7 @@
 #pylint: disable=too-many-arguments
 from collections import OrderedDict
 from datetime import datetime, date
+from typing import Optional, List, Sequence, Union, Any, Dict, Tuple
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Element
 from decimal import Decimal
@@ -29,7 +30,8 @@ PAIN001_REMITTANCE_INFO_VALUES = [t[0] for t in PAIN001_REMITTANCE_INFO_TYPE]
 
 
 class Pain001Party:
-    def __init__(self, name: str, account: str, bic: str, org_id: str = '', address_lines: list or None = None, country_code: str = ''):
+    def __init__(self, name: str, account: str, bic: str, org_id: str = '',
+                 address_lines: Optional[Sequence[str]] = None, country_code: str = ''):
         if address_lines is None:
             address_lines = []
         account = iban_filter(account)
@@ -43,7 +45,8 @@ class Pain001Party:
 
 
 class Pain001Payment:
-    def __init__(self, payment_id, creditor: Pain001Party, amount: Decimal, remittance_info: str, remittance_info_type: str, due_date: date):
+    def __init__(self, payment_id: Union[str, int], creditor: Pain001Party, amount: Decimal,
+                 remittance_info: str, remittance_info_type: str, due_date: date):
         self.payment_id = payment_id
         self.creditor = creditor
         self.amount = amount
@@ -72,14 +75,14 @@ class Pain001:
 
     pain_element_name = 'CstmrCdtTrfInitn'
     tz_str = 'Europe/Helsinki'
-    tz = None
+    tz: Any = None
 
     def __init__(self, msg_id: str,
                  debtor_name: str,
                  debtor_account: str,
                  debtor_bic: str,
                  debtor_org_id: str,
-                 debtor_address_lines: list,
+                 debtor_address_lines: Sequence[str],
                  debtor_country_code: str):
         if not debtor_org_id or len(debtor_org_id) < 5:
             raise ValidationError({'debtor_org_id': _('invalid value')})
@@ -93,7 +96,7 @@ class Pain001:
 
         self.msg_id = msg_id
         self.debtor = Pain001Party(debtor_name, debtor_account, debtor_bic, debtor_org_id, debtor_address_lines, debtor_country_code)
-        self.payments = []
+        self.payments: List[Pain001Payment] = []
 
     def add_payment(self, payment_id,
                     creditor_name: str,
@@ -124,7 +127,7 @@ class Pain001:
         parent.append(e)
         return e
 
-    def _local_time(self, t: datetime or None = None) -> datetime:
+    def _local_time(self, t: Optional[datetime] = None) -> datetime:
         if not t:
             t = now()
         if not self.tz:
@@ -134,7 +137,8 @@ class Pain001:
     def _timestamp(self, t: datetime) -> str:
         return self._local_time(t).isoformat()
 
-    def _dict_to_element(self, doc: dict, value_key: str = '@', attribute_prefix: str = '@') -> Element:
+    @staticmethod
+    def _dict_to_element(doc: Dict[str, Any], value_key: str = '@', attribute_prefix: str = '@') -> Element:
         if len(doc) != 1:
             raise Exception('Invalid data dict for XML generation, document root must have single element')
         for tag, data in doc.items():
@@ -142,6 +146,7 @@ class Pain001:
             assert isinstance(el, Element)
             _xml_element_set_data_r(el, data, value_key, attribute_prefix)
             return el  # pytype: disable=bad-return-type
+        return Element('empty')
 
     def _grp_hdr(self) -> Element:
         g = Element('GrpHdr')
@@ -163,12 +168,13 @@ class Pain001:
         return g
 
     def _pmt_inf(self, p: Pain001Payment) -> Element:
+        rmt_inf: Tuple[str, Any]
         if p.remittance_info_type == PAIN001_REMITTANCE_INFO_MSG:
-            rmt_inf = ['RmtInf', OrderedDict([
+            rmt_inf = ('RmtInf', OrderedDict([
                 ('Ustrd', p.remittance_info),
-            ])]
+            ]))
         elif p.remittance_info_type == PAIN001_REMITTANCE_INFO_OCR:
-            rmt_inf = ['RmtInf', OrderedDict([
+            rmt_inf = ('RmtInf', OrderedDict([
                 ('Strd', OrderedDict([
                     ('CdtrRefInf', OrderedDict([
                         ('Tp', OrderedDict([
@@ -179,9 +185,9 @@ class Pain001:
                         ('Ref', p.remittance_info),
                     ])),
                 ])),
-            ])]
+            ]))
         elif p.remittance_info_type == PAIN001_REMITTANCE_INFO_OCR_ISO:
-            rmt_inf = ['RmtInf', OrderedDict([
+            rmt_inf = ('RmtInf', OrderedDict([
                 ('Strd', OrderedDict([
                     ('CdtrRefInf', OrderedDict([
                         ('Tp', OrderedDict([
@@ -193,7 +199,7 @@ class Pain001:
                         ('Ref', p.remittance_info),
                     ])),
                 ])),
-            ])]
+            ]))
         else:
             raise ValidationError(_('Invalid remittance info type: {}').format(p.remittance_info_type))
 
@@ -206,7 +212,7 @@ class Pain001:
                     ('Nm', self.debtor.name),
                     ('PstlAdr', OrderedDict([
                         ('Ctry', self.debtor.country_code),
-                        ('AdrLine', [{'@': l} for l in self.debtor.address_lines]),
+                        ('AdrLine', [{'@': al} for al in self.debtor.address_lines]),
                     ])),
                     ('Id', OrderedDict([
                         ('OrgId', OrderedDict([
@@ -270,12 +276,12 @@ class Pain001:
             pain.append(self._pmt_inf(p))
         return doc
 
-    def render_to_bytes(self, doc: Element or None = None) -> bytes:
+    def render_to_bytes(self, doc: Optional[Element] = None) -> bytes:
         doc = doc or self.render_to_element()
         xml_bytes = ET.tostring(doc, encoding='utf-8', method='xml')
         return xml_bytes
 
-    def render_to_file(self, filename: str, xml_bytes: bytes or None = None):
+    def render_to_file(self, filename: str, xml_bytes: Optional[bytes] = None):
         xml_bytes = xml_bytes or self.render_to_bytes()
         with open(filename, 'wb') as fp:
             fp.write(xml_bytes)
@@ -285,11 +291,11 @@ class Pain002:
     """
     Class for parsing pain.002.001.03 SEPA payment status XML files.
     """
-    credit_datetime = None
-    msg_id = None
-    original_msg_id = None
-    group_status = None
-    status_reason = None
+    credit_datetime: datetime
+    msg_id: str = ''
+    original_msg_id: str = ''
+    group_status: str = ''
+    status_reason: str = ''
 
     def __init__(self, file_content: bytes):
         self.data = xml_to_dict(file_content)
@@ -297,8 +303,11 @@ class Pain002:
         rpt = self.data.get('CstmrPmtStsRpt', {})
 
         grp_hdr = rpt.get('GrpHdr', {})
-        credit_datetime_str = grp_hdr.get('CreDtTm')
-        self.credit_datetime = parse_datetime(credit_datetime_str)
+        credit_datetime = parse_datetime(grp_hdr.get('CreDtTm'))
+        if credit_datetime is None:
+            raise ValidationError('CreDtTm missing')
+        assert isinstance(credit_datetime, datetime)
+        self.credit_datetime = credit_datetime
         self.msg_id = grp_hdr.get('MsgId')
 
         grp_inf = rpt.get('OrgnlGrpInfAndSts', {})

@@ -4,16 +4,15 @@ import logging
 import traceback
 from datetime import date
 from os.path import basename
-from typing import Callable
-
+from typing import Callable, Optional
 import requests
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
-from zeep.wsse import BinarySignature
+from zeep.wsse import BinarySignature  # type: ignore
 from jbank.models import WsEdiConnection, WsEdiSoapCall
-from lxml import etree  # pytype: disable=import-error
+from lxml import etree  # type: ignore  # pytype: disable=import-error
 
 
 logger = logging.getLogger(__name__)
@@ -88,7 +87,7 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
 
 
 def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status: str = '', file_reference: str = '',  # noqa
-                  file_content: str = '', start_date: date or None = None, end_date: date or None = None,
+                  file_content: str = '', start_date: Optional[date] = None, end_date: Optional[date] = None,
                   verbose: bool = False, cls: Callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
     :param ws:
@@ -118,7 +117,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         app = ws.get_application_request(command, file_type=file_type, status=status, file_reference=file_reference, content=content,
                                          start_date=start_date, end_date=end_date)
         if verbose:
-            logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app))
+            logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app.decode()))
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
         if debug_output:
             with open(soap_call.debug_application_request_full_path, 'wb') as fp:
@@ -152,8 +151,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         body_bytes = soap_body.encode()
         envelope = etree.fromstring(body_bytes)
         binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
-        soap_headers = {
-        }
+        soap_headers: dict = {}
         envelope, soap_headers = binary_signature.apply(envelope, soap_headers)
         signed_body_bytes = etree.tostring(envelope)
         if verbose:

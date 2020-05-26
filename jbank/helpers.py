@@ -14,10 +14,11 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     ReferencePaymentRecord, StatementFile, ReferencePaymentBatchFile, Payout, PayoutStatus, PAYOUT_PAID
 from jbank.sepa import Pain002
 import re
-from lxml import etree, objectify  # pytype: disable=import-error
+from lxml import etree, objectify  # type: ignore  # pytype: disable=import-error
 from jutil.parse import parse_datetime
 
 from jutil.format import strip_media_root
+
 
 ASSIGNABLE_STATEMENT_HEADER_FIELDS = (
     'account_number',
@@ -220,7 +221,7 @@ def get_or_create_bank_account(account_number: str, currency: str = 'EUR') -> Ac
     return acc
 
 
-def process_pain002_file_content(bcontent: bytes, filename: str, created: datetime or None = None):
+def process_pain002_file_content(bcontent: bytes, filename: str, created: Optional[datetime] = None):
     if not created:
         created = now()
     s = Pain002(bcontent)
@@ -279,11 +280,11 @@ def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Option
         if options['start_date'] == 'today':
             start_date = time_now.date()
         else:
-            start_date = parse_datetime(options['start_date']).date()
+            start_date = parse_datetime(options['start_date']).date()  # type: ignore
         end_date = start_date
     if options['end_date']:
         if options['end_date'] == 'today':
             end_date = time_now.date()
         else:
-            end_date = parse_datetime(options['end_date']).date()
+            end_date = parse_datetime(options['end_date']).date()  # type: ignore
     return start_date, end_date
