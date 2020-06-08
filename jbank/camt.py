@@ -93,11 +93,14 @@ def camt053_parse_statement_from_file(filename: str) -> dict:
         return data
 
 
-def camt053_get_stmt_bal(d_stmt: dict, bal_type: str) -> Tuple[Decimal, date]:
+def camt053_get_stmt_bal(d_stmt: dict, bal_type: str) -> Tuple[Decimal, Optional[date]]:
     for bal in d_stmt.get('Bal', []):
         if bal.get('Tp', {}).get('CdOrPrtry', {}).get('Cd', '') == bal_type:
             amt = Decimal(bal.get('Amt', {}).get('@', ''))
-            dt = camt053_get_date(bal.get('Dt', {}), 'Dt', name='Stmt.Bal[{}].Dt.Dt'.format(bal_type))
+            dt_data = bal.get('Dt', {})
+            dt = None
+            if 'Dt' in dt_data:
+                dt = camt053_get_date(dt_data, 'Dt', name='Stmt.Bal[{}].Dt.Dt'.format(bal_type))
             return amt, dt
     raise ValidationError(_('camt.053 field {} type {} missing or invalid').format('Stmt.Bal.Tp.CdOrPrty.Cd', bal_type))
 

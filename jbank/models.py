@@ -130,7 +130,7 @@ class Statement(AccountEntrySourceFile):
     end_date = models.DateField(_('end date'), db_index=True)
     record_date = models.DateTimeField(_('record date'), db_index=True)
     customer_identifier = models.CharField(_('customer identifier'), max_length=64, blank=True, default='')
-    begin_balance_date = models.DateField(_('begin balance date'), )
+    begin_balance_date = models.DateField(_('begin balance date'), null=True, blank=True, default=None)
     begin_balance = models.DecimalField(_('begin balance'), max_digits=10, decimal_places=2)
     record_count = models.IntegerField(_('record count'), null=True, default=None)
     currency_code = models.CharField(_('currency code'), max_length=3)
