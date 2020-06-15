@@ -58,7 +58,7 @@ def camt053_get_dt(data: Dict[str, Any], key: str, name: str = '') -> datetime:
     s = camt053_get_val(data, key, None, True, name)
     val = parse_datetime(s)
     if val is None:
-        raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'datetime'))
+        raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'datetime') + ': {}'.format(s))
     return val
 
 
@@ -74,14 +74,14 @@ def camt053_get_int(data: Dict[str, Any], key: str, name: str = '') -> int:
 def camt053_get_date(data: dict, key: str, default: Optional[date] = None, required: bool = True, name: str = '') -> date:
     s = camt053_get_val(data, key, default, required, name)
     try:
-        val = parse_date(s)
+        val = parse_date(s[:10])
         if val is None:
             raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'date'))
         assert isinstance(val, date)
         return val
     except Exception:
         pass
-    raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'date'))
+    raise ValidationError(_('camt.053 field {} type {} missing or invalid').format(name, 'date') + ': {}'.format(s))
 
 
 def camt053_parse_statement_from_file(filename: str) -> dict:
