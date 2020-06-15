@@ -617,11 +617,11 @@ class WsEdiConnection(models.Model):
 
     @property
     def encryption_cert_full_path(self) -> str:
-        return self.encryption_cert_file.file.name if self.signing_cert_file else ''
+        return self.encryption_cert_file.file.name if self.encryption_cert_file else ''
 
     @property
     def encryption_key_full_path(self) -> str:
-        return self.encryption_key_file.file.name if self.signing_key_file else ''
+        return self.encryption_key_file.file.name if self.encryption_key_file else ''
 
     @property
     def bank_encryption_cert_full_path(self) -> str:

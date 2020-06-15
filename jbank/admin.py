@@ -3,7 +3,10 @@ import base64
 import logging
 import os
 import traceback
+from datetime import datetime
 from os.path import basename
+from typing import Optional
+
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -18,6 +21,7 @@ from django.db import transaction
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse
+from django.utils.formats import date_format
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
@@ -25,7 +29,7 @@ from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
-from jbank.helpers import create_statement, create_reference_payment_batch
+from jbank.helpers import create_statement, create_reference_payment_batch, get_x509_cert_validity_from_file
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
     StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource, WsEdiConnection, \
@@ -1019,6 +1023,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
         'name',
         'sender_identifier',
         'receiver_identifier',
+        'expires',
     )
 
     raw_id_fields = (
@@ -1045,7 +1050,24 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     readonly_fields = (
         'id',
         'created',
+        'expires',
     )
+
+    def expires(self, obj):
+        assert isinstance(obj, WsEdiConnection)
+        min_not_valid_after: Optional[datetime] = None
+        certs = [
+            obj.signing_cert_full_path,
+            obj.encryption_cert_full_path,
+            obj.bank_encryption_cert_full_path,
+        ]
+        for filename in certs:
+            if filename:
+                not_valid_after = get_x509_cert_validity_from_file(filename)[1]
+                if min_not_valid_after is None or not_valid_after < min_not_valid_after:
+                    min_not_valid_after = not_valid_after
+        return date_format(min_not_valid_after.date(), 'SHORT_DATE_FORMAT')
+    expires.short_description = _('expires')
 
 
 class WsEdiSoapCallAdmin(ModelAdminBase):

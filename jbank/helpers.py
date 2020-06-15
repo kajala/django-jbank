@@ -2,8 +2,9 @@ import logging
 from datetime import datetime, date
 from os.path import basename
 from typing import Any, Tuple, Optional
-
 import pytz
+import cryptography
+from cryptography import x509
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -288,3 +289,12 @@ def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Option
         else:
             end_date = parse_datetime(options['end_date']).date()  # type: ignore
     return start_date, end_date
+
+
+def get_x509_cert_validity_from_file(filename: str) -> Tuple[datetime, datetime]:
+    """
+    Returns not_valid_before, not_valid_after pair
+    """
+    pem_data = open(filename, 'rb').read()
+    cert = x509.load_pem_x509_certificate(pem_data, cryptography.hazmat.backends.default_backend())
+    return pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(cert.not_valid_after)

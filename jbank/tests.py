@@ -4,13 +4,14 @@ from datetime import date, datetime
 from decimal import Decimal
 from os.path import join
 import pytz
+from dateutil.tz import tzutc
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.template.loader import get_template
 from django.test import TestCase
 from jacc.models import Account
 from jbank.ecb import parse_euro_exchange_rates_xml
-from jbank.helpers import validate_xml
+from jbank.helpers import validate_xml, get_x509_cert_validity_from_file
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
@@ -117,6 +118,9 @@ class Tests(TestCase):
         ws.signing_cert_file.name = 'data/x509/cert.pem'
         ws.signing_key_file.name = 'data/x509/key.pem'
         ws.save()
+        not_valid_before, not_valid_after = get_x509_cert_validity_from_file('data/x509/cert.pem')
+        self.assertEqual(not_valid_before, datetime(2019, 12, 3, 17, 54, 41, tzinfo=tzutc()))
+        self.assertEqual(not_valid_after, datetime(2019, 12, 13, 17, 54, 41, tzinfo=tzutc()))
         self.assertEqual(WsEdiConnection.objects.get_by_receiver_identifier('123192031').id, ws.id)
         app = open('data/x509/appreq.xml', 'rb').read()
         signed = ws.sign_application_request(app)
