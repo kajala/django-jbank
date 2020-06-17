@@ -68,6 +68,6 @@ class Command(SafeCommand):
                                 if account_number:
                                     get_or_create_bank_account(account_number)
 
-                            camt053_create_statement(data, name=plain_filename, file=file)
+                            camt053_create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
                 print('Skipping statement file {}'.format(filename))

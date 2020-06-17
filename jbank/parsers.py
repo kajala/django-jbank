@@ -548,7 +548,7 @@ def parse_tiliote_statements_from_file(filename: str) -> list:
         raise ValidationError(_('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
             filename=filename, suffixes=', '.join(TO_STATEMENT_SUFFIXES), file_type='tiliote'))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
-        return parse_tiliote_statements(fp.read(), filename=basename(filename))
+        return parse_tiliote_statements(fp.read(), filename=basename(filename))  # type: ignore
 
 
 def combine_svm_batch(header: Optional[Dict[str, Any]], records: List[Dict[str, Union[int, str]]],
@@ -607,4 +607,4 @@ def parse_svm_batches_from_file(filename: str) -> list:
         raise ValidationError(_('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
             filename=filename, suffixes=', '.join(SVM_STATEMENT_SUFFIXES), file_type='saapuvat viitemaksut'))
     with open(filename, 'rt', encoding='ISO-8859-1') as fp:
-        return parse_svm_batches(fp.read(), filename=basename(filename))
+        return parse_svm_batches(fp.read(), filename=basename(filename))  # type: ignore

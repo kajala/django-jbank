@@ -1,4 +1,4 @@
-#pylint: disable=too-many-branches
+# pylint: disable=too-many-branches
 import logging
 import os
 from pprint import pprint
@@ -67,6 +67,6 @@ class Command(SafeCommand):
                                 if account_number:
                                     get_or_create_bank_account(account_number)
 
-                            create_statement(data, name=plain_filename, file=file)
+                            create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
                 print('Skipping statement file {}'.format(filename))

@@ -70,6 +70,6 @@ class Command(SafeCommand):
                                     if account_number:
                                         get_or_create_bank_account(account_number)
 
-                            create_reference_payment_batch(data, name=plain_filename, file=file)
+                            create_reference_payment_batch(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
                 print('Skipping reference payment file {}'.format(filename))

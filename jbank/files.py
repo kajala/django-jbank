@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
+from typing import List
 
 
-def list_dir_files(path: str, suffix: str = '') -> list:
+def list_dir_files(path: str, suffix: str = '') -> List[str]:
     """
     Lists all files (and only files) in a directory, or return [path] if path is a file itself.
     :param path: Directory or a file

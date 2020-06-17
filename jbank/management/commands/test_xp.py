@@ -17,4 +17,4 @@ class Command(SafeCommand):
             print(f)
             with open(f, 'rb') as fp:
                 p = Pain002(fp.read())
-                print(p)
+                print(p)  # pytype: disable=not-callable

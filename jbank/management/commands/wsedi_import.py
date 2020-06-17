@@ -42,7 +42,7 @@ class Command(SafeCommand):
                 new_filename = filename[:-4] + pem_suffix
                 new_path = 'certs/{}'.format(new_filename)
                 with open(os.path.join(settings.MEDIA_ROOT, new_path), 'wb') as fp:
-                    fp.write(content)
+                    fp.write(content)  # pytype: disable=not-callable
                 repl = []
                 for k, v in ws_data.items():
                     if k.endswith('_file') and os.path.basename(v) == filename:
