@@ -170,11 +170,13 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         if verbose:
             logger.info('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
         if res.status_code >= 300:
+            logger.error('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
             raise Exception("WS-EDI {} HTTP {}".format(command, res.status_code))
 
         envelope = etree.fromstring(res.content)
         app_res_el = envelope.find('.//{http://model.bxd.fi}ApplicationResponse')
         if app_res_el is None:
+            logger.error('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
             raise Exception("WS-EDI {} failed, missing ApplicationResponse".format(command))
         app_res_enc = ws.decode_application_response(app_res_el.text.encode())
         if verbose:
