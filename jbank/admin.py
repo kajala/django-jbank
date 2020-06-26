@@ -651,6 +651,9 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         'original_filename',
     )
 
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
     def file_link(self, obj):
         assert isinstance(obj, StatementFile)
         if not obj.file:
@@ -738,6 +741,9 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
         'file_link',
         'original_filename',
     )
+
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
 
     def file_link(self, obj):
         assert isinstance(obj, ReferencePaymentBatchFile)
