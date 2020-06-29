@@ -20,6 +20,7 @@ from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account, AccountEntryManager
 from jutil.dict import choices_label
+from jutil.modelfields import SafeCharField, SafeTextField
 from jutil.format import format_xml, get_media_full_path
 from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
 
@@ -123,25 +124,25 @@ PAYOUT_STATE = (
 class Statement(AccountEntrySourceFile):
     file = models.ForeignKey('StatementFile', blank=True, default=None, null=True, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, related_name='+', on_delete=models.PROTECT)
-    account_number = models.CharField(_('account number'), max_length=32, db_index=True)
-    statement_identifier = models.CharField(_('statement identifier'), max_length=48, db_index=True, blank=True, default='')
+    account_number = SafeCharField(_('account number'), max_length=32, db_index=True)
+    statement_identifier = SafeCharField(_('statement identifier'), max_length=48, db_index=True, blank=True, default='')
     statement_number = models.SmallIntegerField(_('statement number'), db_index=True)
     begin_date = models.DateField(_('begin date'), db_index=True)
     end_date = models.DateField(_('end date'), db_index=True)
     record_date = models.DateTimeField(_('record date'), db_index=True)
-    customer_identifier = models.CharField(_('customer identifier'), max_length=64, blank=True, default='')
+    customer_identifier = SafeCharField(_('customer identifier'), max_length=64, blank=True, default='')
     begin_balance_date = models.DateField(_('begin balance date'), null=True, blank=True, default=None)
     begin_balance = models.DecimalField(_('begin balance'), max_digits=10, decimal_places=2)
     record_count = models.IntegerField(_('record count'), null=True, default=None)
-    currency_code = models.CharField(_('currency code'), max_length=3)
-    account_name = models.CharField(_('account name'), max_length=32, blank=True, default='')
+    currency_code = SafeCharField(_('currency code'), max_length=3)
+    account_name = SafeCharField(_('account name'), max_length=32, blank=True, default='')
     account_limit = models.DecimalField(_('account limit'), max_digits=10, decimal_places=2, blank=True, default=None, null=True)
-    owner_name = models.CharField(_('owner name'), max_length=64)
-    contact_info_1 = models.CharField(_('contact info (1)'), max_length=64, blank=True, default='')
-    contact_info_2 = models.CharField(_('contact info (2)'), max_length=64, blank=True, default='')
-    bank_specific_info_1 = models.CharField(_('bank specific info (1)'), max_length=1024, blank=True, default='')
-    iban = models.CharField(_('IBAN'), max_length=32, db_index=True)
-    bic = models.CharField(_('BIC'), max_length=11, db_index=True)
+    owner_name = SafeCharField(_('owner name'), max_length=64)
+    contact_info_1 = SafeCharField(_('contact info (1)'), max_length=64, blank=True, default='')
+    contact_info_2 = SafeCharField(_('contact info (2)'), max_length=64, blank=True, default='')
+    bank_specific_info_1 = SafeCharField(_('bank specific info (1)'), max_length=1024, blank=True, default='')
+    iban = SafeCharField(_('IBAN'), max_length=32, db_index=True)
+    bic = SafeCharField(_('BIC'), max_length=11, db_index=True)
 
     class Meta:
         verbose_name = _('statement')
@@ -161,26 +162,26 @@ class StatementRecord(AccountEntry):
     statement = models.ForeignKey(Statement, verbose_name=_('statement'), related_name='record_set', on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_('line number'), default=None, null=True, blank=True)
     record_number = models.IntegerField(_('record number'), default=None, null=True, blank=True)
-    archive_identifier = models.CharField(_('archive identifier'), max_length=64, blank=True, default='', db_index=True)
+    archive_identifier = SafeCharField(_('archive identifier'), max_length=64, blank=True, default='', db_index=True)
     record_date = models.DateField(_('record date'), db_index=True)
     value_date = models.DateField(_('value date'), db_index=True, blank=True, null=True, default=None)
     paid_date = models.DateField(_('paid date'), db_index=True, blank=True, null=True, default=None)
-    entry_type = models.CharField(_('entry type'), max_length=1, choices=RECORD_ENTRY_TYPE, db_index=True)
-    record_code = models.CharField(_('record type'), max_length=4, choices=RECORD_CODES, db_index=True, blank=True)
-    record_domain = models.CharField(_('record domain'), max_length=4, choices=RECORD_DOMAIN, db_index=True, blank=True)
-    family_code = models.CharField(_('family code'), max_length=4, db_index=True, blank=True, default='')
-    sub_family_code = models.CharField(_('sub family code'), max_length=4, db_index=True, blank=True, default='')
-    record_description = models.CharField(_('record description'), max_length=128, blank=True, default='')
-    receipt_code = models.CharField(_('receipt code'), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
-    delivery_method = models.CharField(_('delivery method'), max_length=1, db_index=True, choices=DELIVERY_METHOD)
-    name = models.CharField(_('name'), max_length=64, blank=True, db_index=True)
-    name_source = models.CharField(_('name source'), max_length=1, blank=True, choices=NAME_SOURCES)
-    recipient_account_number = models.CharField(_('recipient account number'), max_length=32, blank=True, db_index=True)
-    recipient_account_number_changed = models.CharField(_('recipient account number changed'), max_length=1, blank=True)
-    remittance_info = models.CharField(_('remittance info'), max_length=35, db_index=True, blank=True)
-    messages = models.TextField(_('messages'), blank=True, default='')
-    client_messages = models.TextField(_('client messages'), blank=True, default='')
-    bank_messages = models.TextField(_('bank messages'), blank=True, default='')
+    entry_type = SafeCharField(_('entry type'), max_length=1, choices=RECORD_ENTRY_TYPE, db_index=True)
+    record_code = SafeCharField(_('record type'), max_length=4, choices=RECORD_CODES, db_index=True, blank=True)
+    record_domain = SafeCharField(_('record domain'), max_length=4, choices=RECORD_DOMAIN, db_index=True, blank=True)
+    family_code = SafeCharField(_('family code'), max_length=4, db_index=True, blank=True, default='')
+    sub_family_code = SafeCharField(_('sub family code'), max_length=4, db_index=True, blank=True, default='')
+    record_description = SafeCharField(_('record description'), max_length=128, blank=True, default='')
+    receipt_code = SafeCharField(_('receipt code'), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
+    delivery_method = SafeCharField(_('delivery method'), max_length=1, db_index=True, choices=DELIVERY_METHOD)
+    name = SafeCharField(_('name'), max_length=64, blank=True, db_index=True)
+    name_source = SafeCharField(_('name source'), max_length=1, blank=True, choices=NAME_SOURCES)
+    recipient_account_number = SafeCharField(_('recipient account number'), max_length=32, blank=True, db_index=True)
+    recipient_account_number_changed = SafeCharField(_('recipient account number changed'), max_length=1, blank=True)
+    remittance_info = SafeCharField(_('remittance info'), max_length=35, db_index=True, blank=True)
+    messages = SafeTextField(_('messages'), blank=True, default='')
+    client_messages = SafeTextField(_('client messages'), blank=True, default='')
+    bank_messages = SafeTextField(_('bank messages'), blank=True, default='')
     manually_settled = models.BooleanField(_('manually settled'), db_index=True, default=False, blank=True)
 
     class Meta:
@@ -197,7 +198,7 @@ class StatementRecord(AccountEntry):
 
 
 class CurrencyExchangeSource(models.Model):
-    name = models.CharField(_('name'), max_length=64)
+    name = SafeCharField(_('name'), max_length=64)
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
 
     class Meta:
@@ -210,9 +211,9 @@ class CurrencyExchangeSource(models.Model):
 
 class CurrencyExchange(models.Model):
     record_date = models.DateField(_('record date'), db_index=True)
-    source_currency = models.CharField(_('source currency'), max_length=3, blank=True)
-    target_currency = models.CharField(_('target currency'), max_length=3, blank=True)
-    unit_currency = models.CharField(_('unit currency'), max_length=3, blank=True)
+    source_currency = SafeCharField(_('source currency'), max_length=3, blank=True)
+    target_currency = SafeCharField(_('target currency'), max_length=3, blank=True)
+    unit_currency = SafeCharField(_('unit currency'), max_length=3, blank=True)
     exchange_rate = models.DecimalField(_('exchange rate'), decimal_places=6, max_digits=12, null=True, default=None, blank=True)
     source = models.ForeignKey(CurrencyExchangeSource, verbose_name=_('currency exchange source'), blank=True, null=True, default=None, on_delete=models.PROTECT)  # noqa
 
@@ -226,27 +227,27 @@ class CurrencyExchange(models.Model):
 
 class StatementRecordDetail(models.Model):
     record = models.ForeignKey(StatementRecord, verbose_name=_('record'), related_name='detail_set', on_delete=models.CASCADE)
-    batch_identifier = models.CharField(_('batch message id'), max_length=64, db_index=True, blank=True, default='')
+    batch_identifier = SafeCharField(_('batch message id'), max_length=64, db_index=True, blank=True, default='')
     amount = models.DecimalField(verbose_name=_('amount'), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True)
-    currency_code = models.CharField(_('currency code'), max_length=3)
+    currency_code = SafeCharField(_('currency code'), max_length=3)
     instructed_amount = models.DecimalField(verbose_name=_('instructed amount'), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True)    # noqa
     exchange = models.ForeignKey(CurrencyExchange, verbose_name=_('currency exchange'), related_name='recorddetail_set', on_delete=models.PROTECT, null=True, default=None, blank=True)  # noqa
-    archive_identifier = models.CharField(_('archive identifier'), max_length=64, blank=True)
-    end_to_end_identifier = models.CharField(_('end-to-end identifier'), max_length=64, blank=True)
-    creditor_name = models.CharField(_('creditor name'), max_length=128, blank=True)
-    creditor_account = models.CharField(_('creditor account'), max_length=35, blank=True)
-    debtor_name = models.CharField(_('debtor name'), max_length=128, blank=True)
-    ultimate_debtor_name = models.CharField(_('ultimate debtor name'), max_length=128, blank=True)
-    unstructured_remittance_info = models.CharField(_('unstructured remittance info'), max_length=2048, blank=True)
+    archive_identifier = SafeCharField(_('archive identifier'), max_length=64, blank=True)
+    end_to_end_identifier = SafeCharField(_('end-to-end identifier'), max_length=64, blank=True)
+    creditor_name = SafeCharField(_('creditor name'), max_length=128, blank=True)
+    creditor_account = SafeCharField(_('creditor account'), max_length=35, blank=True)
+    debtor_name = SafeCharField(_('debtor name'), max_length=128, blank=True)
+    ultimate_debtor_name = SafeCharField(_('ultimate debtor name'), max_length=128, blank=True)
+    unstructured_remittance_info = SafeCharField(_('unstructured remittance info'), max_length=2048, blank=True)
     paid_date = models.DateTimeField(_('paid date'), db_index=True, blank=True, null=True, default=None)
 
 
 class StatementRecordRemittanceInfo(models.Model):
     detail = models.ForeignKey(StatementRecordDetail, related_name='remittanceinfo_set', on_delete=models.CASCADE)
-    additional_info = models.CharField(_('additional remittance info'), max_length=256, blank=True, db_index=True)
+    additional_info = SafeCharField(_('additional remittance info'), max_length=256, blank=True, db_index=True)
     amount = models.DecimalField(_('amount'), decimal_places=2, max_digits=10, null=True, default=None, blank=True)
-    currency_code = models.CharField(_('currency code'), max_length=3, blank=True)
-    reference = models.CharField(_('reference'), max_length=35, blank=True, db_index=True)
+    currency_code = SafeCharField(_('currency code'), max_length=3, blank=True)
+    reference = SafeCharField(_('reference'), max_length=35, blank=True, db_index=True)
 
     def __str__(self):
         return '{} {} ref {} ({})'.format(self.amount if self.amount is not None else '', self.currency_code, self.reference, self.additional_info)
@@ -254,13 +255,13 @@ class StatementRecordRemittanceInfo(models.Model):
 
 class StatementRecordSepaInfo(models.Model):
     record = models.OneToOneField(StatementRecord, verbose_name=_('record'), related_name='sepa_info', on_delete=models.CASCADE)
-    reference = models.CharField(_('reference'), max_length=35, blank=True)
-    iban_account_number = models.CharField(_('IBAN'), max_length=35, blank=True)
-    bic_code = models.CharField(_('BIC'), max_length=35, blank=True)
-    recipient_name_detail = models.CharField(_('recipient name detail'), max_length=70, blank=True)
-    payer_name_detail = models.CharField(_('payer name detail'), max_length=70, blank=True)
-    identifier = models.CharField(_('identifier'), max_length=35, blank=True)
-    archive_identifier = models.CharField(_('archive identifier'), max_length=64, blank=True)
+    reference = SafeCharField(_('reference'), max_length=35, blank=True)
+    iban_account_number = SafeCharField(_('IBAN'), max_length=35, blank=True)
+    bic_code = SafeCharField(_('BIC'), max_length=35, blank=True)
+    recipient_name_detail = SafeCharField(_('recipient name detail'), max_length=70, blank=True)
+    payer_name_detail = SafeCharField(_('payer name detail'), max_length=70, blank=True)
+    identifier = SafeCharField(_('identifier'), max_length=35, blank=True)
+    archive_identifier = SafeCharField(_('archive identifier'), max_length=64, blank=True)
 
     class Meta:
         verbose_name = _('SEPA')
@@ -285,9 +286,9 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     objects = ReferencePaymentBatchManager()
     file = models.ForeignKey('ReferencePaymentBatchFile', blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_('record date'), db_index=True)
-    institution_identifier = models.CharField(_('institution identifier'), max_length=2, blank=True)
-    service_identifier = models.CharField(_('service identifier'), max_length=9, blank=True)
-    currency_identifier = models.CharField(_('currency identifier'), max_length=3, choices=CURRENCY_IDENTIFIERS)
+    institution_identifier = SafeCharField(_('institution identifier'), max_length=2, blank=True)
+    service_identifier = SafeCharField(_('service identifier'), max_length=9, blank=True)
+    currency_identifier = SafeCharField(_('currency identifier'), max_length=3, choices=CURRENCY_IDENTIFIERS)
 
     class Meta:
         verbose_name = _('reference payment batch')
@@ -301,18 +302,18 @@ class ReferencePaymentRecord(AccountEntry):
     objects = PaymentRecordManager()  # type: ignore
     batch = models.ForeignKey(ReferencePaymentBatch, verbose_name=_('batch'), related_name='record_set', on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_('line number'), default=0, blank=True)
-    record_type = models.CharField(_('record type'), max_length=1)
-    account_number = models.CharField(_('account number'), max_length=32, db_index=True)
+    record_type = SafeCharField(_('record type'), max_length=1)
+    account_number = SafeCharField(_('account number'), max_length=32, db_index=True)
     record_date = models.DateField(_('record date'), db_index=True)
     paid_date = models.DateField(_('paid date'), db_index=True, blank=True, null=True, default=None)
-    archive_identifier = models.CharField(_('archive identifier'), max_length=32, blank=True, default='', db_index=True)
-    remittance_info = models.CharField(_('remittance info'), max_length=32, db_index=True)
-    payer_name = models.CharField(_('payer name'), max_length=12, db_index=True)
-    currency_identifier = models.CharField(_('currency identifier'), max_length=1, choices=CURRENCY_IDENTIFIERS)
-    name_source = models.CharField(_('name source'), max_length=1, choices=NAME_SOURCES, blank=True)
-    correction_identifier = models.CharField(_('correction identifier'), max_length=1, choices=CORRECTION_IDENTIFIER)
-    delivery_method = models.CharField(_('delivery method'), max_length=1, db_index=True, choices=DELIVERY_METHOD)
-    receipt_code = models.CharField(_('receipt code'), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
+    archive_identifier = SafeCharField(_('archive identifier'), max_length=32, blank=True, default='', db_index=True)
+    remittance_info = SafeCharField(_('remittance info'), max_length=32, db_index=True)
+    payer_name = SafeCharField(_('payer name'), max_length=12, db_index=True)
+    currency_identifier = SafeCharField(_('currency identifier'), max_length=1, choices=CURRENCY_IDENTIFIERS)
+    name_source = SafeCharField(_('name source'), max_length=1, choices=NAME_SOURCES, blank=True)
+    correction_identifier = SafeCharField(_('correction identifier'), max_length=1, choices=CORRECTION_IDENTIFIER)
+    delivery_method = SafeCharField(_('delivery method'), max_length=1, db_index=True, choices=DELIVERY_METHOD)
+    receipt_code = SafeCharField(_('receipt code'), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
     manually_settled = models.BooleanField(_('manually settled'), db_index=True, default=False, blank=True)
 
     class Meta:
@@ -337,9 +338,9 @@ class ReferencePaymentRecord(AccountEntry):
 class StatementFile(models.Model):
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
     file = models.FileField(verbose_name=_('file'), upload_to='uploads')
-    original_filename = models.CharField(_('original filename'), blank=True, default='', max_length=256)
-    tag = models.CharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
-    errors = models.TextField(_('errors'), max_length=4086, default='', blank=True)
+    original_filename = SafeCharField(_('original filename'), blank=True, default='', max_length=256)
+    tag = SafeCharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
+    errors = SafeTextField(_('errors'), max_length=4086, default='', blank=True)
 
     class Meta:
         verbose_name = _('account statement file')
@@ -356,9 +357,9 @@ class StatementFile(models.Model):
 class ReferencePaymentBatchFile(models.Model):
     created = models.DateTimeField(_('created'), default=now, db_index=True, blank=True, editable=False)
     file = models.FileField(verbose_name=_('file'), upload_to='uploads')
-    original_filename = models.CharField(_('original filename'), blank=True, default='', max_length=256)
-    tag = models.CharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
-    errors = models.TextField(_('errors'), max_length=4086, default='', blank=True)
+    original_filename = SafeCharField(_('original filename'), blank=True, default='', max_length=256)
+    tag = SafeCharField(_('tag'), blank=True, max_length=64, default='', db_index=True)
+    errors = SafeTextField(_('errors'), max_length=4086, default='', blank=True)
 
     class Meta:
         verbose_name = _("reference payment batch file")
@@ -373,12 +374,12 @@ class ReferencePaymentBatchFile(models.Model):
 
 
 class PayoutParty(models.Model):
-    name = models.CharField(_('name'), max_length=128, db_index=True)
-    account_number = models.CharField(_('account number'), max_length=35, db_index=True, validators=[iban_validator])
-    bic = models.CharField(_('BIC'), max_length=16, db_index=True, blank=True)
-    org_id = models.CharField(_('organization id'), max_length=32, db_index=True, blank=True, default='')
-    address = models.TextField(_('address'), blank=True, default='')
-    country_code = models.CharField(_('country code'), max_length=2, default='FI', blank=True, db_index=True)
+    name = SafeCharField(_('name'), max_length=128, db_index=True)
+    account_number = SafeCharField(_('account number'), max_length=35, db_index=True, validators=[iban_validator])
+    bic = SafeCharField(_('BIC'), max_length=16, db_index=True, blank=True)
+    org_id = SafeCharField(_('organization id'), max_length=32, db_index=True, blank=True, default='')
+    address = SafeTextField(_('address'), blank=True, default='')
+    country_code = SafeCharField(_('country code'), max_length=2, default='FI', blank=True, db_index=True)
     payouts_account = models.ForeignKey(Account, verbose_name=_('payouts account'), null=True, default=None, blank=True, on_delete=models.PROTECT)
 
     class Meta:
@@ -406,15 +407,15 @@ class Payout(AccountEntry):
     connection = models.ForeignKey('WsEdiConnection', verbose_name=_('WS-EDI connection'), on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     payer = models.ForeignKey(PayoutParty, verbose_name=_('payer'), related_name='+', on_delete=models.PROTECT)
     recipient = models.ForeignKey(PayoutParty, verbose_name=_('recipient'), related_name='+', on_delete=models.PROTECT)
-    messages = models.TextField(_('recipient messages'), blank=True, default='')
-    reference = models.CharField(_('recipient reference'), blank=True, default='', max_length=32)
-    msg_id = models.CharField(_('message id'), max_length=64, blank=True, db_index=True, editable=False)
-    file_name = models.CharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
-    full_path = models.TextField(_('full path'), blank=True, editable=False)
-    file_reference = models.CharField(_('file reference'), max_length=255, blank=True, db_index=True, editable=False)
+    messages = SafeTextField(_('recipient messages'), blank=True, default='')
+    reference = SafeCharField(_('recipient reference'), blank=True, default='', max_length=32)
+    msg_id = SafeCharField(_('message id'), max_length=64, blank=True, db_index=True, editable=False)
+    file_name = SafeCharField(_('file name'), max_length=255, blank=True, db_index=True, editable=False)
+    full_path = SafeTextField(_('full path'), blank=True, editable=False)
+    file_reference = SafeCharField(_('file reference'), max_length=255, blank=True, db_index=True, editable=False)
     due_date = models.DateField(_('due date'), db_index=True, blank=True, null=True, default=None)
     paid_date = models.DateTimeField(_('paid date'), db_index=True, blank=True, null=True, default=None)
-    state = models.CharField(_('state'), max_length=1, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True)
+    state = SafeCharField(_('state'), max_length=1, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True)
 
     class Meta:
         verbose_name = _("payout")
@@ -495,14 +496,14 @@ class PayoutStatus(models.Model):
     objects = PayoutStatusManager()
     payout = models.ForeignKey(Payout, verbose_name=_('payout'), related_name='payoutstatus_set', on_delete=models.PROTECT, null=True, default=None, blank=True)  # noqa
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
-    file_name = models.CharField(_('file name'), max_length=128, blank=True, db_index=True, editable=False)
-    file_path = models.CharField(_('file path'), max_length=255, blank=True, db_index=True, editable=False)
-    response_code = models.CharField(_('response code'), max_length=4, blank=True, db_index=True)
-    response_text = models.CharField(_('response text'), max_length=128, blank=True)
-    msg_id = models.CharField(_('message id'), max_length=64, blank=True, db_index=True)
-    original_msg_id = models.CharField(_('original message id'), blank=True, max_length=64, db_index=True)
-    group_status = models.CharField(_('group status'), max_length=8, blank=True, db_index=True)
-    status_reason = models.CharField(_('status reason'), max_length=255, blank=True)
+    file_name = SafeCharField(_('file name'), max_length=128, blank=True, db_index=True, editable=False)
+    file_path = SafeCharField(_('file path'), max_length=255, blank=True, db_index=True, editable=False)
+    response_code = SafeCharField(_('response code'), max_length=4, blank=True, db_index=True)
+    response_text = SafeCharField(_('response text'), max_length=128, blank=True)
+    msg_id = SafeCharField(_('message id'), max_length=64, blank=True, db_index=True)
+    original_msg_id = SafeCharField(_('original message id'), blank=True, max_length=64, db_index=True)
+    group_status = SafeCharField(_('group status'), max_length=8, blank=True, db_index=True)
+    status_reason = SafeCharField(_('status reason'), max_length=255, blank=True)
 
     class Meta:
         verbose_name = _("payout status")
@@ -532,10 +533,10 @@ class Refund(Payout):
 
 class WsEdiSoapCall(models.Model):
     connection = models.ForeignKey('WsEdiConnection', verbose_name=_('WS-EDI connection'), on_delete=models.CASCADE)
-    command = models.CharField(_('command'), max_length=64, blank=True, db_index=True)
+    command = SafeCharField(_('command'), max_length=64, blank=True, db_index=True)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     executed = models.DateTimeField(_('executed'), default=None, null=True, db_index=True, editable=False, blank=True)
-    error = models.TextField(_('error'), blank=True)
+    error = SafeTextField(_('error'), blank=True)
 
     class Meta:
         verbose_name = _("WS-EDI SOAP call")
@@ -584,19 +585,19 @@ class WsEdiConnectionManager(models.Manager):
 
 class WsEdiConnection(models.Model):
     objects = WsEdiConnectionManager()
-    name = models.CharField(_('name'), max_length=64)
+    name = SafeCharField(_('name'), max_length=64)
     enabled = models.BooleanField(_('enabled'), blank=True, default=True)
-    sender_identifier = models.CharField(_('sender identifier'), max_length=32)
-    receiver_identifier = models.CharField(_('receiver identifier'), max_length=32)
-    target_identifier = models.CharField(_('target identifier'), max_length=32)
-    environment = models.CharField(_('environment'), max_length=32, default='PRODUCTION')
+    sender_identifier = SafeCharField(_('sender identifier'), max_length=32)
+    receiver_identifier = SafeCharField(_('receiver identifier'), max_length=32)
+    target_identifier = SafeCharField(_('target identifier'), max_length=32)
+    environment = SafeCharField(_('environment'), max_length=32, default='PRODUCTION')
     soap_endpoint = models.URLField(_('SOAP endpoint'))
     signing_cert_file = models.FileField(verbose_name=_('signing certificate file'), blank=True, upload_to='certs')
     signing_key_file = models.FileField(verbose_name=_('signing key file'), blank=True, upload_to='certs')
     encryption_cert_file = models.FileField(verbose_name=_('encryption certificate file'), blank=True, upload_to='certs')
     encryption_key_file = models.FileField(verbose_name=_('encryption key file'), blank=True, upload_to='certs')
     bank_encryption_cert_file = models.FileField(verbose_name=_('bank encryption cert file'), blank=True, upload_to='certs')
-    debug_commands = models.TextField(_('debug commands'), blank=True)
+    debug_commands = SafeTextField(_('debug commands'), blank=True)
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     _signing_cert = None
 
