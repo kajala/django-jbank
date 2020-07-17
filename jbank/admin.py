@@ -1081,6 +1081,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
             obj.signing_cert_full_path,
             obj.encryption_cert_full_path,
             obj.bank_encryption_cert_full_path,
+            obj.bank_root_cert_full_path,
         ]
         for filename in certs:
             if filename:

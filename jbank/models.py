@@ -632,6 +632,10 @@ class WsEdiConnection(models.Model):
         return self.bank_encryption_cert_file.file.name if self.bank_encryption_cert_file else ''
 
     @property
+    def bank_root_cert_full_path(self) -> str:
+        return self.bank_root_cert_file.file.name if self.bank_root_cert_file else ''
+
+    @property
     def bank_encryption_cert_with_public_key_full_path(self) -> str:
         src_file = self.bank_encryption_cert_full_path
         file = src_file[:-4] + '-with-pubkey.pem'
