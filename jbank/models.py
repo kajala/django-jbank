@@ -592,6 +592,7 @@ class WsEdiConnection(models.Model):
     target_identifier = SafeCharField(_('target identifier'), max_length=32)
     environment = SafeCharField(_('environment'), max_length=32, default='PRODUCTION')
     soap_endpoint = models.URLField(_('SOAP endpoint'))
+    bank_root_cert_file = models.FileField(verbose_name=_('bank root certificate file'), blank=True, upload_to='certs')
     signing_cert_file = models.FileField(verbose_name=_('signing certificate file'), blank=True, upload_to='certs')
     signing_key_file = models.FileField(verbose_name=_('signing key file'), blank=True, upload_to='certs')
     encryption_cert_file = models.FileField(verbose_name=_('encryption certificate file'), blank=True, upload_to='certs')
