@@ -1035,23 +1035,37 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     raw_id_fields = (
     )
 
-    fields = (
-        'id',
-        'name',
-        'enabled',
-        'sender_identifier',
-        'receiver_identifier',
-        'target_identifier',
-        'environment',
-        'soap_endpoint',
-        'bank_root_cert_file',
-        'signing_cert_file',
-        'signing_key_file',
-        'encryption_cert_file',
-        'encryption_key_file',
-        'bank_encryption_cert_file',
-        'debug_commands',
-        'created',
+    fieldsets = (
+        (None, {
+            'fields': [
+                'id',
+                'name',
+                'enabled',
+                'sender_identifier',
+                'receiver_identifier',
+                'target_identifier',
+                'environment',
+                'debug_commands',
+                'created',
+            ]
+        }),
+        ('PKI', {
+            'fields': [
+                'pki_endpoint',
+                'pin',
+                'bank_root_cert_file',
+            ]
+        }),
+        ('EDI', {
+            'fields': [
+                'soap_endpoint',
+                'signing_cert_file',
+                'signing_key_file',
+                'encryption_cert_file',
+                'encryption_key_file',
+                'bank_encryption_cert_file',
+            ]
+        }),
     )
 
     readonly_fields = (
