@@ -1072,7 +1072,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
                 not_valid_after = get_x509_cert_validity_from_file(filename)[1]
                 if min_not_valid_after is None or not_valid_after < min_not_valid_after:
                     min_not_valid_after = not_valid_after
-        return date_format(min_not_valid_after.date(), 'SHORT_DATE_FORMAT')
+        return date_format(min_not_valid_after.date(), 'SHORT_DATE_FORMAT') if min_not_valid_after else ''
     expires.short_description = _('expires')  # type: ignore
 
 
