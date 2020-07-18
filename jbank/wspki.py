@@ -1,7 +1,7 @@
 # pylint: disable=logging-format-interpolation,logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
 import logging
 import traceback
-from typing import Callable
+from typing import Callable, Optional
 import requests
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
@@ -83,12 +83,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        body_bytes = ws.get_pki_soap_request(soap_call, **kwargs)
-        envelope = etree.fromstring(body_bytes)
-        if 'elem' not in envelope.nsmap:
-            raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
-        elem_ns = '{' + envelope.nsmap['elem'] + '}'
-        req_el = etree_get_element(envelope, elem_ns, command + 'Request')
+        envelope: Optional[etree.Element] = None
 
         # command = 'GetBankCertificate'
         # from lxml import etree
@@ -101,6 +96,13 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         # from jbank.x509_helpers import *
 
         if command == 'GetBankCertificate':
+            body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_template.xml', **kwargs)
+            envelope = etree.fromstring(body_bytes)
+            if 'elem' not in envelope.nsmap:
+                raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
+            elem_ns = '{' + envelope.nsmap['elem'] + '}'
+            req_el = etree_get_element(envelope, elem_ns, command + 'Request')
+
             if not ws.bank_root_cert_full_path:
                 raise Exception('Bank root certificate missing')
             cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
@@ -111,10 +113,10 @@ def wspki_execute(ws: WsEdiConnection, command: str,
             el.text = soap_call.timestamp.isoformat()
             el = etree.SubElement(req_el, '{}RequestId'.format(elem_ns))
             el.text = soap_call.request_identifier
-            pass
 
+        if envelope is None:
+            raise Exception('{} not implemented'.format(command))
         body_bytes = etree.tostring(envelope)
-
         if verbose:
             logger.info('------------------------------------------------------ {} body_bytes\n{}'.format(call_str, body_bytes.decode()))
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
