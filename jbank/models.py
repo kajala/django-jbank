@@ -604,6 +604,7 @@ class WsEdiConnection(models.Model):
     encryption_cert_file = models.FileField(verbose_name=_('encryption certificate file'), blank=True, upload_to='certs')
     encryption_key_file = models.FileField(verbose_name=_('encryption key file'), blank=True, upload_to='certs')
     bank_encryption_cert_file = models.FileField(verbose_name=_('bank encryption cert file'), blank=True, upload_to='certs')
+    bank_signing_cert_file = models.FileField(verbose_name=_('bank signing cert file'), blank=True, upload_to='certs')
     debug_commands = SafeTextField(_('debug commands'), blank=True, help_text=_('wsedi.connection.debug.commands.help.text'))
     created = models.DateTimeField(_('created'), default=now, db_index=True, editable=False, blank=True)
     _signing_cert = None

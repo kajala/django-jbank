@@ -7,7 +7,8 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext as _
 from jbank.models import WsEdiConnection, WsEdiSoapCall
 from lxml import etree  # type: ignore  # pytype: disable=import-error
-from jbank.x509_helpers import get_x509_cert_from_file
+from jbank.x509_helpers import get_x509_cert_from_file, write_pem_file
+from jutil.admin import admin_log
 from jutil.format import get_media_full_path
 
 
@@ -23,7 +24,7 @@ def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
     """
     if not ns.startswith('{'):
         ns = '{' + ns + '}'
-    els = list(el.iter('{}{}'.format('{' + ns + '}', tag)))
+    els = list(el.iter('{}{}'.format(ns, tag)))
     if not els:
         raise Exception('{} not found from {}'.format(tag, el))
     if len(els) > 1:
@@ -53,8 +54,15 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall, elem_ns: st
     for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
         data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
         filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
-        with open(get_media_full_path(filename), 'wt') as fp:
-            fp.write(data_base64)
+        write_pem_file(get_media_full_path(filename), data_base64)
+        if cert_name == 'BankEncryptionCert':
+            ws.bank_encryption_cert_file.name = filename
+        elif cert_name == 'BankSigningCert':
+            ws.bank_signing_cert_file.name = filename
+        elif cert_name == 'BankRootCert':
+            ws.bank_root_cert_file.name = filename
+        ws.save()
+        admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
 
 
 def wspki_execute(ws: WsEdiConnection, command: str,

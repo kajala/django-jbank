@@ -14,13 +14,15 @@ class Command(SafeCommand):
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('--ws', type=int, default=1)
-        parser.add_argument('--cmd', type=str, default='GetBankCertificate')
+        parser.add_argument('--cmd', type=str, default='')
         parser.add_argument('--process-response', type=int)
 
     def do(self, *args, **options):
         if options['process_response']:
             soap_call = WsEdiSoapCall.objects.get(id=options['process_response'])
             assert isinstance(soap_call, WsEdiSoapCall)
+            if not soap_call.debug_application_response_full_path:
+                raise Exception('SOAP call response not available')
             content = open(soap_call.debug_application_response_full_path, 'rb').read()
             process_wspki_response(content, soap_call)
             return
@@ -32,4 +34,7 @@ class Command(SafeCommand):
             return
 
         cmd = options['cmd']
+        if not cmd:
+            logger.error('--cmd missing')
+            return
         wspki_execute(ws, command=cmd, verbose=True)
