@@ -66,6 +66,6 @@ class Command(SafeCommand):
                 with open(f, 'rb') as fp:
                     process_pain002_file_content(fp.read(), f)
             except Exception:
-                logger.error('Error while processing PayoutStatus id=%s: %s', f.id, traceback.format_exc())
+                logger.error('Error while processing PayoutStatus id=%s: %s', f.id, traceback.format_exc())  # type: ignore
                 if not options['ignore_errors']:
                     raise
