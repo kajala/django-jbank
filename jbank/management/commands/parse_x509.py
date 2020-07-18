@@ -1,9 +1,8 @@
 import logging
 from pprint import pprint
 from django.core.management.base import CommandParser
+from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.command import SafeCommand
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +15,5 @@ class Command(SafeCommand):
         parser.add_argument('pem', type=str)
 
     def do(self, *args, **options):
-        pem_data = open(options['pem'], 'rb').read()
-        cert = x509.load_pem_x509_certificate(pem_data, default_backend())
+        cert = get_x509_cert_from_file(options['pem'])
         pprint(cert)

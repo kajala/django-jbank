@@ -9,9 +9,7 @@ from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional
-import cryptography
 import pytz
-from cryptography import x509
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -19,6 +17,7 @@ from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account, AccountEntryManager
+from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.dict import choices_label
 from jutil.modelfields import SafeCharField, SafeTextField
 from jutil.format import format_xml, get_media_full_path
@@ -561,12 +560,20 @@ class WsEdiSoapCall(models.Model):
         return '{:08}{}.xml'.format(self.id, file_type)
 
     @property
+    def debug_pki_soap_request_full_path(self) -> str:
+        return self.debug_get_file_path(self.debug_get_filename('pki-soap-req'))
+
+    @property
     def debug_application_request_full_path(self) -> str:
         return self.debug_get_file_path(self.debug_get_filename('a'))
 
     @property
     def debug_application_response_full_path(self) -> str:
         return self.debug_get_file_path(self.debug_get_filename('r'))
+
+    @property
+    def debug_pki_soap_response_full_path(self) -> str:
+        return self.debug_get_file_path(self.debug_get_filename('pki-soap-res'))
 
     @staticmethod
     def debug_get_file_path(filename: str) -> str:
@@ -655,10 +662,16 @@ class WsEdiConnection(models.Model):
     def signing_cert(self):
         if hasattr(self, '_signing_cert') and self._signing_cert:
             return self._signing_cert
-        pem_data = open(self.signing_cert_full_path, 'rb').read()
-        cert = x509.load_pem_x509_certificate(pem_data, cryptography.hazmat.backends.default_backend())
-        self._signing_cert = cert
-        return cert
+        self._signing_cert = get_x509_cert_from_file(self.signing_cert_full_path)
+        return self._signing_cert
+
+    def get_pki_soap_request(self, soap_call: WsEdiSoapCall, **kwargs) -> bytes:
+        return format_xml(get_template('jbank/pki_soap_template.xml').render({
+            'ws': self,
+            'soap_call': soap_call,
+            'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
+            **kwargs
+        })).encode()
 
     def get_application_request(self, command: str, **kwargs) -> bytes:
         return format_xml(get_template('jbank/application_request_template.xml').render({

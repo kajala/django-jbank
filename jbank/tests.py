@@ -11,10 +11,11 @@ from django.template.loader import get_template
 from django.test import TestCase
 from jacc.models import Account
 from jbank.ecb import parse_euro_exchange_rates_xml
-from jbank.helpers import validate_xml, get_x509_cert_validity_from_file
+from jbank.helpers import validate_xml
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
+from jbank.x509_helpers import get_x509_cert_validity_from_file
 from jutil.format import format_xml
 from jutil.validators import iban_bic
 from lxml import etree  # type: ignore  # pytype: disable=import-error

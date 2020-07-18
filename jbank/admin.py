@@ -27,9 +27,10 @@ from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
+from jbank.x509_helpers import get_x509_cert_validity_from_file
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
-from jbank.helpers import create_statement, create_reference_payment_batch, get_x509_cert_validity_from_file
+from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, ReferencePaymentRecord, \
     ReferencePaymentBatch, StatementFile, ReferencePaymentBatchFile, Payout, Refund, PayoutStatus, PayoutParty, \
     StatementRecordDetail, StatementRecordRemittanceInfo, CurrencyExchange, CurrencyExchangeSource, WsEdiConnection, \
@@ -1214,3 +1215,4 @@ admin.site.register(ReferencePaymentRecord, ReferencePaymentRecordAdmin)
 admin.site.register(ReferencePaymentBatch, ReferencePaymentBatchAdmin)
 admin.site.register(ReferencePaymentBatchFile, ReferencePaymentBatchFileAdmin)
 admin.site.register(WsEdiConnection, WsEdiConnectionAdmin)
+admin.site.register(WsEdiSoapCall, WsEdiSoapCallAdmin)
