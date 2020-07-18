@@ -227,10 +227,10 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     try:
         body_bytes = ws.get_pki_soap_request(soap_call, **kwargs)
         envelope = etree.fromstring(body_bytes)
-        if 'ns2' not in envelope.nsmap:
-            raise Exception("WS-PKI {} SOAP template invalid, ns2 namespace missing".format(command))
-        ns2 = '{' + envelope.nsmap['ns2'] + '}'
-        req_el = list(envelope.iter('{}{}Request'.format(ns2, command)))[0]
+        if 'elem' not in envelope.nsmap:
+            raise Exception("WS-PKI {} SOAP template invalid, elem namespace missing".format(command))
+        elem_ns = '{' + envelope.nsmap['elem'] + '}'
+        req_el = list(envelope.iter('{}{}Request'.format(elem_ns, command)))[0]
 
         # command = 'GetBankCertificate'
         # from lxml import etree
@@ -245,11 +245,11 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         if command == 'GetBankCertificate':
             cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
             logger.info('BankRootCertificateSerialNo %s', cert.serial_number)
-            el = etree.SubElement(req_el, '{}BankRootCertificateSerialNo'.format(ns2))
+            el = etree.SubElement(req_el, '{}BankRootCertificateSerialNo'.format(elem_ns))
             el.text = str(cert.serial_number)
-            el = etree.SubElement(req_el, '{}Timestamp'.format(ns2))
+            el = etree.SubElement(req_el, '{}Timestamp'.format(elem_ns))
             el.text = soap_call.timestamp.isoformat()
-            el = etree.SubElement(req_el, '{}RequestId'.format(ns2))
+            el = etree.SubElement(req_el, '{}RequestId'.format(elem_ns))
             el.text = soap_call.request_identifier
             pass
 

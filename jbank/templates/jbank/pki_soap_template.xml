@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://danskebank.dk/PKI/PKIFactoryService" xmlns:ns2="http://danskebank.dk/PKI/PKIFactoryService/elements">
-  <SOAP-ENV:Body>
-    <ns1:{{ soap_call.command }}In>
-      <ns1:RequestHeader>
-        <ns1:SenderId>{{ soap_call.connection.sender_identifier }}</ns1:SenderId>
-        <ns1:RequestId>{{ soap_call.request_identifier }}</ns1:RequestId>
-        <ns1:Timestamp>{{ soap_call.timestamp.isoformat }}</ns1:Timestamp>
-        <ns1:InterfaceVersion>1</ns1:InterfaceVersion>
-      </ns1:RequestHeader>
-      <ns2:{{ soap_call.command }}Request>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pkif="http://danskebank.dk/PKI/PKIFactoryService" xmlns:elem="http://danskebank.dk/PKI/PKIFactoryService/elements">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <pkif:{{ soap_call.command }}In>
+      <pkif:RequestHeader>
+        <pkif:SenderId>{{ soap_call.connection.sender_identifier }}</pkif:SenderId>
+        <pkif:RequestId>{{ soap_call.request_identifier }}</pkif:RequestId>
+        <pkif:Timestamp>{{ soap_call.timestamp.isoformat }}</pkif:Timestamp>
+        <pkif:InterfaceVersion>1</pkif:InterfaceVersion>
+      </pkif:RequestHeader>
+      <elem:{{ soap_call.command }}Request>
           {{ payload }}
-      </ns2:{{ soap_call.command }}Request>
-    </ns1:{{ soap_call.command }}In>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
+      </elem:{{ soap_call.command }}Request>
+    </pkif:{{ soap_call.command }}In>
+  </soapenv:Body>
+</soapenv:Envelope>
