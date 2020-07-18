@@ -5,6 +5,7 @@
     <pkif:{{ soap_call.command }}In>
       <pkif:RequestHeader>
         <pkif:SenderId>{{ soap_call.connection.sender_identifier }}</pkif:SenderId>
+        <pkif:CustomerId>{{ soap_call.connection.sender_identifier }}</pkif:CustomerId>
         <pkif:RequestId>{{ soap_call.request_identifier }}</pkif:RequestId>
         <pkif:Timestamp>{{ soap_call.timestamp.isoformat }}</pkif:Timestamp>
         <pkif:InterfaceVersion>1</pkif:InterfaceVersion>
