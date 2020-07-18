@@ -286,5 +286,3 @@ def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Option
         else:
             end_date = parse_datetime(options['end_date']).date()  # type: ignore
     return start_date, end_date
-
-

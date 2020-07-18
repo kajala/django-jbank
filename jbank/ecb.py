@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # noqa
 from urllib import request
 
 

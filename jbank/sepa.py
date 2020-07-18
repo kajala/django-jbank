@@ -2,7 +2,7 @@
 from collections import OrderedDict
 from datetime import datetime, date
 from typing import Optional, List, Sequence, Union, Any, Dict, Tuple
-from xml.etree import ElementTree as ET
+from xml.etree import ElementTree as ET  # noqa
 from xml.etree.ElementTree import Element
 from decimal import Decimal
 import pytz
@@ -161,7 +161,7 @@ class Pain001:
                 ('Nm', self.debtor.name),
                 ('PstlAdr', OrderedDict([
                     ('Ctry', self.debtor.country_code),
-                    ('AdrLine', [{'@': l} for l in self.debtor.address_lines]),
+                    ('AdrLine', [{'@': al} for al in self.debtor.address_lines]),
                 ])),
             ]),
         }))

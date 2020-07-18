@@ -205,7 +205,7 @@ class CurrencyExchangeSource(models.Model):
         verbose_name_plural = _('currency exchange sources')
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class CurrencyExchange(models.Model):
@@ -509,7 +509,7 @@ class PayoutStatus(models.Model):
         verbose_name_plural = _("payout statuses")
 
     def __str__(self):
-        return self.group_status
+        return str(self.group_status)
 
     @property
     def full_path(self) -> str:
