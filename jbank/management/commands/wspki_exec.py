@@ -2,7 +2,7 @@ import logging
 from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
 from jbank.models import WsEdiConnection
-from jbank.wsedi import wspki_execute
+from jbank.wspki import wspki_execute
 
 
 logger = logging.getLogger(__name__)

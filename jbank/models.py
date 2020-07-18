@@ -560,20 +560,12 @@ class WsEdiSoapCall(models.Model):
         return '{:08}{}.xml'.format(self.id, file_type)
 
     @property
-    def debug_pki_soap_request_full_path(self) -> str:
-        return self.debug_get_file_path(self.debug_get_filename('pki-soap-req'))
-
-    @property
     def debug_application_request_full_path(self) -> str:
         return self.debug_get_file_path(self.debug_get_filename('a'))
 
     @property
     def debug_application_response_full_path(self) -> str:
         return self.debug_get_file_path(self.debug_get_filename('r'))
-
-    @property
-    def debug_pki_soap_response_full_path(self) -> str:
-        return self.debug_get_file_path(self.debug_get_filename('pki-soap-res'))
 
     @staticmethod
     def debug_get_file_path(filename: str) -> str:
