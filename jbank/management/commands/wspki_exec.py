@@ -4,6 +4,7 @@ from jutil.command import SafeCommand
 from jbank.models import WsEdiConnection, WsEdiSoapCall
 from jbank.wspki import wspki_execute, process_wspki_response
 
+
 logger = logging.getLogger(__name__)
 
 
