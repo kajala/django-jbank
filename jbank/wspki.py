@@ -101,6 +101,8 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         # from jbank.x509_helpers import *
 
         if command == 'GetBankCertificate':
+            if not ws.bank_root_cert_full_path:
+                raise Exception('Bank root certificate missing')
             cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
             logger.info('BankRootCertificateSerialNo %s', cert.serial_number)
             el = etree.SubElement(req_el, '{}BankRootCertificateSerialNo'.format(elem_ns))
