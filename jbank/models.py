@@ -549,6 +549,11 @@ class WsEdiSoapCall(models.Model):
         return self.created.astimezone(pytz.timezone('Europe/Helsinki'))
 
     @property
+    def timestamp_digits(self) -> str:
+        v = re.sub(r'[^\d]', '', self.created.isoformat())
+        return v[:17]
+
+    @property
     def request_identifier(self) -> str:
         return str(self.id)
 

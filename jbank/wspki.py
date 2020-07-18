@@ -8,9 +8,53 @@ from django.utils.translation import ugettext as _
 from jbank.models import WsEdiConnection, WsEdiSoapCall
 from lxml import etree  # type: ignore  # pytype: disable=import-error
 from jbank.x509_helpers import get_x509_cert_from_file
+from jutil.format import get_media_full_path
 
 
 logger = logging.getLogger(__name__)
+
+
+def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
+    """
+    :param el: Root Element
+    :param ns: Target namespace
+    :param tag: Target tag
+    :return: Found Element
+    """
+    if not ns.startswith('{'):
+        ns = '{' + ns + '}'
+    els = list(el.iter('{}{}'.format('{' + ns + '}', tag)))
+    if not els:
+        raise Exception('{} not found from {}'.format(tag, el))
+    if len(els) > 1:
+        raise Exception('{} found from {} more than once'.format(tag, el))
+    return els[0]
+
+
+def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall, elem_ns: str = ''):
+    ws = soap_call.connection
+    command = soap_call.command
+
+    # find elem namespace if not set
+    if not elem_ns:
+        envelope = etree.fromstring(content)
+        if 'elem' not in envelope.nsmap:
+            raise Exception("WS-PKI {} SOAP response invalid, 'elem' namespace missing".format(command))
+        elem_ns = '{' + envelope.nsmap['elem'] + '}'
+
+    # find response element and check return code
+    envelope = etree.fromstring(content)
+    res_el = etree_get_element(envelope, elem_ns, command + 'Response')
+    return_code = etree_get_element(res_el, elem_ns, 'ReturnCode').text
+    return_text = etree_get_element(res_el, elem_ns, 'ReturnText').text
+    if return_code != '00':
+        raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
+
+    for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
+        data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
+        filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
+        with open(get_media_full_path(filename), 'wt') as fp:
+            fp.write(data_base64)
 
 
 def wspki_execute(ws: WsEdiConnection, command: str,
@@ -34,9 +78,9 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         body_bytes = ws.get_pki_soap_request(soap_call, **kwargs)
         envelope = etree.fromstring(body_bytes)
         if 'elem' not in envelope.nsmap:
-            raise Exception("WS-PKI {} SOAP template invalid, elem namespace missing".format(command))
+            raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
         elem_ns = '{' + envelope.nsmap['elem'] + '}'
-        req_el = list(envelope.iter('{}{}Request'.format(elem_ns, command)))[0]
+        req_el = etree_get_element(envelope, elem_ns, command + 'Request')
 
         # command = 'GetBankCertificate'
         # from lxml import etree
@@ -90,9 +134,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         soap_call.executed = now()
         soap_call.save(update_fields=['executed'])
 
-        if debug_output:
-            with open(soap_call.debug_application_response_full_path, 'wb') as fp:
-                fp.write(res.content)
+        process_wspki_response(res.content, soap_call, elem_ns)
 
         return res.content
     except Exception:
