@@ -5,6 +5,12 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 
 def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RSAPrivateKey:
+    """
+    Creates RSA private key.
+    :param public_exponent: int, exponent
+    :param key_size: int, bits
+    :return: RSAPrivateKey
+    """
     backend = cryptography.hazmat.backends.default_backend()
     return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(
         public_exponent=public_exponent,
@@ -14,7 +20,12 @@ def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RS
 
 
 def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
-    return private_key.private_bytes(
+    """
+    Returns private key PEM file bytes.
+    :param private_key: RSPrivateKey
+    :return: bytes
+    """
+    return private_key.private_bytes(  # type: ignore
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
@@ -22,6 +33,11 @@ def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
 
 
 def strip_pem_header_and_footer(pem: bytes) -> bytes:
+    """
+    Strips -----BEGIN and -----END parts of the CSR PEM.
+    :param pem: bytes
+    :return: bytes
+    """
     if not pem.startswith(b'-----BEGIN '):
         raise Exception('PEM does not appear to have header: {}...'.format(pem[:32].decode() + '...'))
     return b'\n'.join(pem.split(b'\n')[1:-2])
@@ -35,6 +51,10 @@ def create_csr_pem(private_key: RSAPrivateKey, common_name: str, country_name: s
                    postal_address: str = '', postal_code: str = '', pseudonym: str = '', serial_number: str = '',
                    state_or_province_name: str = '', street_address: str = '', surname: str = '',
                    title: str = '', user_id: str = '', x500_unique_identifier: str = '') -> bytes:
+    """
+    See http://fileformats.archiveteam.org/wiki/PKCS10
+    :return: CSR PEM as bytes
+    """
     pairs = [
         (common_name, 'COMMON_NAME'),
         (country_name, 'COUNTRY_NAME'),
