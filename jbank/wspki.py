@@ -85,16 +85,6 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     try:
         envelope: Optional[etree.Element] = None
 
-        # command = 'GetBankCertificate'
-        # from lxml import etree
-        # ws = WsEdiConnection.objects.last()
-        # soap_call = WsEdiSoapCall.objects.last()
-        # body_bytes = ws.get_pki_soap_request(soap_call)
-        # envelope = etree.fromstring(body_bytes)
-        # ns2 = '{' + envelope.nsmap['ns2'] + '}'
-        # req_el = list(envelope.iter('{}{}Request'.format(ns2, command)))[0]
-        # from jbank.x509_helpers import *
-
         if command == 'GetBankCertificate':
             body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml', **kwargs)
             envelope = etree.fromstring(body_bytes)
