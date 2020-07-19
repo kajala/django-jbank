@@ -15,7 +15,7 @@ from jbank.helpers import validate_xml
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
 from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
-from jbank.x509_helpers import get_x509_cert_validity_from_file
+from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.format import format_xml
 from jutil.validators import iban_bic
 from lxml import etree  # type: ignore  # pytype: disable=import-error
@@ -119,7 +119,8 @@ class Tests(TestCase):
         ws.signing_cert_file.name = 'data/x509/cert.pem'
         ws.signing_key_file.name = 'data/x509/key.pem'
         ws.save()
-        not_valid_before, not_valid_after = get_x509_cert_validity_from_file('data/x509/cert.pem')
+        cert = get_x509_cert_from_file('data/x509/cert.pem')
+        not_valid_before, not_valid_after = pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(cert.not_valid_after)
         self.assertEqual(not_valid_before, datetime(2019, 12, 3, 17, 54, 41, tzinfo=tzutc()))
         self.assertEqual(not_valid_after, datetime(2019, 12, 13, 17, 54, 41, tzinfo=tzutc()))
         self.assertEqual(WsEdiConnection.objects.get_by_receiver_identifier('123192031').id, ws.id)

@@ -1,7 +1,4 @@
 import logging
-from datetime import datetime
-from typing import Tuple
-import pytz
 import cryptography
 from cryptography import x509
 
@@ -9,20 +6,12 @@ from cryptography import x509
 logger = logging.getLogger(__name__)
 
 
-def get_x509_cert_from_file(filename: str):
+def get_x509_cert_from_file(filename: str) -> x509.Certificate:
     """
-    Returns not_valid_before, not_valid_after pair
+    Load X509 certificate from file.
     """
     pem_data = open(filename, 'rb').read()
     return x509.load_pem_x509_certificate(pem_data, cryptography.hazmat.backends.default_backend())
-
-
-def get_x509_cert_validity_from_file(filename: str) -> Tuple[datetime, datetime]:
-    """
-    Returns not_valid_before, not_valid_after pair in UTC
-    """
-    cert = get_x509_cert_from_file(filename)
-    return pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(cert.not_valid_after)
 
 
 def write_pem_file(filename: str, cert_base64: str):

@@ -7,6 +7,7 @@ from datetime import datetime
 from os.path import basename
 from typing import Optional
 
+import pytz
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -27,7 +28,7 @@ from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
-from jbank.x509_helpers import get_x509_cert_validity_from_file
+from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
 from jbank.helpers import create_statement, create_reference_payment_batch
@@ -1087,7 +1088,8 @@ class WsEdiConnectionAdmin(ModelAdminBase):
         ]
         for filename in certs:
             if filename:
-                not_valid_after = get_x509_cert_validity_from_file(filename)[1]
+                cert = get_x509_cert_from_file(filename)
+                not_valid_after = pytz.utc.localize(cert.not_valid_after)
                 if min_not_valid_after is None or not_valid_after < min_not_valid_after:
                     min_not_valid_after = not_valid_after
         return date_format(min_not_valid_after.date(), 'SHORT_DATE_FORMAT') if min_not_valid_after else ''

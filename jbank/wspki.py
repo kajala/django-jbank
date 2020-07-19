@@ -96,7 +96,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         # from jbank.x509_helpers import *
 
         if command == 'GetBankCertificate':
-            body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_template.xml', **kwargs)
+            body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml', **kwargs)
             envelope = etree.fromstring(body_bytes)
             if 'elem' not in envelope.nsmap:
                 raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
