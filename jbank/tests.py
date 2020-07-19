@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.template.loader import get_template
 from django.test import TestCase
 from jacc.models import Account
+from jbank.csr_helpers import create_private_key, create_csr_pem, get_private_key_pem, strip_pem_header_and_footer
 from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.helpers import validate_xml
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
@@ -163,3 +164,11 @@ class Tests(TestCase):
             account=acc)
         with self.assertRaisesMessage(ValidationError, '> 0'):
             p.full_clean()
+
+    def test_rsa_csr(self):
+        pk = create_private_key()
+        csr = create_csr_pem(pk, common_name='kajala.com', country_name='FI', organization_name='Kajala Group Ltd')
+        self.assertEqual(csr.decode().split('\n')[0], '-----BEGIN CERTIFICATE REQUEST-----')
+        pk_pem = get_private_key_pem(pk)
+        self.assertEqual(pk_pem.decode().split('\n')[0], '-----BEGIN PRIVATE KEY-----')
+        self.assertFalse(strip_pem_header_and_footer(pk_pem).startswith(b'-----BEGIN'))
