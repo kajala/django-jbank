@@ -642,6 +642,26 @@ class WsEdiConnection(models.Model):
         return self.bank_root_cert_file.file.name if self.bank_root_cert_file else ''
 
     @property
+    def ca_cert_full_path(self) -> str:
+        return self.ca_cert_file.file.name if self.ca_cert_file else ''
+
+    @property
+    def signing_cert_with_public_key_full_path(self) -> str:
+        src_file = self.signing_cert_full_path
+        file = src_file[:-4] + '-with-pubkey.pem'
+        if not os.path.isfile(file):
+            out = subprocess.check_output([
+                settings.OPENSSL_PATH,
+                'x509',
+                '-pubkey',
+                '-in',
+                src_file,
+            ])
+            with open(file, 'wb') as fp:
+                fp.write(out)
+        return file
+
+    @property
     def bank_encryption_cert_with_public_key_full_path(self) -> str:
         src_file = self.bank_encryption_cert_full_path
         file = src_file[:-4] + '-with-pubkey.pem'
@@ -681,7 +701,8 @@ class WsEdiConnection(models.Model):
             **kwargs
         })).encode()
 
-    def verify_signature(self, content: bytes):
+    @staticmethod
+    def verify_signature(content: bytes, signing_key_full_path: str):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
@@ -689,28 +710,37 @@ class WsEdiConnection(models.Model):
                 settings.XMLSEC1_PATH,
                 '--verify',
                 '--pubkey-pem',
-                self.signing_key_full_path,
+                signing_key_full_path,
                 fp.name
             ])
 
-    def sign_application_request(self, content: bytes) -> bytes:
+    def sign_application_request(self, content: bytes,
+                                 signing_key_full_path: str = '', signing_cert_full_path: str = '') -> bytes:
         """
         Sign application request.
         See https://users.dcc.uchile.cl/~pcamacho/tutorial/web/xmlsec/xmlsec.html
         :param content: XML application request
+        :param signing_key_full_path: Override signing key full path (if not use self.signing_key_full_path)
+        :param signing_cert_full_path: Override signing key full path (if not use self.signing_cert_full_path)
         :return: str
         """
-        with tempfile.NamedTemporaryFile() as fp:
+        if not signing_key_full_path:
+            signing_key_full_path = self.signing_key_full_path
+        if not signing_cert_full_path:
+            signing_cert_full_path = self.signing_cert_full_path
+        with tempfile.NamedTemporaryFile(delete=False) as fp:
             fp.write(content)
             fp.flush()
-            out = subprocess.check_output([
+            cmd = [
                 settings.XMLSEC1_PATH,
                 '--sign',
                 '--privkey-pem',
-                '{},{}'.format(self.signing_key_full_path, self.signing_cert_full_path),
+                '{},{}'.format(signing_key_full_path, signing_cert_full_path),
                 fp.name
-            ])
-        self.verify_signature(out)
+            ]
+            logger.info("Executing command:\n%s", ' '.join(cmd))
+            out = subprocess.check_output(cmd)
+        self.verify_signature(out, signing_key_full_path)
         return out
 
     def encrypt_application_request(self, content: bytes) -> bytes:

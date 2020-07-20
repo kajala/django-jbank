@@ -1,14 +1,15 @@
 # pylint: logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
 import logging
 import traceback
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 import requests
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
-from jbank.csr_helpers import create_private_key, get_private_key_pem, strip_pem_header_and_footer, create_csr_pem
+from jbank.csr_helpers import create_private_key, get_private_key_pem, strip_pem_header_and_footer, create_csr_pem, \
+    write_private_key_pem_file
 from jbank.models import WsEdiConnection, WsEdiSoapCall, PayoutParty
 from lxml import etree  # type: ignore  # pytype: disable=import-error
-from jbank.x509_helpers import get_x509_cert_from_file, write_pem_file
+from jbank.x509_helpers import get_x509_cert_from_file, write_cert_pem_file
 from jutil.admin import admin_log
 from jutil.format import get_media_full_path, format_xml_bytes
 
@@ -79,7 +80,12 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, 
         el.text = soap_call.timestamp.isoformat()
         el = etree.SubElement(req_el, '{}RequestId'.format(elem_ns))
         el.text = soap_call.request_identifier
-    elif command == 'CreateCertificate':
+    elif command in ['CreateCertificate', 'RenewCertificate']:
+        is_renew = command == 'RenewCertificate'
+        old_signing_key_full_path = get_media_full_path(ws.signing_key_file.name) if is_renew else ''
+        old_signing_cert_full_path = get_media_full_path(ws.signing_cert_file.name) if is_renew else ''
+        old_signing_cert = get_x509_cert_from_file(old_signing_cert_full_path) if is_renew else None
+
         encryption_pk = create_private_key()
         signing_pk = create_private_key()
         encryption_pk_pem = get_private_key_pem(encryption_pk)
@@ -90,8 +96,8 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, 
         ws.signing_key_file.name = signing_pk_filename
         ws.save()
         admin_log([ws], 'Encryption and signing private keys set as {} and {}'.format(encryption_pk_filename, signing_pk_filename))
-        write_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
-        write_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
+        write_private_key_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
+        write_private_key_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
         csr_params = {
             'common_name': payout_party.name,
             'organization_name': payout_party.name,
@@ -105,11 +111,16 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, 
         req = ws.get_pki_template('jbank/pki_create_certificate_request_template.xml', soap_call, **{
             'encryption_cert_pkcs10': strip_pem_header_and_footer(encryption_csr).decode().replace('\n', ''),
             'signing_cert_pkcs10': strip_pem_header_and_footer(signing_csr).decode().replace('\n', ''),
+            'old_signing_cert': old_signing_cert,
         })
-        logger.info('CreateCertificate request:\n%s', format_xml_bytes(req).decode())
+        logger.info('%s request:\n%s', command, format_xml_bytes(req).decode())
+
+        if is_renew:
+            req = ws.sign_application_request(req, old_signing_key_full_path, old_signing_cert_full_path)
+            logger.info('%s request signed:\n%s', command, format_xml_bytes(req).decode())
 
         enc_req_bytes = ws.encrypt_application_request(req)
-        logger.info('CreateCertificate request encrypted:\n%s', format_xml_bytes(enc_req_bytes).decode())
+        logger.info('%s request encrypted:\n%s', command, format_xml_bytes(enc_req_bytes).decode())
         enc_req_env = etree.fromstring(enc_req_bytes)
 
         body_bytes = ws.get_pki_template('jbank/pki_soap_template.xml', soap_call, **kwargs)
@@ -168,7 +179,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
         for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
             filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
-            write_pem_file(get_media_full_path(filename), data_base64.encode())
+            write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
             if cert_name == 'BankEncryptionCert':
                 ws.bank_encryption_cert_file.name = filename
             elif cert_name == 'BankSigningCert':
@@ -177,19 +188,21 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
                 ws.bank_root_cert_file.name = filename
             ws.save()
             admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
-    elif command == 'CreateCertificate':
+    elif command in ['CreateCertificate', 'RenewCertificate']:
         for cert_name in ['EncryptionCert', 'SigningCert', 'CACert']:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
             filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
-            write_pem_file(get_media_full_path(filename), data_base64.encode())
+            write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
             if cert_name == 'EncryptionCert':
                 ws.encryption_cert_file.name = filename
+                admin_log([ws], 'soap_call(id={}): encryption_cert_file={}'.format(soap_call.id, filename))
             elif cert_name == 'SigningCert':
                 ws.signing_cert_file.name = filename
+                admin_log([ws], 'soap_call(id={}): signing_cert_file={}'.format(soap_call.id, filename))
             elif cert_name == 'CACert':
                 ws.ca_cert_file.name = filename
+                admin_log([ws], 'soap_call(id={}): ca_cert_file={}'.format(soap_call.id, filename))
             ws.save()
-            admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
     else:
         raise Exception('{} not implemented'.format(command))
 

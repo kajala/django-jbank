@@ -1081,14 +1081,19 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     def expires(self, obj):
         assert isinstance(obj, WsEdiConnection)
         min_not_valid_after: Optional[datetime] = None
-        certs = [
-            obj.signing_cert_full_path,
-            obj.encryption_cert_full_path,
-            obj.bank_encryption_cert_full_path,
-            obj.bank_root_cert_full_path,
-        ]
+        try:
+            certs = [
+                obj.signing_cert_full_path,
+                obj.encryption_cert_full_path,
+                obj.bank_encryption_cert_full_path,
+                obj.bank_root_cert_full_path,
+                obj.ca_cert_full_path,
+            ]
+        except Exception as e:
+            logger.error(e)
+            return _('(missing certificate files)')
         for filename in certs:
-            if filename:
+            if filename and os.path.isfile(filename):
                 cert = get_x509_cert_from_file(filename)
                 not_valid_after = pytz.utc.localize(cert.not_valid_after)
                 if min_not_valid_after is None or not_valid_after < min_not_valid_after:

@@ -1,7 +1,13 @@
+import logging
+
 import cryptography
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from django.core.exceptions import ValidationError
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RSAPrivateKey:
@@ -30,6 +36,19 @@ def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
+
+
+def write_private_key_pem_file(filename: str, key_base64: bytes):
+    """
+    Writes PEM data to file.
+    :param filename: PEM filename
+    :param cert_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
+    """
+    if b'BEGIN' not in key_base64 or b'END' not in key_base64:
+        raise ValidationError('write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer')
+    with open(filename, 'wb') as fp:
+        fp.write(key_base64)
+        logger.info('%s written', filename)
 
 
 def strip_pem_header_and_footer(pem: bytes) -> bytes:
