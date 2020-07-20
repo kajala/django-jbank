@@ -51,18 +51,21 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall, elem_ns: st
     if return_code != '00':
         raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
 
-    for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
-        data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
-        filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
-        write_pem_file(get_media_full_path(filename), data_base64)
-        if cert_name == 'BankEncryptionCert':
-            ws.bank_encryption_cert_file.name = filename
-        elif cert_name == 'BankSigningCert':
-            ws.bank_signing_cert_file.name = filename
-        elif cert_name == 'BankRootCert':
-            ws.bank_root_cert_file.name = filename
-        ws.save()
-        admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
+    if command == 'GetBankCertificate':
+        for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
+            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
+            filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
+            write_pem_file(get_media_full_path(filename), data_base64)
+            if cert_name == 'BankEncryptionCert':
+                ws.bank_encryption_cert_file.name = filename
+            elif cert_name == 'BankSigningCert':
+                ws.bank_signing_cert_file.name = filename
+            elif cert_name == 'BankRootCert':
+                ws.bank_root_cert_file.name = filename
+            ws.save()
+            admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
+    else:
+        raise Exception('{} not implemented'.format(command))
 
 
 def wspki_execute(ws: WsEdiConnection, command: str,
@@ -84,6 +87,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
         envelope: Optional[etree.Element] = None
+        elem_ns = ''
 
         if command == 'GetBankCertificate':
             body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml', **kwargs)
@@ -137,7 +141,6 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         soap_call.save(update_fields=['executed'])
 
         process_wspki_response(res.content, soap_call, elem_ns)
-
         return res.content
     except Exception:
         soap_call.error = traceback.format_exc()
