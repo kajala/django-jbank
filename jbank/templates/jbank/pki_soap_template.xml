@@ -10,8 +10,6 @@
         <pkif:Timestamp>{{ soap_call.timestamp.isoformat }}</pkif:Timestamp>
         <pkif:InterfaceVersion>1</pkif:InterfaceVersion>
       </pkif:RequestHeader>
-      <elem:{{ soap_call.command }}Request>
-      </elem:{{ soap_call.command }}Request>
     </pkif:{{ soap_call.command }}In>
   </soapenv:Body>
 </soapenv:Envelope>
