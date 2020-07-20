@@ -1,7 +1,6 @@
-# pylint: logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
 import logging
 import traceback
-from typing import Callable, Optional, List
+from typing import Callable, Optional
 import requests
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
@@ -51,7 +50,7 @@ def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
     return els[0]
 
 
-def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, **kwargs) -> bytes:
+def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, **kwargs) -> bytes:  # pytype: ignore=too-many-locals,too-many-statements
     ws = soap_call.connection
     command = soap_call.command
     envelope: Optional[etree.Element] = None
@@ -139,7 +138,7 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, 
     return body_bytes
 
 
-def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
+def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
     ws = soap_call.connection
     command = soap_call.command
     envelope = etree.fromstring(content)

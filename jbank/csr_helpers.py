@@ -62,7 +62,7 @@ def strip_pem_header_and_footer(pem: bytes) -> bytes:
     return b'\n'.join(pem.split(b'\n')[1:-2])
 
 
-def create_csr_pem(private_key: RSAPrivateKey, common_name: str, country_name: str, dn_qualifier: str = '',
+def create_csr_pem(private_key: RSAPrivateKey, common_name: str, country_name: str, dn_qualifier: str = '',  # pylint: ignore=too-many-arguments,too-many-locals
                    business_category: str = '', domain_component: str = '', email_address: str = '',
                    generation_qualifier: str = '', given_name: str = '', jurisdiction_country_name: str = '',
                    jurisdiction_locality_name: str = '', jurisdiction_state_or_province_name: str = '',
