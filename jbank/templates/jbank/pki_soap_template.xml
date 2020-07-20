@@ -9,6 +9,7 @@
         <pkif:RequestId>{{ soap_call.request_identifier }}</pkif:RequestId>
         <pkif:Timestamp>{{ soap_call.timestamp.isoformat }}</pkif:Timestamp>
         <pkif:InterfaceVersion>1</pkif:InterfaceVersion>
+        <pkif:Environment>{{ ws.environment }}</pkif:Environment>
       </pkif:RequestHeader>
     </pkif:{{ command }}In>
   </soapenv:Body>
