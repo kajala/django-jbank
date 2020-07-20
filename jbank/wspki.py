@@ -39,15 +39,20 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
     envelope: Optional[etree.Element] = None
 
     if command == 'GetBankCertificate':
-        body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml', **kwargs)
-        envelope = etree.fromstring(body_bytes)
-        if 'elem' not in envelope.nsmap:
-            raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
-        elem_ns = '{' + envelope.nsmap['elem'] + '}'
-        req_el = etree_get_element(envelope, elem_ns, command + 'Request')
-
         if not ws.bank_root_cert_full_path:
             raise Exception('Bank root certificate missing')
+
+        body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_soap_template.xml', **kwargs)
+        envelope = etree.fromstring(body_bytes)
+        for ns_name in ['elem', 'pkif']:
+            if ns_name not in envelope.nsmap:
+                raise Exception("WS-PKI {} SOAP template invalid, '{}' namespace missing".format(command, ns_name))
+        pkif_ns = '{' + envelope.nsmap['pkif'] + '}'
+        elem_ns = '{' + envelope.nsmap['elem'] + '}'
+
+        req_hdr_el = etree_get_element(envelope, pkif_ns, 'RequestHeader')
+        req_el = etree.SubElement(req_hdr_el.getparent(), '{}{}Request'.format(elem_ns, command))
+
         cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
         logger.info('BankRootCertificateSerialNo %s', cert.serial_number)
         el = etree.SubElement(req_el, '{}BankRootCertificateSerialNo'.format(elem_ns))
