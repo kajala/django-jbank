@@ -65,11 +65,13 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
         signing_pk_filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, 'SigningKey')
         write_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
         write_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
-        req_bytes = ws.get_pki_request(soap_call, 'jbank/pki_create_certificate_request_template.xml', **{
+        req = ws.get_pki_request(soap_call, 'jbank/pki_create_certificate_request_template.xml', **{
             'encryption_cert_pkcs10': strip_pem_header_and_footer(encryption_pk_pem).decode().replace('\n', ''),
             'signing_cert_pkcs10': strip_pem_header_and_footer(signing_pk_pem).decode().replace('\n', ''),
         })
-        logger.info('CreateCertificate request:\n%s', format_xml_bytes(req_bytes).decode())
+        logger.info('CreateCertificate request:\n%s', format_xml_bytes(req).decode())
+        enc_req = ws.encrypt_application_request(req)
+        logger.info('CreateCertificate request encrypted:\n%s', format_xml_bytes(enc_req).decode())
 
     if envelope is None:
         raise Exception('{} not implemented'.format(command))
