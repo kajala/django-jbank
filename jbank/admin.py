@@ -1067,6 +1067,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
                 'encryption_key_file',
                 'bank_encryption_cert_file',
                 'bank_signing_cert_file',
+                'ca_cert_file',
             ]
         }),
     )

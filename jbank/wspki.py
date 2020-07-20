@@ -86,6 +86,10 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, 
         signing_pk_pem = get_private_key_pem(signing_pk)
         encryption_pk_filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, 'EncryptionKey')
         signing_pk_filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, 'SigningKey')
+        ws.encryption_key_file.name = encryption_pk_filename
+        ws.signing_key_file.name = signing_pk_filename
+        ws.save()
+        admin_log([ws], 'Encryption and signing private keys set as {} and {}'.format(encryption_pk_filename, signing_pk_filename))
         write_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
         write_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
         csr_params = {
@@ -149,7 +153,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
             return_text = etree_get_element(envelope, pkif_ns, 'ReturnText').text
             raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
 
-    # check that we have needed namespaces
+    # check that we have element namespace
     if not elem_ns:
         raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService/elements namespace missing".format(command))
 
@@ -171,6 +175,19 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
                 ws.bank_signing_cert_file.name = filename
             elif cert_name == 'BankRootCert':
                 ws.bank_root_cert_file.name = filename
+            ws.save()
+            admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
+    elif command == 'CreateCertificate':
+        for cert_name in ['EncryptionCert', 'SigningCert', 'CACert']:
+            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
+            filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
+            write_pem_file(get_media_full_path(filename), data_base64.encode())
+            if cert_name == 'EncryptionCert':
+                ws.encryption_cert_file.name = filename
+            elif cert_name == 'SigningCert':
+                ws.signing_cert_file.name = filename
+            elif cert_name == 'CACert':
+                ws.ca_cert_file.name = filename
             ws.save()
             admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
     else:
