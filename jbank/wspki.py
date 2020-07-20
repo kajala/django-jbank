@@ -72,7 +72,7 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
     envelope: Optional[etree.Element] = None
 
     if command == 'GetBankCertificate':
-        body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml')
+        body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml', **kwargs)
         envelope = etree.fromstring(body_bytes)
         if 'elem' not in envelope.nsmap:
             raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
