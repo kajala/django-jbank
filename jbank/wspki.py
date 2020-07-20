@@ -5,12 +5,13 @@ from typing import Callable, Optional
 import requests
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
+
+from jbank.csr_helpers import create_private_key, get_private_key_pem, strip_pem_header_and_footer
 from jbank.models import WsEdiConnection, WsEdiSoapCall
 from lxml import etree  # type: ignore  # pytype: disable=import-error
 from jbank.x509_helpers import get_x509_cert_from_file, write_pem_file
 from jutil.admin import admin_log
-from jutil.format import get_media_full_path
-
+from jutil.format import get_media_full_path, format_xml_bytes
 
 logger = logging.getLogger(__name__)
 
@@ -30,40 +31,6 @@ def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
     if len(els) > 1:
         raise Exception('{} found from {} more than once'.format(tag, el))
     return els[0]
-
-
-def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
-    ws = soap_call.connection
-    command = soap_call.command
-
-    # find elem namespace if not set
-    envelope = etree.fromstring(content)
-    if 'elem' not in envelope.nsmap:
-        raise Exception("WS-PKI {} SOAP response invalid, 'elem' namespace missing".format(command))
-    elem_ns = '{' + envelope.nsmap['elem'] + '}'
-
-    # find response element and check return code
-    res_el = etree_get_element(envelope, elem_ns, command + 'Response')
-    return_code = etree_get_element(res_el, elem_ns, 'ReturnCode').text
-    return_text = etree_get_element(res_el, elem_ns, 'ReturnText').text
-    if return_code != '00':
-        raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
-
-    if command == 'GetBankCertificate':
-        for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
-            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
-            filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
-            write_pem_file(get_media_full_path(filename), data_base64)
-            if cert_name == 'BankEncryptionCert':
-                ws.bank_encryption_cert_file.name = filename
-            elif cert_name == 'BankSigningCert':
-                ws.bank_signing_cert_file.name = filename
-            elif cert_name == 'BankRootCert':
-                ws.bank_root_cert_file.name = filename
-            ws.save()
-            admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
-    else:
-        raise Exception('{} not implemented'.format(command))
 
 
 def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
@@ -89,11 +56,59 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
         el.text = soap_call.timestamp.isoformat()
         el = etree.SubElement(req_el, '{}RequestId'.format(elem_ns))
         el.text = soap_call.request_identifier
+    elif command == 'CreateCertificate':
+        encryption_pk = create_private_key()
+        signing_pk = create_private_key()
+        encryption_pk_pem = get_private_key_pem(encryption_pk)
+        signing_pk_pem = get_private_key_pem(signing_pk)
+        encryption_pk_filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, 'EncryptionKey')
+        signing_pk_filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, 'SigningKey')
+        write_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
+        write_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
+        req_bytes = ws.get_pki_request(soap_call, 'jbank/pki_create_certificate_request_template.xml', **{
+            'encryption_cert_pkcs10': strip_pem_header_and_footer(encryption_pk_pem).decode().replace('\n', ''),
+            'signing_cert_pkcs10': strip_pem_header_and_footer(signing_pk_pem).decode().replace('\n', ''),
+        })
+        logger.info('CreateCertificate request:\n%s', format_xml_bytes(req_bytes).decode())
 
     if envelope is None:
         raise Exception('{} not implemented'.format(command))
     body_bytes = etree.tostring(envelope)
     return body_bytes
+
+
+def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
+    ws = soap_call.connection
+    command = soap_call.command
+
+    # find elem namespace if not set
+    envelope = etree.fromstring(content)
+    if 'elem' not in envelope.nsmap:
+        raise Exception("WS-PKI {} SOAP response invalid, 'elem' namespace missing".format(command))
+    elem_ns = '{' + envelope.nsmap['elem'] + '}'
+
+    # find response element and check return code
+    res_el = etree_get_element(envelope, elem_ns, command + 'Response')
+    return_code = etree_get_element(res_el, elem_ns, 'ReturnCode').text
+    return_text = etree_get_element(res_el, elem_ns, 'ReturnText').text
+    if return_code != '00':
+        raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
+
+    if command == 'GetBankCertificate':
+        for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
+            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
+            filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, cert_name)
+            write_pem_file(get_media_full_path(filename), data_base64.encode())
+            if cert_name == 'BankEncryptionCert':
+                ws.bank_encryption_cert_file.name = filename
+            elif cert_name == 'BankSigningCert':
+                ws.bank_signing_cert_file.name = filename
+            elif cert_name == 'BankRootCert':
+                ws.bank_root_cert_file.name = filename
+            ws.save()
+            admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
+    else:
+        raise Exception('{} not implemented'.format(command))
 
 
 def wspki_execute(ws: WsEdiConnection, command: str,
