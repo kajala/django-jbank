@@ -32,19 +32,17 @@ def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
     return els[0]
 
 
-def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall, elem_ns: str = ''):
+def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
     ws = soap_call.connection
     command = soap_call.command
 
     # find elem namespace if not set
-    if not elem_ns:
-        envelope = etree.fromstring(content)
-        if 'elem' not in envelope.nsmap:
-            raise Exception("WS-PKI {} SOAP response invalid, 'elem' namespace missing".format(command))
-        elem_ns = '{' + envelope.nsmap['elem'] + '}'
+    envelope = etree.fromstring(content)
+    if 'elem' not in envelope.nsmap:
+        raise Exception("WS-PKI {} SOAP response invalid, 'elem' namespace missing".format(command))
+    elem_ns = '{' + envelope.nsmap['elem'] + '}'
 
     # find response element and check return code
-    envelope = etree.fromstring(content)
     res_el = etree_get_element(envelope, elem_ns, command + 'Response')
     return_code = etree_get_element(res_el, elem_ns, 'ReturnCode').text
     return_text = etree_get_element(res_el, elem_ns, 'ReturnText').text
@@ -68,6 +66,36 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall, elem_ns: st
         raise Exception('{} not implemented'.format(command))
 
 
+def generate_wspki_request(soap_call: WsEdiSoapCall) -> bytes:
+    ws = soap_call.connection
+    command = soap_call.command
+    envelope: Optional[etree.Element] = None
+
+    if command == 'GetBankCertificate':
+        body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml')
+        envelope = etree.fromstring(body_bytes)
+        if 'elem' not in envelope.nsmap:
+            raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
+        elem_ns = '{' + envelope.nsmap['elem'] + '}'
+        req_el = etree_get_element(envelope, elem_ns, command + 'Request')
+
+        if not ws.bank_root_cert_full_path:
+            raise Exception('Bank root certificate missing')
+        cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
+        logger.info('BankRootCertificateSerialNo %s', cert.serial_number)
+        el = etree.SubElement(req_el, '{}BankRootCertificateSerialNo'.format(elem_ns))
+        el.text = str(cert.serial_number)
+        el = etree.SubElement(req_el, '{}Timestamp'.format(elem_ns))
+        el.text = soap_call.timestamp.isoformat()
+        el = etree.SubElement(req_el, '{}RequestId'.format(elem_ns))
+        el.text = soap_call.request_identifier
+
+    if envelope is None:
+        raise Exception('{} not implemented'.format(command))
+    body_bytes = etree.tostring(envelope)
+    return body_bytes
+
+
 def wspki_execute(ws: WsEdiConnection, command: str,
                   verbose: bool = False, cls: Callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
@@ -86,31 +114,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        envelope: Optional[etree.Element] = None
-        elem_ns = ''
-
-        if command == 'GetBankCertificate':
-            body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_get_bank_certificate_soap_template.xml', **kwargs)
-            envelope = etree.fromstring(body_bytes)
-            if 'elem' not in envelope.nsmap:
-                raise Exception("WS-PKI {} SOAP template invalid, 'elem' namespace missing".format(command))
-            elem_ns = '{' + envelope.nsmap['elem'] + '}'
-            req_el = etree_get_element(envelope, elem_ns, command + 'Request')
-
-            if not ws.bank_root_cert_full_path:
-                raise Exception('Bank root certificate missing')
-            cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
-            logger.info('BankRootCertificateSerialNo %s', cert.serial_number)
-            el = etree.SubElement(req_el, '{}BankRootCertificateSerialNo'.format(elem_ns))
-            el.text = str(cert.serial_number)
-            el = etree.SubElement(req_el, '{}Timestamp'.format(elem_ns))
-            el.text = soap_call.timestamp.isoformat()
-            el = etree.SubElement(req_el, '{}RequestId'.format(elem_ns))
-            el.text = soap_call.request_identifier
-
-        if envelope is None:
-            raise Exception('{} not implemented'.format(command))
-        body_bytes = etree.tostring(envelope)
+        body_bytes: bytes = generate_wspki_request(soap_call)
         if verbose:
             logger.info('------------------------------------------------------ {} body_bytes\n{}'.format(call_str, body_bytes.decode()))
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
@@ -140,7 +144,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
         soap_call.executed = now()
         soap_call.save(update_fields=['executed'])
 
-        process_wspki_response(res.content, soap_call, elem_ns)
+        process_wspki_response(res.content, soap_call)
         return res.content
     except Exception:
         soap_call.error = traceback.format_exc()
