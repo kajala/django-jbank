@@ -650,13 +650,15 @@ class WsEdiConnection(models.Model):
         src_file = self.signing_cert_full_path
         file = src_file[:-4] + '-with-pubkey.pem'
         if not os.path.isfile(file):
-            out = subprocess.check_output([
+            cmd = [
                 settings.OPENSSL_PATH,
                 'x509',
                 '-pubkey',
                 '-in',
                 src_file,
-            ])
+            ]
+            logger.info(' '.join(cmd))
+            out = subprocess.check_output(cmd)
             with open(file, 'wb') as fp:
                 fp.write(out)
         return file
@@ -666,13 +668,15 @@ class WsEdiConnection(models.Model):
         src_file = self.bank_encryption_cert_full_path
         file = src_file[:-4] + '-with-pubkey.pem'
         if not os.path.isfile(file):
-            out = subprocess.check_output([
+            cmd = [
                 settings.OPENSSL_PATH,
                 'x509',
                 '-pubkey',
                 '-in',
                 src_file,
-            ])
+            ]
+            # logger.info(' '.join(cmd))
+            out = subprocess.check_output(cmd)
             with open(file, 'wb') as fp:
                 fp.write(out)
         return file
@@ -706,13 +710,15 @@ class WsEdiConnection(models.Model):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
-            subprocess.check_output([
+            cmd = [
                 settings.XMLSEC1_PATH,
                 '--verify',
                 '--pubkey-pem',
                 signing_key_full_path,
                 fp.name
-            ])
+            ]
+            # logger.info(' '.join(cmd))
+            subprocess.check_output(cmd)
 
     def sign_application_request(self, content: bytes,
                                  signing_key_full_path: str = '', signing_cert_full_path: str = '') -> bytes:
@@ -728,7 +734,7 @@ class WsEdiConnection(models.Model):
             signing_key_full_path = self.signing_key_full_path
         if not signing_cert_full_path:
             signing_cert_full_path = self.signing_cert_full_path
-        with tempfile.NamedTemporaryFile(delete=False) as fp:
+        with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
             cmd = [
@@ -738,7 +744,7 @@ class WsEdiConnection(models.Model):
                 '{},{}'.format(signing_key_full_path, signing_cert_full_path),
                 fp.name
             ]
-            logger.info("Executing command:\n%s", ' '.join(cmd))
+            # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
         self.verify_signature(out, signing_key_full_path)
         return out
@@ -747,12 +753,14 @@ class WsEdiConnection(models.Model):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
-            out = subprocess.check_output([
+            cmd = [
                 self._xmlsec1_example_bin('encrypt3'),
                 fp.name,
                 self.bank_encryption_cert_with_public_key_full_path,
                 self.bank_encryption_cert_full_path
-            ])
+            ]
+            # logger.info(' '.join(cmd))
+            out = subprocess.check_output(cmd)
         return out
 
     def encode_application_request(self, content: bytes) -> bytes:
@@ -769,11 +777,13 @@ class WsEdiConnection(models.Model):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
-            out = subprocess.check_output([
+            cmd = [
                 self._xmlsec1_example_bin('decrypt3'),
                 fp.name,
                 self.encryption_key_full_path,
-            ])
+            ]
+            # logger.info(' '.join(cmd))
+            out = subprocess.check_output(cmd)
         return out
 
     @property
