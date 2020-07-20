@@ -66,7 +66,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
         raise Exception('{} not implemented'.format(command))
 
 
-def generate_wspki_request(soap_call: WsEdiSoapCall) -> bytes:
+def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
     ws = soap_call.connection
     command = soap_call.command
     envelope: Optional[etree.Element] = None
@@ -114,7 +114,7 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        body_bytes: bytes = generate_wspki_request(soap_call)
+        body_bytes: bytes = generate_wspki_request(soap_call, **kwargs)
         if verbose:
             logger.info('------------------------------------------------------ {} body_bytes\n{}'.format(call_str, body_bytes.decode()))
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
