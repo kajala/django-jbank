@@ -663,10 +663,11 @@ class WsEdiConnection(models.Model):
         self._signing_cert = get_x509_cert_from_file(self.signing_cert_full_path)
         return self._signing_cert
 
-    def get_pki_request(self, soap_call: WsEdiSoapCall, template_name: str, **kwargs) -> bytes:
+    def get_pki_template(self, template_name: str, soap_call: WsEdiSoapCall, **kwargs) -> bytes:
         return format_xml(get_template(template_name).render({
-            'ws': self,
+            'ws': soap_call.connection,
             'soap_call': soap_call,
+            'command': soap_call.command,
             'timestamp': now().astimezone(pytz.timezone('Europe/Helsinki')).isoformat(),
             **kwargs
         })).encode()

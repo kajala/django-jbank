@@ -1,19 +1,36 @@
-# pylint: disable=logging-format-interpolation,logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
+# pylint: logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
 import logging
 import traceback
 from typing import Callable, Optional
 import requests
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
-
-from jbank.csr_helpers import create_private_key, get_private_key_pem, strip_pem_header_and_footer
-from jbank.models import WsEdiConnection, WsEdiSoapCall
+from jbank.csr_helpers import create_private_key, get_private_key_pem, strip_pem_header_and_footer, create_csr_pem
+from jbank.models import WsEdiConnection, WsEdiSoapCall, PayoutParty
 from lxml import etree  # type: ignore  # pytype: disable=import-error
 from jbank.x509_helpers import get_x509_cert_from_file, write_pem_file
 from jutil.admin import admin_log
 from jutil.format import get_media_full_path, format_xml_bytes
 
+
 logger = logging.getLogger(__name__)
+
+
+def etree_find_element(el: etree.Element, ns: str, tag: str) -> Optional[etree.Element]:
+    """
+    :param el: Root Element
+    :param ns: Target namespace
+    :param tag: Target tag
+    :return: Element if found
+    """
+    if not ns.startswith('{'):
+        ns = '{' + ns + '}'
+    els = list(el.iter('{}{}'.format(ns, tag)))
+    if not els:
+        return None
+    if len(els) > 1:
+        return None
+    return els[0]
 
 
 def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
@@ -33,7 +50,7 @@ def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
     return els[0]
 
 
-def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
+def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, **kwargs) -> bytes:
     ws = soap_call.connection
     command = soap_call.command
     envelope: Optional[etree.Element] = None
@@ -42,7 +59,7 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
         if not ws.bank_root_cert_full_path:
             raise Exception('Bank root certificate missing')
 
-        body_bytes = ws.get_pki_request(soap_call, 'jbank/pki_soap_template.xml', **kwargs)
+        body_bytes = ws.get_pki_template('jbank/pki_soap_template.xml', soap_call, **kwargs)
         envelope = etree.fromstring(body_bytes)
         for ns_name in ['elem', 'pkif']:
             if ns_name not in envelope.nsmap:
@@ -51,7 +68,8 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
         elem_ns = '{' + envelope.nsmap['elem'] + '}'
 
         req_hdr_el = etree_get_element(envelope, pkif_ns, 'RequestHeader')
-        req_el = etree.SubElement(req_hdr_el.getparent(), '{}{}Request'.format(elem_ns, command))
+        cmd_el = req_hdr_el.getparent()
+        req_el = etree.SubElement(cmd_el, '{}{}Request'.format(elem_ns, command))
 
         cert = get_x509_cert_from_file(ws.bank_root_cert_full_path)
         logger.info('BankRootCertificateSerialNo %s', cert.serial_number)
@@ -70,13 +88,35 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
         signing_pk_filename = 'certs/ws{}-{}-{}.pem'.format(ws.id, soap_call.timestamp_digits, 'SigningKey')
         write_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
         write_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
-        req = ws.get_pki_request(soap_call, 'jbank/pki_create_certificate_request_template.xml', **{
-            'encryption_cert_pkcs10': strip_pem_header_and_footer(encryption_pk_pem).decode().replace('\n', ''),
-            'signing_cert_pkcs10': strip_pem_header_and_footer(signing_pk_pem).decode().replace('\n', ''),
+        csr_params = {
+            'common_name': payout_party.name,
+            'organization_name': payout_party.name,
+            'country_name': payout_party.country_code,
+            'organizational_unit_name': 'IT-services',
+            'locality_name': 'Helsinki',
+            'state_or_province_name': 'Uusimaa',
+        }
+        encryption_csr = create_csr_pem(encryption_pk, **csr_params)
+        signing_csr = create_csr_pem(signing_pk, **csr_params)
+        req = ws.get_pki_template('jbank/pki_create_certificate_request_template.xml', soap_call, **{
+            'encryption_cert_pkcs10': strip_pem_header_and_footer(encryption_csr).decode().replace('\n', ''),
+            'signing_cert_pkcs10': strip_pem_header_and_footer(signing_csr).decode().replace('\n', ''),
         })
         logger.info('CreateCertificate request:\n%s', format_xml_bytes(req).decode())
-        enc_req = ws.encrypt_application_request(req)
-        logger.info('CreateCertificate request encrypted:\n%s', format_xml_bytes(enc_req).decode())
+
+        enc_req_bytes = ws.encrypt_application_request(req)
+        logger.info('CreateCertificate request encrypted:\n%s', format_xml_bytes(enc_req_bytes).decode())
+        enc_req_env = etree.fromstring(enc_req_bytes)
+
+        body_bytes = ws.get_pki_template('jbank/pki_soap_template.xml', soap_call, **kwargs)
+        envelope = etree.fromstring(body_bytes)
+        for ns_name in ['pkif']:
+            if ns_name not in envelope.nsmap:
+                raise Exception("WS-PKI {} SOAP template invalid, '{}' namespace missing".format(command, ns_name))
+        pkif_ns = '{' + envelope.nsmap['pkif'] + '}'
+        req_hdr_el = etree_get_element(envelope, pkif_ns, 'RequestHeader')
+        cmd_el = req_hdr_el.getparent()
+        cmd_el.insert(cmd_el.index(req_hdr_el)+1, enc_req_env)
 
     if envelope is None:
         raise Exception('{} not implemented'.format(command))
@@ -87,12 +127,31 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, **kwargs) -> bytes:
 def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
     ws = soap_call.connection
     command = soap_call.command
-
-    # find elem namespace if not set
     envelope = etree.fromstring(content)
-    if 'elem' not in envelope.nsmap:
-        raise Exception("WS-PKI {} SOAP response invalid, 'elem' namespace missing".format(command))
-    elem_ns = '{' + envelope.nsmap['elem'] + '}'
+
+    # find namespaces
+    pkif_ns = ''
+    elem_ns = ''
+    for ns_name, ns_url in envelope.nsmap.items():
+        assert isinstance(ns_name, str)
+        if ns_url.endswith('PKIFactoryService/elements'):
+            elem_ns = '{' + ns_url + '}'
+        elif ns_url.endswith('PKIFactoryService'):
+            pkif_ns = '{' + ns_url + '}'
+    if not pkif_ns:
+        raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService namespace missing".format(command))
+
+    # check for errors
+    err_el = etree_find_element(envelope, pkif_ns, 'ReturnCode')
+    if err_el is not None:
+        if err_el.text != '00':
+            return_code = err_el.text
+            return_text = etree_get_element(envelope, pkif_ns, 'ReturnText').text
+            raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
+
+    # check that we have needed namespaces
+    if not elem_ns:
+        raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService/elements namespace missing".format(command))
 
     # find response element and check return code
     res_el = etree_get_element(envelope, elem_ns, command + 'Response')
@@ -118,10 +177,11 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):
         raise Exception('{} not implemented'.format(command))
 
 
-def wspki_execute(ws: WsEdiConnection, command: str,
+def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str,
                   verbose: bool = False, cls: Callable = WsEdiSoapCall, **kwargs) -> bytes:
     """
     :param ws:
+    :param payout_party:
     :param command:
     :param verbose:
     :param cls:
@@ -136,9 +196,9 @@ def wspki_execute(ws: WsEdiConnection, command: str,
     soap_call.save()
     call_str = 'WsEdiSoapCall({})'.format(soap_call.id)
     try:
-        body_bytes: bytes = generate_wspki_request(soap_call, **kwargs)
+        body_bytes: bytes = generate_wspki_request(soap_call, payout_party, **kwargs)
         if verbose:
-            logger.info('------------------------------------------------------ {} body_bytes\n{}'.format(call_str, body_bytes.decode()))
+            logger.info('------------------------------------------------------ %s body_bytes\n%s', call_str, body_bytes.decode())
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
         if debug_output:
             with open(soap_call.debug_application_request_full_path, 'wb') as fp:
@@ -152,21 +212,21 @@ def wspki_execute(ws: WsEdiConnection, command: str,
             'User-Agent': 'Kajala WS',
         }
         if verbose:
-            logger.info('HTTP POST {}'.format(ws.pki_endpoint))
+            logger.info('HTTP POST %s', ws.pki_endpoint)
         res = requests.post(ws.pki_endpoint, data=body_bytes, headers=http_headers)
         if debug_output:
             with open(soap_call.debug_application_response_full_path, 'wb') as fp:
                 fp.write(res.content)
         if verbose:
-            logger.info('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
+            logger.info('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, res.text)
         if res.status_code >= 300:
-            logger.error('------------------------------------------------------ {} HTTP response {}\n{}'.format(call_str, res.status_code, res.text))
+            logger.error('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, res.text)
             raise Exception("WS-PKI {} HTTP {}".format(command, res.status_code))
+
+        process_wspki_response(res.content, soap_call)
 
         soap_call.executed = now()
         soap_call.save(update_fields=['executed'])
-
-        process_wspki_response(res.content, soap_call)
         return res.content
     except Exception:
         soap_call.error = traceback.format_exc()

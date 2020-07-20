@@ -1,7 +1,7 @@
 import logging
 from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
-from jbank.models import WsEdiConnection, WsEdiSoapCall
+from jbank.models import WsEdiConnection, WsEdiSoapCall, PayoutParty
 from jbank.wspki import wspki_execute, process_wspki_response
 
 
@@ -16,6 +16,7 @@ class Command(SafeCommand):
     def add_arguments(self, parser: CommandParser):
         parser.add_argument('--ws', type=int, default=1)
         parser.add_argument('--cmd', type=str, default='')
+        parser.add_argument('--payout-party-id', type=int)
         parser.add_argument('--process-response', type=int)
 
     def do(self, *args, **options):
@@ -38,4 +39,10 @@ class Command(SafeCommand):
         if not cmd:
             logger.error('--cmd missing')
             return
-        wspki_execute(ws, command=cmd, verbose=True)
+        payout_party_id = options['payout_party_id']
+        if not payout_party_id:
+            logger.error('--payout-party-id missing')
+            return
+        payout_party = PayoutParty.objects.get(id=payout_party_id)
+        assert isinstance(payout_party, PayoutParty)
+        wspki_execute(ws, payout_party=payout_party, command=cmd, verbose=True)

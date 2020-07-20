@@ -2,14 +2,14 @@
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pkif="http://danskebank.dk/PKI/PKIFactoryService" xmlns:elem="http://danskebank.dk/PKI/PKIFactoryService/elements">
   <soapenv:Header/>
   <soapenv:Body>
-    <pkif:{{ soap_call.command }}In>
+    <pkif:{{ command }}In>
       <pkif:RequestHeader>
-        <pkif:SenderId>{{ soap_call.connection.sender_identifier }}</pkif:SenderId>
-        <pkif:CustomerId>{{ soap_call.connection.sender_identifier }}</pkif:CustomerId>
+        <pkif:SenderId>{{ ws.sender_identifier }}</pkif:SenderId>
+        <pkif:CustomerId>{{ ws.sender_identifier }}</pkif:CustomerId>
         <pkif:RequestId>{{ soap_call.request_identifier }}</pkif:RequestId>
         <pkif:Timestamp>{{ soap_call.timestamp.isoformat }}</pkif:Timestamp>
         <pkif:InterfaceVersion>1</pkif:InterfaceVersion>
       </pkif:RequestHeader>
-    </pkif:{{ soap_call.command }}In>
+    </pkif:{{ command }}In>
   </soapenv:Body>
 </soapenv:Envelope>

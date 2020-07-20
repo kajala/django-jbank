@@ -1218,3 +1218,5 @@ admin.site.register(ReferencePaymentRecord, ReferencePaymentRecordAdmin)
 admin.site.register(ReferencePaymentBatch, ReferencePaymentBatchAdmin)
 admin.site.register(ReferencePaymentBatchFile, ReferencePaymentBatchFileAdmin)
 admin.site.register(WsEdiConnection, WsEdiConnectionAdmin)
+admin.site.register(WsEdiSoapCall, WsEdiSoapCallAdmin)
+
