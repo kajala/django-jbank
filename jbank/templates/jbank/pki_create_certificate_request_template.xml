@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tns:{{ soap_call.command }}Request xmlns:xe="http://www.w3.org/2001/04/xmlenc#" xmlns:xd="http://www.w3.org/2000/09/xmldsig#" xmlns:tns="http://danskebank.dk/PKI/PKIFactoryService/elements" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pkif="http://danskebank.dk/PKI/PKIFactoryService">
-    <tns:CustomerId>{{ soap_call.connection.sender_identifier }}</tns:CustomerId>
+<tns:{{ command }}Request xmlns:xe="http://www.w3.org/2001/04/xmlenc#" xmlns:xd="http://www.w3.org/2000/09/xmldsig#" xmlns:tns="http://danskebank.dk/PKI/PKIFactoryService/elements" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:pkif="http://danskebank.dk/PKI/PKIFactoryService">
+    <tns:CustomerId>{{ ws.sender_identifier }}</tns:CustomerId>
     <tns:KeyGeneratorType>software</tns:KeyGeneratorType>
     <tns:EncryptionCertPKCS10>{{ encryption_cert_pkcs10 }}</tns:EncryptionCertPKCS10>
     <tns:SigningCertPKCS10>{{ signing_cert_pkcs10 }}</tns:SigningCertPKCS10>
     <tns:Timestamp>{{ soap_call.timestamp.isoformat }}</tns:Timestamp>
     <tns:RequestId>{{ soap_call.request_identifier }}</tns:RequestId>
-    <tns:PIN>{{ soap_call.connection.pin }}</tns:PIN>
-</tns:{{ soap_call.command }}Request>
+    <tns:Environment>{{ ws.environment }}</tns:Environment>
+    <tns:PIN>{{ ws.pin }}</tns:PIN>
+</tns:{{ command }}Request>
