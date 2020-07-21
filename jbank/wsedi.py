@@ -120,7 +120,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
             logger.info('------------------------------------------------------ {} app\n{}'.format(call_str, app.decode()))
         debug_output = command in ws.debug_command_list or 'ALL' in ws.debug_command_list
         if debug_output:
-            with open(soap_call.debug_application_request_full_path, 'wb') as fp:
+            with open(soap_call.debug_request_full_path, 'wb') as fp:
                 fp.write(app)
 
         signed_app = ws.sign_application_request(app)
@@ -196,7 +196,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
         soap_call.save(update_fields=['executed'])
 
         if debug_output:
-            with open(soap_call.debug_application_response_full_path, 'wb') as fp:
+            with open(soap_call.debug_response_full_path, 'wb') as fp:
                 fp.write(app_res)
 
         return app_res

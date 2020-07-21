@@ -1,9 +1,11 @@
 import logging
+from typing import Optional
 
 import cryptography
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.core.exceptions import ValidationError
 
 
@@ -36,6 +38,16 @@ def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
+
+
+def load_private_key_from_pem_data(pem_data: bytes, password: Optional[bytes] = None) -> RSAPrivateKey:
+    backend = cryptography.hazmat.backends.default_backend()
+    return load_pem_private_key(pem_data, password=password, backend=backend)
+
+
+def load_private_key_from_pem_file(filename: str, password: Optional[bytes] = None) -> RSAPrivateKey:
+    with open(filename, 'rb') as fp:
+        return load_private_key_from_pem_data(fp.read(), password)
 
 
 def write_private_key_pem_file(filename: str, key_base64: bytes):

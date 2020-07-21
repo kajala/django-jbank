@@ -565,11 +565,11 @@ class WsEdiSoapCall(models.Model):
         return '{:08}{}.xml'.format(self.id, file_type)
 
     @property
-    def debug_application_request_full_path(self) -> str:
+    def debug_request_full_path(self) -> str:
         return self.debug_get_file_path(self.debug_get_filename('a'))
 
     @property
-    def debug_application_response_full_path(self) -> str:
+    def debug_response_full_path(self) -> str:
         return self.debug_get_file_path(self.debug_get_filename('r'))
 
     @staticmethod
@@ -619,31 +619,31 @@ class WsEdiConnection(models.Model):
 
     @property
     def signing_cert_full_path(self) -> str:
-        return self.signing_cert_file.file.name if self.signing_cert_file else ''
+        return get_media_full_path(self.signing_cert_file.file.name) if self.signing_cert_file else ''
 
     @property
     def signing_key_full_path(self) -> str:
-        return self.signing_key_file.file.name if self.signing_key_file else ''
+        return get_media_full_path(self.signing_key_file.file.name) if self.signing_key_file else ''
 
     @property
     def encryption_cert_full_path(self) -> str:
-        return self.encryption_cert_file.file.name if self.encryption_cert_file else ''
+        return get_media_full_path(self.encryption_cert_file.file.name) if self.encryption_cert_file else ''
 
     @property
     def encryption_key_full_path(self) -> str:
-        return self.encryption_key_file.file.name if self.encryption_key_file else ''
+        return get_media_full_path(self.encryption_key_file.file.name) if self.encryption_key_file else ''
 
     @property
     def bank_encryption_cert_full_path(self) -> str:
-        return self.bank_encryption_cert_file.file.name if self.bank_encryption_cert_file else ''
+        return get_media_full_path(self.bank_encryption_cert_file.file.name) if self.bank_encryption_cert_file else ''
 
     @property
     def bank_root_cert_full_path(self) -> str:
-        return self.bank_root_cert_file.file.name if self.bank_root_cert_file else ''
+        return get_media_full_path(self.bank_root_cert_file.file.name) if self.bank_root_cert_file else ''
 
     @property
     def ca_cert_full_path(self) -> str:
-        return self.ca_cert_file.file.name if self.ca_cert_file else ''
+        return get_media_full_path(self.ca_cert_file.file.name) if self.ca_cert_file else ''
 
     @property
     def signing_cert_with_public_key_full_path(self) -> str:
@@ -705,8 +705,8 @@ class WsEdiConnection(models.Model):
             **kwargs
         })).encode()
 
-    @staticmethod
-    def verify_signature(content: bytes, signing_key_full_path: str):
+    @classmethod
+    def verify_signature(cls, content: bytes, signing_key_full_path: str):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
@@ -720,20 +720,22 @@ class WsEdiConnection(models.Model):
             # logger.info(' '.join(cmd))
             subprocess.check_output(cmd)
 
-    def sign_application_request(self, content: bytes,
-                                 signing_key_full_path: str = '', signing_cert_full_path: str = '') -> bytes:
+    def sign_pki_request(self, content: bytes) -> bytes:
+        return self._sign_request(content, self.signing_key_full_path, self.signing_cert_full_path)
+
+    def sign_application_request(self, content: bytes) -> bytes:
+        return self._sign_request(content, self.signing_key_full_path, self.signing_cert_full_path)
+
+    @classmethod
+    def _sign_request(cls, content: bytes, signing_key_full_path: str, signing_cert_full_path: str) -> bytes:
         """
-        Sign application request.
+        Sign a request.
         See https://users.dcc.uchile.cl/~pcamacho/tutorial/web/xmlsec/xmlsec.html
         :param content: XML application request
         :param signing_key_full_path: Override signing key full path (if not use self.signing_key_full_path)
         :param signing_cert_full_path: Override signing key full path (if not use self.signing_cert_full_path)
         :return: str
         """
-        if not signing_key_full_path:
-            signing_key_full_path = self.signing_key_full_path
-        if not signing_cert_full_path:
-            signing_cert_full_path = self.signing_cert_full_path
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
@@ -746,10 +748,16 @@ class WsEdiConnection(models.Model):
             ]
             # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
-        self.verify_signature(out, signing_key_full_path)
+        cls.verify_signature(out, signing_key_full_path)
         return out
 
+    def encrypt_pki_request(self, content: bytes) -> bytes:
+        return self._encrypt_request(content)
+
     def encrypt_application_request(self, content: bytes) -> bytes:
+        return self._encrypt_request(content)
+
+    def _encrypt_request(self, content: bytes) -> bytes:
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()

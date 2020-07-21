@@ -1160,7 +1160,7 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         obj = get_object_or_404(self.get_queryset(request), id=object_id)
         assert isinstance(obj, WsEdiSoapCall)
         if file_type == 'f':
-            with open(obj.debug_application_response_full_path, 'rb') as fb:
+            with open(obj.debug_response_full_path, 'rb') as fb:
                 data = xml_to_dict(fb.read())
                 content = base64.b64decode(data.get('Content', ''))
                 return FormattedXmlResponse(content, filename=obj.debug_get_filename(file_type))
@@ -1168,18 +1168,18 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
 
     def admin_application_request(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
-        if not os.path.isfile(obj.debug_application_request_full_path):
+        if not os.path.isfile(obj.debug_request_full_path):
             return ''
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'a'])
-        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_request_full_path)))
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_request_full_path)))
     admin_application_request.short_description = _('application request')  # type: ignore
 
     def admin_application_response(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
-        if not os.path.isfile(obj.debug_application_response_full_path):
+        if not os.path.isfile(obj.debug_response_full_path):
             return ''
         download_url = reverse('admin:jbank_wsedisoapcall_soap_download', args=[str(obj.id), 'r'])
-        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_application_response_full_path)))
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_response_full_path)))
     admin_application_response.short_description = _('application response')  # type: ignore
 
     def admin_application_response_file(self, obj):
