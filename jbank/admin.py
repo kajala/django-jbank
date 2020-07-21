@@ -1157,6 +1157,9 @@ class WsEdiSoapCallAdmin(ModelAdminBase):
         return fields
 
     def soap_download_view(self, request, object_id, file_type, form_url = '', extra_context = None):  # pylint: disable=unused-argument
+        user = request.user
+        if not user.is_authenticated or not user.is_superuser:
+            raise Http404('File not found')
         obj = get_object_or_404(self.get_queryset(request), id=object_id)
         assert isinstance(obj, WsEdiSoapCall)
         if file_type == 'f':
