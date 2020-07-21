@@ -256,9 +256,11 @@ def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str,
             with open(soap_call.debug_response_full_path, 'wb') as fp:
                 fp.write(res.content)
         if verbose:
-            logger.info('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, format_xml_bytes(res.content).decode())
+            logger.info('------------------------------------------------------ %s HTTP response %s\n%s', call_str,
+                        res.status_code, format_xml_bytes(res.content).decode())
         if res.status_code >= 300:
-            logger.error('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, format_xml_bytes(res.content).decode())
+            logger.error('------------------------------------------------------ %s HTTP response %s\n%s', call_str,
+                         res.status_code, format_xml_bytes(res.content).decode())
             raise Exception("WS-PKI {} HTTP {}".format(command, res.status_code))
 
         process_wspki_response(res.content, soap_call)
