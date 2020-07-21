@@ -126,7 +126,7 @@ def generate_wspki_request(soap_call: WsEdiSoapCall, payout_party: PayoutParty, 
 
         cmd_el.insert(cmd_el.index(req_hdr_el)+1, req_el)
 
-    elif command == 'CertificateStatus':
+    elif command in ['CertificateStatus', 'GetOwnCertificateList']:
         cert = get_x509_cert_from_file(ws.signing_cert_full_path)
         req = ws.get_pki_template('jbank/pki_certificate_status_request_template.xml', soap_call, **{
             'certs': [cert],
@@ -150,6 +150,17 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
     command = soap_call.command
     envelope = etree.fromstring(content)
 
+    # check for errors
+    return_code: str = ''
+    return_text: str = ''
+    for el in envelope.iter():
+        if el.tag and el.tag.endswith('}ReturnCode'):
+            return_code = el.text
+            return_text_el = list(envelope.iter(el.tag[:-4] + 'Text'))[0]
+            return_text = return_text_el.text if return_text_el is not None else ''
+    if return_code != '00':
+        raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
+
     # find namespaces
     pkif_ns = ''
     elem_ns = ''
@@ -161,25 +172,11 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             pkif_ns = '{' + ns_url + '}'
     if not pkif_ns:
         raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService namespace missing".format(command))
-
-    # check for errors
-    err_el = etree_find_element(envelope, pkif_ns, 'ReturnCode')
-    if err_el is not None:
-        if err_el.text != '00':
-            return_code = err_el.text
-            return_text = etree_get_element(envelope, pkif_ns, 'ReturnText').text
-            raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
-
-    # check that we have element namespace
     if not elem_ns:
         raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService/elements namespace missing".format(command))
 
-    # find response element and check return code
+    # find response element
     res_el = etree_get_element(envelope, elem_ns, command + 'Response')
-    return_code = etree_get_element(res_el, elem_ns, 'ReturnCode').text
-    return_text = etree_get_element(res_el, elem_ns, 'ReturnText').text
-    if return_code != '00':
-        raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
 
     if command == 'GetBankCertificate':
         for cert_name in ['BankEncryptionCert', 'BankSigningCert', 'BankRootCert']:
@@ -194,6 +191,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
                 ws.bank_root_cert_file.name = filename
             ws.save()
             admin_log([ws], '{} set by system from SOAP call response id={}'.format(cert_name, soap_call.id))
+
     elif command in ['CreateCertificate', 'RenewCertificate']:
         for cert_name in ['EncryptionCert', 'SigningCert', 'CACert']:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
@@ -209,8 +207,10 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
                 ws.ca_cert_file.name = filename
                 admin_log([ws], 'soap_call(id={}): ca_cert_file={}'.format(soap_call.id, filename))
             ws.save()
-    elif command == 'CertificateStatus':
+
+    elif command in ['CertificateStatus', 'GetOwnCertificateList']:
         pass
+
     else:
         raise Exception('{} not implemented'.format(command))
 
@@ -256,9 +256,9 @@ def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str,
             with open(soap_call.debug_response_full_path, 'wb') as fp:
                 fp.write(res.content)
         if verbose:
-            logger.info('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, res.text)
+            logger.info('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, format_xml_bytes(res.content).decode())
         if res.status_code >= 300:
-            logger.error('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, res.text)
+            logger.error('------------------------------------------------------ %s HTTP response %s\n%s', call_str, res.status_code, format_xml_bytes(res.content).decode())
             raise Exception("WS-PKI {} HTTP {}".format(command, res.status_code))
 
         process_wspki_response(res.content, soap_call)
