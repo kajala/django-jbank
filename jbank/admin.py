@@ -19,6 +19,8 @@ from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
+from django.db.models import F, Q
+from django.db.models.aggregates import Sum
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse
@@ -27,7 +29,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
-from jacc.models import Account, EntryType
+from jacc.models import Account, EntryType, AccountEntry
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
@@ -38,8 +40,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
-
+from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log, admin_obj_link
 
 logger = logging.getLogger(__name__)
 
@@ -82,12 +83,19 @@ class AccountEntryMatchedFilter(SimpleListFilter):
     def queryset(self, request, queryset):
         val = self.value()
         if val:
+            # return original settlements only
             queryset = queryset.filter(type__is_settlement=True, parent=None)
             if val == '1':
-                return queryset.filter(child_set=None).exclude(manually_settled=True)
+                # return those which are not manually settled and
+                # have either a) no children b) sum of children less than amount
+                queryset = queryset.exclude(manually_settled=True)
+                queryset = queryset.annotate(child_set_amount=Sum('child_set__amount'))
+                return queryset.filter(Q(child_set=None) | Q(child_set_amount__lt=F('amount')))
             if val == '2':
-                return queryset.exclude(child_set=None)
+                # return any entries with derived account entries or marked as manually settled
+                return queryset.exclude(Q(child_set=None) & Q(manually_settled=False))
             if val == '3':
+                # return only manually marked as settled
                 return queryset.filter(manually_settled=True)
         return queryset
 
@@ -290,7 +298,7 @@ def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=un
 
 class StatementRecordAdmin(ModelAdminBase):
     exclude = ()
-    list_per_page = 50
+    list_per_page = 25
     save_on_top = False
     date_hierarchy = 'record_date'
     readonly_fields = (
@@ -420,7 +428,7 @@ class StatementRecordAdmin(ModelAdminBase):
 
 class ReferencePaymentRecordAdmin(ModelAdminBase):
     exclude = ()
-    list_per_page = 50
+    list_per_page = 25
     save_on_top = False
     date_hierarchy = 'record_date'
     raw_id_fields = (
