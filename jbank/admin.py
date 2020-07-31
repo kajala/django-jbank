@@ -76,7 +76,7 @@ class AccountEntryMatchedFilter(SimpleListFilter):
         return [
             ('1', capfirst(_('account.entry.not.matched'))),
             ('2', capfirst(_('account.entry.is.matched'))),
-            ('3', capfirst(_('masked as settled'))),
+            ('3', capfirst(_('marked as settled'))),
         ]
 
     def queryset(self, request, queryset):
