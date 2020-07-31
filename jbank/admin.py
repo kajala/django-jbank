@@ -29,7 +29,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
-from jacc.models import Account, EntryType, AccountEntry
+from jacc.models import Account, EntryType
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
@@ -40,7 +40,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log, admin_obj_link
+from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
 
 logger = logging.getLogger(__name__)
 
