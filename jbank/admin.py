@@ -820,6 +820,9 @@ class PayoutStatusAdmin(ModelAdminBase):
     )
 
     def file_download_view(self, request, pk, filename, form_url='', extra_context=None):  # pylint: disable=unused-argument
+        user = request.user
+        if not user.is_authenticated or not user.is_staff:
+            raise Http404(_('File {} not found').format(filename))
         obj = get_object_or_404(self.get_queryset(request), pk=pk, file_name=filename)
         assert isinstance(obj, PayoutStatus)
         full_path = obj.full_path
