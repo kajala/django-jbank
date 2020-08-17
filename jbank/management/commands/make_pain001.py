@@ -81,4 +81,4 @@ class Command(SafeCommand):
                 logger.error(long_err)
                 p.state = PAYOUT_ERROR
                 p.save(update_fields=['state'])
-                PayoutStatus.objects.create(payout=p, file_name=p.file_name, msg_id=p.msg_id, status_reason=short_err[:255])
+                PayoutStatus.objects.create(payout=p, group_status=PAYOUT_ERROR, file_name=p.file_name, msg_id=p.msg_id, status_reason=short_err[:255])
