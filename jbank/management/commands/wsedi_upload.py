@@ -93,5 +93,6 @@ class Command(SafeCommand):
                 short_err = 'File upload failed: ' + str(e)
                 p.state = PAYOUT_ERROR
                 p.save(update_fields=['state'])
-                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code,
-                                            response_text=response_text, status_reason=short_err[:255])
+                PayoutStatus.objects.create(payout=p, group_status=PAYOUT_ERROR, msg_id=p.msg_id, file_name=p.file_name,
+                                            response_code=response_code, response_text=response_text,
+                                            status_reason=short_err[:255])
