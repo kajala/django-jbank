@@ -84,8 +84,9 @@ class Command(SafeCommand):
                     if file_reference:
                         p.file_reference = file_reference
                         p.save(update_fields=['file_reference'])
-                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name, response_code=response_code,
-                                            response_text=response_text, status_reason='File upload OK')
+                PayoutStatus.objects.create(payout=p, msg_id=p.msg_id, file_name=p.file_name,
+                                            response_code=response_code, response_text=response_text,
+                                            status_reason='File upload OK')
 
             except Exception as e:
                 long_err = "File upload failed ({}): ".format(p.file_name) + traceback.format_exc()
