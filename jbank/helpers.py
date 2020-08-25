@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, date
 from os.path import basename
-from typing import Any, Tuple, Optional
+from typing import Any, Tuple, Optional, List
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -213,9 +213,31 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
     return batch
 
 
+def get_or_create_bank_account_entry_types() -> List[EntryType]:
+    e_type_codes = [
+        settings.E_BANK_DEPOSIT,
+        settings.E_BANK_WITHDRAW,
+        settings.E_BANK_REFERENCE_PAYMENT,
+        settings.E_BANK_REFUND,
+        settings.E_BANK_PAYOUT,
+    ]
+    e_types: List[EntryType] = []
+    for code in e_type_codes:
+        e_type = EntryType.objects.get_or_create(code=code, defaults={
+            'identifier': code,
+            'name': code,
+            'is_settlement': True,
+            'is_payment': code in [settings.E_BANK_DEPOSIT, settings.E_BANK_REFERENCE_PAYMENT],
+        })[0]
+        e_types.append(e_type)
+    return e_types
+
+
 def get_or_create_bank_account(account_number: str, currency: str = 'EUR') -> Account:
     a_type = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={'name': _('bank account')})[0]
-    acc = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)[0]
+    acc, created = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)
+    if created:
+        get_or_create_bank_account_entry_types()
     return acc
 
 

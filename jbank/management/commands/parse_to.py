@@ -10,7 +10,7 @@ from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
 from jbank.parsers import parse_tiliote_statements_from_file
 from jutil.command import SafeCommand
-
+from jutil.format import is_media_path, strip_media_root
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +59,14 @@ class Command(SafeCommand):
                     if not Statement.objects.filter(name=plain_filename).first():
                         file = StatementFile(original_filename=filename, tag=options['tag'])
                         file.save()
-                        with open(filename, 'rb') as fp:
-                            file.file.save(plain_filename, File(fp))
+
+                        if is_media_path(filename):
+                            file.file.name = strip_media_root(filename)  # type: ignore
+                            file.save()
+                        else:
+                            with open(filename, 'rb') as fp:
+                                file.file.save(plain_filename, File(fp))
+
                         for data in statements:
                             if options['auto_create_accounts']:
                                 account_number = data.get('header', {}).get('account_number')

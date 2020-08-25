@@ -1,4 +1,4 @@
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 import base64
 import logging
 import os
@@ -40,7 +40,7 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, AdminFileDownloadMixin, admin_log
+from jutil.admin import ModelAdminBase, admin_log
 
 logger = logging.getLogger(__name__)
 
@@ -633,7 +633,7 @@ class StatementFileForm(forms.ModelForm):
         return file
 
 
-class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
+class StatementFileAdmin(ModelAdminBase):
     save_on_top = False
     exclude = ()
     form = StatementFileForm
@@ -651,28 +651,18 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     list_display = (
         'id',
         'created',
-        'file_link',
+        'file',
     )
 
     readonly_fields = (
         'created',
         'errors',
-        'file_link',
+        'file',
         'original_filename',
     )
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
-
-    def file_link(self, obj):
-        assert isinstance(obj, StatementFile)
-        if not obj.file:
-            return ''
-        name = basename(obj.file.name)
-        admin_url = reverse('admin:jbank_statement_file_changelist', args=(obj.id, ))
-        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
-    file_link.admin_order_field = 'file'  # type: ignore
-    file_link.short_description = _('statements')  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
         if add:
@@ -693,9 +683,6 @@ class StatementFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
                     instance.delete()
 
         return super().construct_change_message(request, form, formsets, add)
-
-    def get_urls(self):
-        return self.get_download_urls() + super().get_urls()
 
 
 class ReferencePaymentBatchFileForm(forms.ModelForm):
@@ -725,7 +712,7 @@ class ReferencePaymentBatchFileForm(forms.ModelForm):
         return file
 
 
-class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
+class ReferencePaymentBatchFileAdmin(ModelAdminBase):
     save_on_top = False
     exclude = ()
     form = ReferencePaymentBatchFileForm
@@ -734,7 +721,7 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     list_display = (
         'id',
         'created',
-        'file_link',
+        'file',
     )
 
     list_filter = (
@@ -748,22 +735,12 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
     readonly_fields = (
         'created',
         'errors',
-        'file_link',
+        'file',
         'original_filename',
     )
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
-
-    def file_link(self, obj):
-        assert isinstance(obj, ReferencePaymentBatchFile)
-        if not obj.file:
-            return ''
-        name = basename(obj.file.name)
-        admin_url = reverse('admin:jbank_referencepaymentbatch_file_changelist', args=(obj.id, ))
-        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
-    file_link.admin_order_field = 'file'  # type: ignore
-    file_link.short_description = _("reference payment batches")  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
         if add:
@@ -790,9 +767,6 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase, AdminFileDownloadMixin):
                     instance.delete()
 
         return super().construct_change_message(request, form, formsets, add)
-
-    def get_urls(self):
-        return self.get_download_urls() + super().get_urls()
 
 
 class PayoutStatusAdmin(ModelAdminBase):
