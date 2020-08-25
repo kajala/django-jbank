@@ -18,9 +18,8 @@ from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account, AccountEntryManager
 from jbank.x509_helpers import get_x509_cert_from_file
-from jutil.dict import choices_label
 from jutil.modelfields import SafeCharField, SafeTextField
-from jutil.format import format_xml, get_media_full_path
+from jutil.format import format_xml, get_media_full_path, choices_label
 from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
 
 
