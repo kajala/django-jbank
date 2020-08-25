@@ -7,6 +7,7 @@ import pytz
 from dateutil.tz import tzutc
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.template.loader import get_template
 from django.test import TestCase
 from jacc.models import Account
@@ -172,3 +173,12 @@ class Tests(TestCase):
         pk_pem = get_private_key_pem(pk)
         self.assertEqual(pk_pem.decode().split('\n')[0], '-----BEGIN PRIVATE KEY-----')
         self.assertFalse(strip_pem_header_and_footer(pk_pem).startswith(b'-----BEGIN'))
+
+    def test_parse_xt(self):
+        if os.path.isdir('./downloads/xt'):
+            call_command('parse_xt', 'downloads/xt', auto_create_accounts=True)
+        if os.path.isdir('./downloads/svm'):
+            call_command('parse_svm', 'downloads/svm', auto_create_accounts=True)
+        call_command('parse_xt', 'data/xt', auto_create_accounts=True)
+        call_command('parse_svm', 'data/svm', auto_create_accounts=True)
+        call_command('parse_to', 'data/to', auto_create_accounts=True)
