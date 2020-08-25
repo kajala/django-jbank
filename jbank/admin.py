@@ -163,7 +163,7 @@ class StatementAdmin(ModelAdminBase):
         'statement_number',
         'begin_balance',
         'currency_code',
-        'name',
+        'file_link',
         'account_entry_list'
     )
 
