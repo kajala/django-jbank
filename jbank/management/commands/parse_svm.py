@@ -10,7 +10,7 @@ from jbank.files import list_dir_files
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
 from jbank.parsers import parse_svm_batches_from_file
 from jutil.command import SafeCommand
-from jutil.format import is_media_path, strip_media_root
+from jutil.format import strip_media_root, is_media_full_path
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class Command(SafeCommand):
                         file = ReferencePaymentBatchFile(original_filename=filename, tag=options['tag'])
                         file.save()
 
-                        if is_media_path(filename):
+                        if is_media_full_path(filename):
                             file.file.name = strip_media_root(filename)  # type: ignore
                             file.save()
                         else:
