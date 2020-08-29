@@ -2,6 +2,7 @@ recursive-include . *.txt *.md *.ini *.conf *.css *.png *.js *.html *.po *.mo *.
 global-include *.html *.css *.js *.png *.jpg *.po *.mo *.txt *.md *.xml *.typed *.c Makefile
 prune venv
 prune project
+prune certs
 prune downloads
 prune uploads
 prune logs
