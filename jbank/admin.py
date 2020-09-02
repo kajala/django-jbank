@@ -950,7 +950,6 @@ class RefundAdmin(PayoutAdmin):
         'payer',
         'recipient',
     )
-
     fields = (
         'connection',
         'account',
@@ -960,12 +959,19 @@ class RefundAdmin(PayoutAdmin):
         'amount',
         'messages',
         'reference',
-        'due_date',
+        'attachment',
         'msg_id',
         'file_name',
         'timestamp',
         'paid_date',
-        'state',
+        'group_status',
+        'created',
+    )
+    readonly_fields = (
+        'msg_id',
+        'file_name',
+        'timestamp',
+        'paid_date',
         'group_status',
         'created',
     )

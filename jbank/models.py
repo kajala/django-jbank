@@ -528,6 +528,8 @@ class Refund(Payout):
         verbose_name = _("incoming.payment.refund")
         verbose_name_plural = _("incoming.payment.refunds")
 
+    attachment = models.FileField(verbose_name=_('attachment'), blank=True, upload_to='uploads')
+
 
 class WsEdiSoapCall(models.Model):
     connection = models.ForeignKey('WsEdiConnection', verbose_name=_('WS-EDI connection'), on_delete=models.CASCADE)

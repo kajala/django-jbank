@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-02 13:51+0000\n"
+"POT-Creation-Date: 2020-09-02 14:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,7 +47,7 @@ msgid "account entries"
 msgstr "tilitapahtumat"
 
 #: jbank/admin.py:183 jbank/admin.py:512 jbank/admin.py:593 jbank/admin.py:813
-#: jbank/admin.py:837 jbank/admin.py:1180 jbank/models.py:338
+#: jbank/admin.py:837 jbank/admin.py:1186 jbank/models.py:338
 #: jbank/models.py:357
 msgid "file"
 msgstr "tiedosto"
@@ -90,36 +90,36 @@ msgstr "Käsittelemätön virhe"
 msgid "File {} not found"
 msgstr "Tiedostoa {} ei löydy"
 
-#: jbank/admin.py:1079
+#: jbank/admin.py:1085
 msgid "(missing certificate files)"
 msgstr ""
 
-#: jbank/admin.py:1087
+#: jbank/admin.py:1093
 msgid "expires"
 msgstr "vanhenee"
 
-#: jbank/admin.py:1163
+#: jbank/admin.py:1169
 msgid "application request"
 msgstr "palvelupyyntö"
 
-#: jbank/admin.py:1171
+#: jbank/admin.py:1177
 msgid "application response"
 msgstr "palveluvastaus"
 
-#: jbank/admin.py:1185
+#: jbank/admin.py:1191
 msgid "execution time"
 msgstr "suoritetusaika"
 
-#: jbank/admin.py:1190 jbank/models.py:118 jbank/models.py:537
+#: jbank/admin.py:1196 jbank/models.py:118 jbank/models.py:539
 msgid "error"
 msgstr "virhe"
 
-#: jbank/admin.py:1199
+#: jbank/admin.py:1205
 #: jbank/templates/admin/jbank/mark_as_manually_settled.html:21
 msgid "Mark as manually settled"
 msgstr "Merkitse tapahtuma manuaalisesti kohdistetuksi"
 
-#: jbank/admin.py:1200
+#: jbank/admin.py:1206
 msgid "Unmark manually settled flag"
 msgstr "Merkitse tapahtuma avoimeksi/kohdistamattomaksi"
 
@@ -483,7 +483,7 @@ msgid "delivery method"
 msgstr "toimitustapa"
 
 #: jbank/models.py:175 jbank/models.py:199 jbank/models.py:375
-#: jbank/models.py:591
+#: jbank/models.py:593
 msgid "name"
 msgstr "nimi"
 
@@ -528,7 +528,7 @@ msgid "statement records"
 msgstr "tiliotteen tietueet"
 
 #: jbank/models.py:200 jbank/models.py:337 jbank/models.py:356
-#: jbank/models.py:496 jbank/models.py:535 jbank/models.py:609
+#: jbank/models.py:496 jbank/models.py:537 jbank/models.py:611
 msgid "created"
 msgstr "luotu"
 
@@ -712,7 +712,7 @@ msgstr "ulosmaksun osapuoli"
 msgid "payout parties"
 msgstr "ulosmaksun osapuolet"
 
-#: jbank/models.py:405 jbank/models.py:533 jbank/models.py:613
+#: jbank/models.py:405 jbank/models.py:535 jbank/models.py:615
 msgid "WS-EDI connection"
 msgstr "WS-EDI yhteys"
 
@@ -822,23 +822,27 @@ msgstr "palautus"
 msgid "incoming.payment.refunds"
 msgstr "palautukset"
 
-#: jbank/models.py:534
+#: jbank/models.py:531
+msgid "attachment"
+msgstr "liite"
+
+#: jbank/models.py:536
 msgid "command"
 msgstr "komento"
 
-#: jbank/models.py:536
+#: jbank/models.py:538
 msgid "executed"
 msgstr "suoritettu"
 
-#: jbank/models.py:540
+#: jbank/models.py:542
 msgid "WS-EDI SOAP call"
 msgstr "WS-EDI SOAP kutsu"
 
-#: jbank/models.py:541
+#: jbank/models.py:543
 msgid "WS-EDI SOAP calls"
 msgstr "WS-EDI SOAP kutsut"
 
-#: jbank/models.py:584
+#: jbank/models.py:586
 #, python-brace-format
 msgid ""
 "WS-EDI connection cannot be found by receiver identifier "
@@ -847,75 +851,75 @@ msgstr ""
 "Pankkiyhteyttä ei voida valita vastaanottajan tunnisteen "
 "{receiver_identifier} perusteella koska täsmääviä yhteyksiä on {matches} kpl"
 
-#: jbank/models.py:592
+#: jbank/models.py:594
 msgid "enabled"
 msgstr "päällä"
 
-#: jbank/models.py:593
+#: jbank/models.py:595
 msgid "sender identifier"
 msgstr "lähettäjän tunniste"
 
-#: jbank/models.py:594
+#: jbank/models.py:596
 msgid "receiver identifier"
 msgstr "vastaanottajan tunniste"
 
-#: jbank/models.py:595
+#: jbank/models.py:597
 msgid "target identifier"
 msgstr "kohdekansion tunniste"
 
-#: jbank/models.py:596
+#: jbank/models.py:598
 msgid "environment"
 msgstr "ympäristö"
 
-#: jbank/models.py:598
+#: jbank/models.py:600
 msgid "PKI endpoint"
 msgstr "PKI yhteysosoite"
 
-#: jbank/models.py:599
+#: jbank/models.py:601
 msgid "bank root certificate file"
 msgstr ""
 
-#: jbank/models.py:600
+#: jbank/models.py:602
 msgid "EDI endpoint"
 msgstr "EDI yhteysosoite"
 
-#: jbank/models.py:601
+#: jbank/models.py:603
 msgid "signing certificate file"
 msgstr ""
 
-#: jbank/models.py:602
+#: jbank/models.py:604
 msgid "signing key file"
 msgstr ""
 
-#: jbank/models.py:603
+#: jbank/models.py:605
 msgid "encryption certificate file"
 msgstr ""
 
-#: jbank/models.py:604
+#: jbank/models.py:606
 msgid "encryption key file"
 msgstr ""
 
-#: jbank/models.py:605
+#: jbank/models.py:607
 msgid "bank encryption cert file"
 msgstr ""
 
-#: jbank/models.py:606
+#: jbank/models.py:608
 msgid "bank signing cert file"
 msgstr ""
 
-#: jbank/models.py:607
+#: jbank/models.py:609
 msgid "CA certificate file"
 msgstr ""
 
-#: jbank/models.py:608
+#: jbank/models.py:610
 msgid "debug commands"
 msgstr "debug komennot"
 
-#: jbank/models.py:608
+#: jbank/models.py:610
 msgid "wsedi.connection.debug.commands.help.text"
 msgstr "Debugattavat komennot välilyönnillä erotettuna"
 
-#: jbank/models.py:614
+#: jbank/models.py:616
 msgid "WS-EDI connections"
 msgstr "WS-EDI yhteydet"
 
