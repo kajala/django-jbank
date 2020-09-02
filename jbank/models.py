@@ -525,8 +525,8 @@ class PayoutStatus(models.Model):
 
 class Refund(Payout):
     class Meta:
-        verbose_name = _("refund")
-        verbose_name_plural = _("refunds")
+        verbose_name = _("incoming.payment.refund")
+        verbose_name_plural = _("incoming.payment.refunds")
 
 
 class WsEdiSoapCall(models.Model):
