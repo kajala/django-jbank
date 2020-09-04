@@ -6,7 +6,6 @@ import traceback
 from datetime import datetime
 from os.path import basename
 from typing import Optional
-
 import pytz
 from django import forms
 from django.conf import settings
@@ -31,6 +30,7 @@ from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
 from jbank.x509_helpers import get_x509_cert_from_file
+from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.xml import xml_to_dict
 from jbank.helpers import create_statement, create_reference_payment_batch
@@ -40,9 +40,16 @@ from jbank.models import Statement, StatementRecord, StatementRecordSepaInfo, Re
     WsEdiSoapCall
 from jbank.parsers import parse_tiliote_statements, parse_tiliote_statements_from_file, parse_svm_batches_from_file, \
     parse_svm_batches
-from jutil.admin import ModelAdminBase, admin_log
+from jutil.admin import ModelAdminBase, admin_log, admin_log_changed_fields
 
 logger = logging.getLogger(__name__)
+
+
+class BankAdminBase(ModelAdminBase):
+    def save_form(self, request, form, change):
+        if change:
+            admin_log_changed_fields(form.instance, form.changed_data, request.user, ip=get_ip(request))
+        return form.save(commit=False)
 
 
 class SettlementEntryTypesFilter(SimpleListFilter):
@@ -121,7 +128,7 @@ class AccountNameFilter(SimpleListFilter):
         return queryset
 
 
-class StatementAdmin(ModelAdminBase):
+class StatementAdmin(BankAdminBase):
     exclude = ()
     list_per_page = 20
     save_on_top = False
@@ -296,7 +303,7 @@ def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=un
         messages.info(request, msg)
 
 
-class StatementRecordAdmin(ModelAdminBase):
+class StatementRecordAdmin(BankAdminBase):
     exclude = ()
     list_per_page = 25
     save_on_top = False
@@ -426,7 +433,7 @@ class StatementRecordAdmin(ModelAdminBase):
     file_link.short_description = _("account statement file")  # type: ignore
 
 
-class ReferencePaymentRecordAdmin(ModelAdminBase):
+class ReferencePaymentRecordAdmin(BankAdminBase):
     exclude = ()
     list_per_page = 25
     save_on_top = False
@@ -536,7 +543,7 @@ class ReferencePaymentRecordAdmin(ModelAdminBase):
     source_file_link.short_description = _('account entry source file')  # type: ignore
 
 
-class ReferencePaymentBatchAdmin(ModelAdminBase):
+class ReferencePaymentBatchAdmin(BankAdminBase):
     exclude = ()
     list_per_page = 20
     save_on_top = False
@@ -633,7 +640,7 @@ class StatementFileForm(forms.ModelForm):
         return file
 
 
-class StatementFileAdmin(ModelAdminBase):
+class StatementFileAdmin(BankAdminBase):
     save_on_top = False
     exclude = ()
     form = StatementFileForm
@@ -712,7 +719,7 @@ class ReferencePaymentBatchFileForm(forms.ModelForm):
         return file
 
 
-class ReferencePaymentBatchFileAdmin(ModelAdminBase):
+class ReferencePaymentBatchFileAdmin(BankAdminBase):
     save_on_top = False
     exclude = ()
     form = ReferencePaymentBatchFileForm
@@ -769,7 +776,7 @@ class ReferencePaymentBatchFileAdmin(ModelAdminBase):
         return super().construct_change_message(request, form, formsets, add)
 
 
-class PayoutStatusAdmin(ModelAdminBase):
+class PayoutStatusAdmin(BankAdminBase):
     fields = (
         'created',
         'payout',
@@ -838,7 +845,7 @@ class PayoutStatusInlineAdmin(admin.TabularInline):
     file_name_link.admin_order_field = 'file_name'  # type: ignore
 
 
-class PayoutAdmin(ModelAdminBase):
+class PayoutAdmin(BankAdminBase):
     save_on_top = False
     exclude = ()
     inlines = [PayoutStatusInlineAdmin]
@@ -915,7 +922,7 @@ class PayoutAdmin(ModelAdminBase):
         return super().save_model(request, obj, form, change)
 
 
-class PayoutPartyAdmin(ModelAdminBase):
+class PayoutPartyAdmin(BankAdminBase):
     save_on_top = False
     exclude = ()
     search_fields = (
@@ -977,7 +984,7 @@ class RefundAdmin(PayoutAdmin):
     )
 
 
-class CurrencyExchangeSourceAdmin(ModelAdminBase):
+class CurrencyExchangeSourceAdmin(BankAdminBase):
     save_on_top = False
     exclude = ()
 
@@ -995,7 +1002,7 @@ class CurrencyExchangeSourceAdmin(ModelAdminBase):
     list_display = fields
 
 
-class CurrencyExchangeAdmin(ModelAdminBase):
+class CurrencyExchangeAdmin(BankAdminBase):
     save_on_top = False
 
     fields = (
@@ -1013,7 +1020,7 @@ class CurrencyExchangeAdmin(ModelAdminBase):
     list_filter = ('source_currency', 'target_currency', 'source')
 
 
-class WsEdiConnectionAdmin(ModelAdminBase):
+class WsEdiConnectionAdmin(BankAdminBase):
     save_on_top = False
 
     list_display = (
@@ -1093,7 +1100,7 @@ class WsEdiConnectionAdmin(ModelAdminBase):
     expires.short_description = _('expires')  # type: ignore
 
 
-class WsEdiSoapCallAdmin(ModelAdminBase):
+class WsEdiSoapCallAdmin(BankAdminBase):
     save_on_top = False
 
     date_hierarchy = 'created'
