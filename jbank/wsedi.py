@@ -100,7 +100,7 @@ def wsedi_execute(ws: WsEdiConnection, command: str, file_type: str = '', status
     :param end_date:
     :param verbose:
     :param cls:
-    :return: str
+    :return: bytes
     """
     if ws and not ws.enabled:
         raise Exception(_('ws.edi.connection.not.enabled').format(ws=ws))

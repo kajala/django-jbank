@@ -102,8 +102,8 @@ class Command(SafeCommand):
                             res = wsedi_get(command=command, file_type=file_type, status='', file_reference=file_reference, verbose=options['verbose'])
                             file_data = res.json()
                         if 'Content' not in file_data:
-                            logger.error('WS-EDI {} HTTP {} but Content block missing: {}'.format(command, res.status_code, file_data))
-                            raise Exception("WS-EDI {} HTTP {} but Content block missing".format(command, res.status_code))
+                            logger.error('WS-EDI {} Content block missing: {}'.format(command, file_data))
+                            raise Exception("WS-EDI {} Content block missing".format(command))
                         bcontent = base64.b64decode(file_data['Content'])
                         with open(file_path, 'wb') as fp:
                             fp.write(bcontent)
