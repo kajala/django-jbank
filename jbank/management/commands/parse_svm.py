@@ -8,7 +8,7 @@ from django.db import transaction
 from jbank.helpers import create_reference_payment_batch, get_or_create_bank_account
 from jbank.files import list_dir_files
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
-from jbank.parsers import parse_svm_batches_from_file
+from jbank.parsers import parse_svm_batches_from_file, parse_filename_suffix, SVM_STATEMENT_SUFFIXES
 from jutil.command import SafeCommand
 from jutil.format import strip_media_root, is_media_full_path
 
@@ -32,6 +32,10 @@ class Command(SafeCommand):
         # pprint(files)
         for filename in files:
             plain_filename = os.path.basename(filename)
+
+            if parse_filename_suffix(plain_filename).upper() not in SVM_STATEMENT_SUFFIXES:
+                print('Ignoring non-SVM file {}'.format(filename))
+                continue
 
             if options['resolve_original_filenames']:
                 found = ReferencePaymentBatchFile.objects.filter(referencepaymentbatch__name=plain_filename).first()

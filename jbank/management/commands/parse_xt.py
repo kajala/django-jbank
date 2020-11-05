@@ -5,10 +5,12 @@ from pprint import pprint
 from django.core.files import File
 from django.core.management.base import CommandParser
 from django.db import transaction
-from jbank.camt import camt053_get_iban, camt053_create_statement, camt053_parse_statement_from_file
+from jbank.camt import camt053_get_iban, camt053_create_statement, camt053_parse_statement_from_file, \
+    CAMT053_STATEMENT_SUFFIXES
 from jbank.helpers import get_or_create_bank_account
 from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
+from jbank.parsers import parse_filename_suffix
 from jutil.command import SafeCommand
 from jutil.format import strip_media_root, is_media_full_path
 
@@ -32,6 +34,10 @@ class Command(SafeCommand):
         files = list_dir_files(options['path'], options['suffix'])
         for filename in files:
             plain_filename = os.path.basename(filename)
+
+            if parse_filename_suffix(plain_filename).upper() not in CAMT053_STATEMENT_SUFFIXES:
+                print('Ignoring non-CAMT53 file {}'.format(filename))
+                continue
 
             if options['resolve_original_filenames']:
                 found = StatementFile.objects.filter(statement__name=plain_filename).first()

@@ -8,7 +8,7 @@ from django.db import transaction
 from jbank.helpers import create_statement, get_or_create_bank_account
 from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
-from jbank.parsers import parse_tiliote_statements_from_file
+from jbank.parsers import parse_tiliote_statements_from_file, parse_filename_suffix, TO_STATEMENT_SUFFIXES
 from jutil.command import SafeCommand
 from jutil.format import strip_media_root, is_media_full_path
 
@@ -31,6 +31,10 @@ class Command(SafeCommand):
         files = list_dir_files(options['path'])
         for filename in files:
             plain_filename = os.path.basename(filename)
+
+            if parse_filename_suffix(plain_filename).upper() not in TO_STATEMENT_SUFFIXES:
+                print('Ignoring non-TO file {}'.format(filename))
+                continue
 
             if options['resolve_original_filenames']:
                 found = StatementFile.objects.filter(statement__name=plain_filename).first()
