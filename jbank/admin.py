@@ -5,7 +5,7 @@ import os
 import traceback
 from datetime import datetime
 from os.path import basename
-from typing import Optional
+from typing import Optional, Sequence
 import pytz
 from django import forms
 from django.conf import settings
@@ -851,21 +851,21 @@ class PayoutAdmin(BankAdminBase):
     inlines = [PayoutStatusInlineAdmin]
     date_hierarchy = 'timestamp'
 
-    raw_id_fields = (
+    raw_id_fields: Sequence[str] = (
         'account',
         'parent',
         'payer',
         'recipient',
     )
 
-    list_filter = (
+    list_filter: Sequence[str] = (
         'state',
         'payoutstatus_set__response_code',
         'payoutstatus_set__group_status',
         'recipient__bic',
     )
 
-    fields = (
+    fields: Sequence[str] = (
         'connection',
         'account',
         'parent',
@@ -884,7 +884,7 @@ class PayoutAdmin(BankAdminBase):
         'created',
     )
 
-    list_display = (
+    list_display: Sequence[str] = (
         'id',
         'timestamp',
         'recipient',
@@ -893,7 +893,7 @@ class PayoutAdmin(BankAdminBase):
         'state',
     )
 
-    readonly_fields = (
+    readonly_fields: Sequence[str] = (
         'created',
         'paid_date',
         'timestamp',
@@ -902,7 +902,7 @@ class PayoutAdmin(BankAdminBase):
         'group_status',
     )
 
-    search_fields = (
+    search_fields: Sequence[str] = (
         '=msg_id',
         '=file_name',
         '=file_reference',
