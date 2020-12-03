@@ -306,7 +306,7 @@ class ReferencePaymentRecord(AccountEntry):
     paid_date = models.DateField(_('paid date'), db_index=True, blank=True, null=True, default=None)
     archive_identifier = SafeCharField(_('archive identifier'), max_length=32, blank=True, default='', db_index=True)
     remittance_info = SafeCharField(_('remittance info'), max_length=32, db_index=True)
-    payer_name = SafeCharField(_('payer name'), max_length=12, db_index=True)
+    payer_name = SafeCharField(_('payer name'), max_length=12, blank=True, default='', db_index=True)
     currency_identifier = SafeCharField(_('currency identifier'), max_length=1, choices=CURRENCY_IDENTIFIERS)
     name_source = SafeCharField(_('name source'), max_length=1, choices=NAME_SOURCES, blank=True)
     correction_identifier = SafeCharField(_('correction identifier'), max_length=1, choices=CORRECTION_IDENTIFIER)
