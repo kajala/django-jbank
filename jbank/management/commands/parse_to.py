@@ -4,7 +4,6 @@ import os
 from pprint import pprint
 from django.core.files import File
 from django.core.management.base import CommandParser
-from django.db import transaction
 from jbank.helpers import create_statement, get_or_create_bank_account
 from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
@@ -29,7 +28,7 @@ class Command(SafeCommand):
 
     def do(self, *args, **options):
         files = list_dir_files(options['path'])
-        for filename in files:
+        for filename in files:  # pylint: disable=too-many-nested-blocks
             plain_filename = os.path.basename(filename)
 
             if parse_filename_suffix(plain_filename).upper() not in TO_STATEMENT_SUFFIXES:
