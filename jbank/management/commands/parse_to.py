@@ -59,24 +59,23 @@ class Command(SafeCommand):
                 if options['verbose']:
                     pprint(statements)
 
-                with transaction.atomic():
-                    if not Statement.objects.filter(name=plain_filename).first():
-                        file = StatementFile(original_filename=filename, tag=options['tag'])
+                if not Statement.objects.filter(name=plain_filename).first():
+                    file = StatementFile(original_filename=filename, tag=options['tag'])
+                    file.save()
+
+                    if is_media_full_path(filename):
+                        file.file.name = strip_media_root(filename)  # type: ignore
                         file.save()
+                    else:
+                        with open(filename, 'rb') as fp:
+                            file.file.save(plain_filename, File(fp))
 
-                        if is_media_full_path(filename):
-                            file.file.name = strip_media_root(filename)  # type: ignore
-                            file.save()
-                        else:
-                            with open(filename, 'rb') as fp:
-                                file.file.save(plain_filename, File(fp))
+                    for data in statements:
+                        if options['auto_create_accounts']:
+                            account_number = data.get('header', {}).get('account_number')
+                            if account_number:
+                                get_or_create_bank_account(account_number)
 
-                        for data in statements:
-                            if options['auto_create_accounts']:
-                                account_number = data.get('header', {}).get('account_number')
-                                if account_number:
-                                    get_or_create_bank_account(account_number)
-
-                            create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
+                        create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
                 print('Skipping statement file {}'.format(filename))
