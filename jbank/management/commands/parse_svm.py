@@ -2,15 +2,13 @@
 import logging
 import os
 from pprint import pprint
-from django.core.files import File
 from django.core.management.base import CommandParser
 from django.db import transaction
-from jbank.helpers import create_reference_payment_batch, get_or_create_bank_account
+from jbank.helpers import create_reference_payment_batch, get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
 from jbank.parsers import parse_svm_batches_from_file, parse_filename_suffix, SVM_STATEMENT_SUFFIXES
 from jutil.command import SafeCommand
-from jutil.format import strip_media_root, is_media_full_path
 
 logger = logging.getLogger(__name__)
 
@@ -61,24 +59,18 @@ class Command(SafeCommand):
                     pprint(batches)
 
                 with transaction.atomic():
-                    if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
-                        file = ReferencePaymentBatchFile(original_filename=filename, tag=options['tag'])
-                        file.save()
+                    file = ReferencePaymentBatchFile(original_filename=filename, tag=options['tag'])
+                    file.save()
+                    save_or_store_media(file.file, filename)
+                    file.save()
 
-                        if is_media_full_path(filename):
-                            file.file.name = strip_media_root(filename)  # type: ignore
-                            file.save()
-                        else:
-                            with open(filename, 'rb') as fp:
-                                file.file.save(plain_filename, File(fp))
+                    for data in batches:
+                        if options['auto_create_accounts']:
+                            for rec_data in data['records']:
+                                account_number = rec_data.get('account_number')
+                                if account_number:
+                                    get_or_create_bank_account(account_number)
 
-                        for data in batches:
-                            if options['auto_create_accounts']:
-                                for rec_data in data['records']:
-                                    account_number = rec_data.get('account_number')
-                                    if account_number:
-                                        get_or_create_bank_account(account_number)
-
-                            create_reference_payment_batch(data, name=plain_filename, file=file)  # pytype: disable=not-callable
+                        create_reference_payment_batch(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
                 print('Skipping reference payment file {}'.format(filename))

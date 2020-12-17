@@ -2,16 +2,15 @@
 import logging
 import os
 from pprint import pprint
-from django.core.files import File
 from django.core.management.base import CommandParser
+from django.db import transaction
 from jbank.camt import camt053_get_iban, camt053_create_statement, camt053_parse_statement_from_file, \
     CAMT053_STATEMENT_SUFFIXES
-from jbank.helpers import get_or_create_bank_account
+from jbank.helpers import get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
 from jbank.parsers import parse_filename_suffix
 from jutil.command import SafeCommand
-from jutil.format import strip_media_root, is_media_full_path
 
 logger = logging.getLogger(__name__)
 
@@ -61,15 +60,12 @@ class Command(SafeCommand):
                 if options['verbose']:
                     pprint(statement)
 
-                if not Statement.objects.filter(name=plain_filename).first():
+                with transaction.atomic():
                     file = StatementFile(original_filename=filename, tag=options['tag'])
                     file.save()
-                    if is_media_full_path(filename):
-                        file.file.name = strip_media_root(filename)  # type: ignore
-                        file.save()
-                    else:
-                        with open(filename, 'rb') as fp:
-                            file.file.save(plain_filename, File(fp))
+                    save_or_store_media(file.file, filename)
+                    file.save()
+
                     for data in [statement]:
                         if options['auto_create_accounts']:
                             account_number = camt053_get_iban(data)

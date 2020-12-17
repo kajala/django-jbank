@@ -1,11 +1,13 @@
 import logging
+import os
 from datetime import datetime, date
 from os.path import basename
 from typing import Any, Tuple, Optional, List
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.core.files import File
+from django.db import transaction, models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, AccountType, EntryType
@@ -15,8 +17,7 @@ from jbank.sepa import Pain002
 import re
 from lxml import etree, objectify  # type: ignore  # pytype: disable=import-error
 from jutil.parse import parse_datetime
-from jutil.format import strip_media_root
-
+from jutil.format import strip_media_root, is_media_full_path
 
 ASSIGNABLE_STATEMENT_HEADER_FIELDS = (
     'account_number',
@@ -308,3 +309,16 @@ def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Option
         else:
             end_date = parse_datetime(options['end_date']).date()  # type: ignore
     return start_date, end_date
+
+
+def save_or_store_media(file: models.FileField, filename: str):
+    """
+    Saves FileField filename as relative path if it's under MEDIA_ROOT.
+    Otherwise writes file under media root.
+    """
+    if is_media_full_path(filename):
+        file.name = strip_media_root(filename)  # type: ignore
+    else:
+        with open(filename, 'rb') as fp:
+            plain_filename = os.path.basename(filename)
+            file.save(plain_filename, File(fp))  # noqa
