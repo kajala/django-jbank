@@ -6,33 +6,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0018_auto_20180208_1130'),
+        ("jbank", "0018_auto_20180208_1130"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payout',
-            name='file_reference',
-            field=models.CharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name='file reference'),
+            model_name="payout",
+            name="file_reference",
+            field=models.CharField(
+                blank=True, db_index=True, editable=False, max_length=255, verbose_name="file reference"
+            ),
         ),
         migrations.AddField(
-            model_name='payoutstatus',
-            name='response_code',
-            field=models.CharField(blank=True, db_index=True, max_length=4, verbose_name='response code'),
+            model_name="payoutstatus",
+            name="response_code",
+            field=models.CharField(blank=True, db_index=True, max_length=4, verbose_name="response code"),
         ),
         migrations.AddField(
-            model_name='payoutstatus',
-            name='response_text',
-            field=models.CharField(blank=True, max_length=128, verbose_name='response text'),
+            model_name="payoutstatus",
+            name="response_text",
+            field=models.CharField(blank=True, max_length=128, verbose_name="response text"),
         ),
         migrations.AlterField(
-            model_name='payoutstatus',
-            name='msg_id',
-            field=models.CharField(blank=True, db_index=True, max_length=64, verbose_name='message id'),
+            model_name="payoutstatus",
+            name="msg_id",
+            field=models.CharField(blank=True, db_index=True, max_length=64, verbose_name="message id"),
         ),
         migrations.AlterField(
-            model_name='payoutstatus',
-            name='original_msg_id',
-            field=models.CharField(blank=True, db_index=True, max_length=64, verbose_name='original message id'),
+            model_name="payoutstatus",
+            name="original_msg_id",
+            field=models.CharField(blank=True, db_index=True, max_length=64, verbose_name="original message id"),
         ),
     ]

@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0038_auto_20191127_0145'),
+        ("jbank", "0038_auto_20191127_0145"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='wsediconnection',
-            name='signing_cert',
+            model_name="wsediconnection",
+            name="signing_cert",
         ),
         migrations.AddField(
-            model_name='wsediconnection',
-            name='signing_cert_file',
-            field=models.FileField(blank=True, upload_to='certs', verbose_name='signing certificate file'),
+            model_name="wsediconnection",
+            name="signing_cert_file",
+            field=models.FileField(blank=True, upload_to="certs", verbose_name="signing certificate file"),
         ),
     ]

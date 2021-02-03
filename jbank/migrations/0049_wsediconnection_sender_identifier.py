@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0048_wsediconnection_soap_endpoint'),
+        ("jbank", "0048_wsediconnection_soap_endpoint"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='sender_identifier',
-            field=models.CharField(default='', max_length=32, verbose_name='sender identifier'),
+            model_name="wsediconnection",
+            name="sender_identifier",
+            field=models.CharField(default="", max_length=32, verbose_name="sender identifier"),
             preserve_default=False,
         ),
     ]

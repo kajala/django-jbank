@@ -7,13 +7,15 @@ import jutil.modelfields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0068_auto_20200717_2327'),
+        ("jbank", "0068_auto_20200717_2327"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='wsediconnection',
-            name='debug_commands',
-            field=jutil.modelfields.SafeTextField(blank=True, help_text='wsedi.connection.debug.commands.help.text', verbose_name='debug commands'),
+            model_name="wsediconnection",
+            name="debug_commands",
+            field=jutil.modelfields.SafeTextField(
+                blank=True, help_text="wsedi.connection.debug.commands.help.text", verbose_name="debug commands"
+            ),
         ),
     ]

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0008_auto_20171103_0007'),
+        ("jbank", "0008_auto_20171103_0007"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='statementrecord',
-            name='remittance_info',
-            field=models.CharField(blank=True, db_index=True, max_length=32, verbose_name='remittance info'),
+            model_name="statementrecord",
+            name="remittance_info",
+            field=models.CharField(blank=True, db_index=True, max_length=32, verbose_name="remittance info"),
         ),
     ]

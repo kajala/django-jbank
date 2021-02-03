@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0061_auto_20200325_2204'),
+        ("jbank", "0061_auto_20200325_2204"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payoutstatus',
-            name='file_path',
-            field=models.CharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name='file path'),
+            model_name="payoutstatus",
+            name="file_path",
+            field=models.CharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file path"),
         ),
         migrations.AlterField(
-            model_name='payoutstatus',
-            name='file_name',
-            field=models.CharField(blank=True, db_index=True, editable=False, max_length=128, verbose_name='file name'),
+            model_name="payoutstatus",
+            name="file_name",
+            field=models.CharField(blank=True, db_index=True, editable=False, max_length=128, verbose_name="file name"),
         ),
     ]

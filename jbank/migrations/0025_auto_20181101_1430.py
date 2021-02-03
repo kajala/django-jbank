@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0024_auto_20180425_1704'),
+        ("jbank", "0024_auto_20180425_1704"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payout',
-            name='reference',
-            field=models.CharField(blank=True, default='', max_length=32, verbose_name='recipient reference'),
+            model_name="payout",
+            name="reference",
+            field=models.CharField(blank=True, default="", max_length=32, verbose_name="recipient reference"),
         ),
         migrations.AlterField(
-            model_name='payout',
-            name='messages',
-            field=models.TextField(blank=True, default='', verbose_name='recipient messages'),
+            model_name="payout",
+            name="messages",
+            field=models.TextField(blank=True, default="", verbose_name="recipient messages"),
         ),
     ]

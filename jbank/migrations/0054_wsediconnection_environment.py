@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0053_wsediconnection_target_identifier'),
+        ("jbank", "0053_wsediconnection_target_identifier"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='environment',
-            field=models.CharField(default='PRODUCTION', max_length=32, verbose_name='environment'),
+            model_name="wsediconnection",
+            name="environment",
+            field=models.CharField(default="PRODUCTION", max_length=32, verbose_name="environment"),
         ),
     ]

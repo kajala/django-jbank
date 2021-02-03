@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0022_auto_20180411_1814'),
+        ("jbank", "0022_auto_20180411_1814"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payout',
-            name='messages',
-            field=models.TextField(verbose_name='recipient messages'),
+            model_name="payout",
+            name="messages",
+            field=models.TextField(verbose_name="recipient messages"),
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0055_auto_20191130_2011'),
+        ("jbank", "0055_auto_20191130_2011"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='debug_commands',
-            field=models.TextField(blank=True, verbose_name='debug commands'),
+            model_name="wsediconnection",
+            name="debug_commands",
+            field=models.TextField(blank=True, verbose_name="debug commands"),
         ),
     ]

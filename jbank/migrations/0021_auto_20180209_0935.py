@@ -7,13 +7,21 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0020_payout_due_date'),
+        ("jbank", "0020_payout_due_date"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payoutstatus',
-            name='payout',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='payoutstatus_set', to='jbank.Payout', verbose_name='payout'),
+            model_name="payoutstatus",
+            name="payout",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="payoutstatus_set",
+                to="jbank.Payout",
+                verbose_name="payout",
+            ),
         ),
     ]

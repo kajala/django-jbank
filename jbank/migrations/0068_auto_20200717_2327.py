@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0067_wsediconnection_pki_endpoint'),
+        ("jbank", "0067_wsediconnection_pki_endpoint"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='wsediconnection',
-            name='soap_endpoint',
-            field=models.URLField(verbose_name='EDI endpoint'),
+            model_name="wsediconnection",
+            name="soap_endpoint",
+            field=models.URLField(verbose_name="EDI endpoint"),
         ),
     ]

@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
-    help = 'Parses x509 cert'
+    help = "Parses x509 cert"
 
     def add_arguments(self, parser: CommandParser):
-        parser.add_argument('pem', type=str)
+        parser.add_argument("pem", type=str)
 
     def do(self, *args, **options):
-        cert = get_x509_cert_from_file(options['pem'])
+        cert = get_x509_cert_from_file(options["pem"])
         pprint(cert)

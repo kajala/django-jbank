@@ -7,29 +7,57 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jacc', '0022_auto_20200629_0346'),
-        ('jbank', '0001_squashed_0071_wsediconnection_ca_cert_file'),
+        ("jacc", "0022_auto_20200629_0346"),
+        ("jbank", "0001_squashed_0071_wsediconnection_ca_cert_file"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='referencepaymentbatch',
-            name='accountentrysourcefile_ptr',
-            field=models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='jacc.AccountEntrySourceFile'),
+            model_name="referencepaymentbatch",
+            name="accountentrysourcefile_ptr",
+            field=models.OneToOneField(
+                auto_created=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                parent_link=True,
+                primary_key=True,
+                serialize=False,
+                to="jacc.AccountEntrySourceFile",
+            ),
         ),
         migrations.AlterField(
-            model_name='referencepaymentrecord',
-            name='accountentry_ptr',
-            field=models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='jacc.AccountEntry'),
+            model_name="referencepaymentrecord",
+            name="accountentry_ptr",
+            field=models.OneToOneField(
+                auto_created=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                parent_link=True,
+                primary_key=True,
+                serialize=False,
+                to="jacc.AccountEntry",
+            ),
         ),
         migrations.AlterField(
-            model_name='statement',
-            name='accountentrysourcefile_ptr',
-            field=models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='jacc.AccountEntrySourceFile'),
+            model_name="statement",
+            name="accountentrysourcefile_ptr",
+            field=models.OneToOneField(
+                auto_created=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                parent_link=True,
+                primary_key=True,
+                serialize=False,
+                to="jacc.AccountEntrySourceFile",
+            ),
         ),
         migrations.AlterField(
-            model_name='statementrecord',
-            name='accountentry_ptr',
-            field=models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='jacc.AccountEntry'),
+            model_name="statementrecord",
+            name="accountentry_ptr",
+            field=models.OneToOneField(
+                auto_created=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                parent_link=True,
+                primary_key=True,
+                serialize=False,
+                to="jacc.AccountEntry",
+            ),
         ),
     ]

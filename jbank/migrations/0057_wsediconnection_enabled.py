@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0056_wsediconnection_debug_commands'),
+        ("jbank", "0056_wsediconnection_debug_commands"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='enabled',
-            field=models.BooleanField(blank=True, default=True, verbose_name='enabled'),
+            model_name="wsediconnection",
+            name="enabled",
+            field=models.BooleanField(blank=True, default=True, verbose_name="enabled"),
         ),
     ]

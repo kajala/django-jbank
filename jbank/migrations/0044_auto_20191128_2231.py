@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0043_wsedisoapcall'),
+        ("jbank", "0043_wsedisoapcall"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='wsedisoapcall',
-            name='request_identifier',
+            model_name="wsedisoapcall",
+            name="request_identifier",
         ),
         migrations.RemoveField(
-            model_name='wsedisoapcall',
-            name='timestamp',
+            model_name="wsedisoapcall",
+            name="timestamp",
         ),
     ]

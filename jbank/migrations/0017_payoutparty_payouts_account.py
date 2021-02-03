@@ -7,14 +7,21 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jacc', '0010_auto_20180201_0734'),
-        ('jbank', '0016_auto_20180208_0724'),
+        ("jacc", "0010_auto_20180201_0734"),
+        ("jbank", "0016_auto_20180208_0724"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payoutparty',
-            name='payouts_account',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='jacc.AccountEntry', verbose_name='payouts account'),
+            model_name="payoutparty",
+            name="payouts_account",
+            field=models.ForeignKey(
+                blank=True,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="jacc.AccountEntry",
+                verbose_name="payouts account",
+            ),
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0040_wsediconnection_signing_key_file'),
+        ("jbank", "0040_wsediconnection_signing_key_file"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='encryption_cert_file',
-            field=models.FileField(blank=True, upload_to='certs', verbose_name='encryption certificate file'),
+            model_name="wsediconnection",
+            name="encryption_cert_file",
+            field=models.FileField(blank=True, upload_to="certs", verbose_name="encryption certificate file"),
         ),
         migrations.AddField(
-            model_name='wsediconnection',
-            name='encryption_key_file',
-            field=models.FileField(blank=True, upload_to='certs', verbose_name='encryption key file'),
+            model_name="wsediconnection",
+            name="encryption_key_file",
+            field=models.FileField(blank=True, upload_to="certs", verbose_name="encryption key file"),
         ),
     ]

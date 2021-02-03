@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0005_statementfile_created'),
+        ("jbank", "0005_statementfile_created"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='statementfile',
-            name='errors',
-            field=models.TextField(blank=True, default='', max_length=4086),
+            model_name="statementfile",
+            name="errors",
+            field=models.TextField(blank=True, default="", max_length=4086),
         ),
         migrations.AlterField(
-            model_name='statementfile',
-            name='file',
-            field=models.FileField(upload_to='uploads', verbose_name='file'),
+            model_name="statementfile",
+            name="file",
+            field=models.FileField(upload_to="uploads", verbose_name="file"),
         ),
     ]

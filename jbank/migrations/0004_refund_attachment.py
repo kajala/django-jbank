@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0003_auto_20200902_1354'),
+        ("jbank", "0003_auto_20200902_1354"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='refund',
-            name='attachment',
-            field=models.FileField(blank=True, upload_to='uploads', verbose_name='attachment'),
+            model_name="refund",
+            name="attachment",
+            field=models.FileField(blank=True, upload_to="uploads", verbose_name="attachment"),
         ),
     ]

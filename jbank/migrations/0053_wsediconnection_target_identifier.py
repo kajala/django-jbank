@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0052_auto_20191130_1927'),
+        ("jbank", "0052_auto_20191130_1927"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='target_identifier',
-            field=models.CharField(default=1, max_length=32, verbose_name='target identifier'),
+            model_name="wsediconnection",
+            name="target_identifier",
+            field=models.CharField(default=1, max_length=32, verbose_name="target identifier"),
             preserve_default=False,
         ),
     ]

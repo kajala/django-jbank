@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0045_wsediconnection_receiver_identifier'),
+        ("jbank", "0045_wsediconnection_receiver_identifier"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='wsedisoapcall',
-            options={'verbose_name': 'WS-EDI SOAP call', 'verbose_name_plural': 'WS-EDI SOAP calls'},
+            name="wsedisoapcall",
+            options={"verbose_name": "WS-EDI SOAP call", "verbose_name_plural": "WS-EDI SOAP calls"},
         ),
     ]

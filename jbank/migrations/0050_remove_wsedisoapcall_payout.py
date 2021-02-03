@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0049_wsediconnection_sender_identifier'),
+        ("jbank", "0049_wsediconnection_sender_identifier"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='wsedisoapcall',
-            name='payout',
+            model_name="wsedisoapcall",
+            name="payout",
         ),
     ]

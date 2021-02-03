@@ -21,9 +21,7 @@ def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RS
     """
     backend = cryptography.hazmat.backends.default_backend()
     return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(
-        public_exponent=public_exponent,
-        key_size=key_size,
-        backend=backend
+        public_exponent=public_exponent, key_size=key_size, backend=backend
     )
 
 
@@ -36,7 +34,7 @@ def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
     return private_key.private_bytes(  # type: ignore
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
+        encryption_algorithm=serialization.NoEncryption(),
     )
 
 
@@ -46,7 +44,7 @@ def load_private_key_from_pem_data(pem_data: bytes, password: Optional[bytes] = 
 
 
 def load_private_key_from_pem_file(filename: str, password: Optional[bytes] = None) -> RSAPrivateKey:
-    with open(filename, 'rb') as fp:
+    with open(filename, "rb") as fp:
         return load_private_key_from_pem_data(fp.read(), password)
 
 
@@ -56,11 +54,13 @@ def write_private_key_pem_file(filename: str, key_base64: bytes):
     :param filename: PEM filename
     :param cert_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
     """
-    if b'BEGIN' not in key_base64 or b'END' not in key_base64:
-        raise ValidationError('write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer')
-    with open(filename, 'wb') as fp:
+    if b"BEGIN" not in key_base64 or b"END" not in key_base64:
+        raise ValidationError(
+            "write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer"
+        )
+    with open(filename, "wb") as fp:
         fp.write(key_base64)
-        logger.info('%s written', filename)
+        logger.info("%s written", filename)
 
 
 def strip_pem_header_and_footer(pem: bytes) -> bytes:
@@ -69,48 +69,67 @@ def strip_pem_header_and_footer(pem: bytes) -> bytes:
     :param pem: bytes
     :return: bytes
     """
-    if not pem.startswith(b'-----BEGIN '):
-        raise Exception('PEM does not appear to have header: {}...'.format(pem[:32].decode() + '...'))
-    return b'\n'.join(pem.split(b'\n')[1:-2])
+    if not pem.startswith(b"-----BEGIN "):
+        raise Exception("PEM does not appear to have header: {}...".format(pem[:32].decode() + "..."))
+    return b"\n".join(pem.split(b"\n")[1:-2])
 
 
-def create_csr_pem(private_key: RSAPrivateKey, common_name: str, country_name: str, # pylint: disable=too-many-arguments,too-many-locals
-                   dn_qualifier: str = '', business_category: str = '', domain_component: str = '', email_address: str = '',
-                   generation_qualifier: str = '', given_name: str = '', jurisdiction_country_name: str = '',
-                   jurisdiction_locality_name: str = '', jurisdiction_state_or_province_name: str = '',
-                   locality_name: str = '', organizational_unit_name: str = '', organization_name: str = '',
-                   postal_address: str = '', postal_code: str = '', pseudonym: str = '', serial_number: str = '',
-                   state_or_province_name: str = '', street_address: str = '', surname: str = '',
-                   title: str = '', user_id: str = '', x500_unique_identifier: str = '') -> bytes:
+def create_csr_pem(  # pylint: disable=too-many-arguments,too-many-locals
+    private_key: RSAPrivateKey,
+    common_name: str,
+    country_name: str,
+    dn_qualifier: str = "",
+    business_category: str = "",
+    domain_component: str = "",
+    email_address: str = "",
+    generation_qualifier: str = "",
+    given_name: str = "",
+    jurisdiction_country_name: str = "",
+    jurisdiction_locality_name: str = "",
+    jurisdiction_state_or_province_name: str = "",
+    locality_name: str = "",
+    organizational_unit_name: str = "",
+    organization_name: str = "",
+    postal_address: str = "",
+    postal_code: str = "",
+    pseudonym: str = "",
+    serial_number: str = "",
+    state_or_province_name: str = "",
+    street_address: str = "",
+    surname: str = "",
+    title: str = "",
+    user_id: str = "",
+    x500_unique_identifier: str = "",
+) -> bytes:
     """
     See http://fileformats.archiveteam.org/wiki/PKCS10
     :return: CSR PEM as bytes
     """
     pairs = [
-        (common_name, 'COMMON_NAME'),
-        (country_name, 'COUNTRY_NAME'),
-        (dn_qualifier, 'DN_QUALIFIER'),
-        (business_category, 'BUSINESS_CATEGORY'),
-        (domain_component, 'DOMAIN_COMPONENT'),
-        (email_address, 'EMAIL_ADDRESS'),
-        (generation_qualifier, 'GENERATION_QUALIFIER'),
-        (given_name, 'GIVEN_NAME'),
-        (jurisdiction_country_name, 'JURISDICTION_COUNTRY_NAME'),
-        (jurisdiction_locality_name, 'JURISDICTION_LOCALITY_NAME'),
-        (jurisdiction_state_or_province_name, 'JURISDICTION_STATE_OR_PROVINCE_NAME'),
-        (locality_name, 'LOCALITY_NAME'),
-        (organizational_unit_name, 'ORGANIZATIONAL_UNIT_NAME'),
-        (organization_name, 'ORGANIZATION_NAME'),
-        (postal_address, 'POSTAL_ADDRESS'),
-        (postal_code, 'POSTAL_CODE'),
-        (pseudonym, 'PSEUDONYM'),
-        (serial_number, 'SERIAL_NUMBER'),
-        (state_or_province_name, 'STATE_OR_PROVINCE_NAME'),
-        (street_address, 'STREET_ADDRESS'),
-        (surname, 'SURNAME'),
-        (title, 'TITLE'),
-        (user_id, 'USER_ID'),
-        (x500_unique_identifier, 'X500_UNIQUE_IDENTIFIER'),
+        (common_name, "COMMON_NAME"),
+        (country_name, "COUNTRY_NAME"),
+        (dn_qualifier, "DN_QUALIFIER"),
+        (business_category, "BUSINESS_CATEGORY"),
+        (domain_component, "DOMAIN_COMPONENT"),
+        (email_address, "EMAIL_ADDRESS"),
+        (generation_qualifier, "GENERATION_QUALIFIER"),
+        (given_name, "GIVEN_NAME"),
+        (jurisdiction_country_name, "JURISDICTION_COUNTRY_NAME"),
+        (jurisdiction_locality_name, "JURISDICTION_LOCALITY_NAME"),
+        (jurisdiction_state_or_province_name, "JURISDICTION_STATE_OR_PROVINCE_NAME"),
+        (locality_name, "LOCALITY_NAME"),
+        (organizational_unit_name, "ORGANIZATIONAL_UNIT_NAME"),
+        (organization_name, "ORGANIZATION_NAME"),
+        (postal_address, "POSTAL_ADDRESS"),
+        (postal_code, "POSTAL_CODE"),
+        (pseudonym, "PSEUDONYM"),
+        (serial_number, "SERIAL_NUMBER"),
+        (state_or_province_name, "STATE_OR_PROVINCE_NAME"),
+        (street_address, "STREET_ADDRESS"),
+        (surname, "SURNAME"),
+        (title, "TITLE"),
+        (user_id, "USER_ID"),
+        (x500_unique_identifier, "X500_UNIQUE_IDENTIFIER"),
     ]
     name_parts = []
     for val, k in pairs:

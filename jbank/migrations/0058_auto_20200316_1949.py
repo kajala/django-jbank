@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0057_wsediconnection_enabled'),
+        ("jbank", "0057_wsediconnection_enabled"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='statementrecordremittanceinfo',
-            name='additional_info',
-            field=models.CharField(blank=True, db_index=True, max_length=256, verbose_name='additional remittance info'),
+            model_name="statementrecordremittanceinfo",
+            name="additional_info",
+            field=models.CharField(
+                blank=True, db_index=True, max_length=256, verbose_name="additional remittance info"
+            ),
         ),
     ]

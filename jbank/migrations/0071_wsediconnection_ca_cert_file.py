@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0070_wsediconnection_bank_signing_cert_file'),
+        ("jbank", "0070_wsediconnection_bank_signing_cert_file"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='ca_cert_file',
-            field=models.FileField(blank=True, upload_to='certs', verbose_name='CA certificate file'),
+            model_name="wsediconnection",
+            name="ca_cert_file",
+            field=models.FileField(blank=True, upload_to="certs", verbose_name="CA certificate file"),
         ),
     ]

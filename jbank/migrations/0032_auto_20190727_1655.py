@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0031_auto_20190727_1639'),
+        ("jbank", "0031_auto_20190727_1639"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='statementrecorddetail',
-            name='unstructured_remittance_info',
-            field=models.CharField(blank=True, max_length=2048, verbose_name='unstructured remittance info'),
+            model_name="statementrecorddetail",
+            name="unstructured_remittance_info",
+            field=models.CharField(blank=True, max_length=2048, verbose_name="unstructured remittance info"),
         ),
     ]

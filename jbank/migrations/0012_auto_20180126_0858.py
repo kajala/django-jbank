@@ -8,31 +8,52 @@ import jutil.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jacc', '0008_auto_20180121_1705'),
-        ('jbank', '0011_auto_20180126_0851'),
+        ("jacc", "0008_auto_20180121_1705"),
+        ("jbank", "0011_auto_20180126_0851"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RefundRecord',
+            name="RefundRecord",
             fields=[
-                ('accountentry_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='jacc.AccountEntry')),
-                ('iban_account_number', models.CharField(max_length=35, validators=[jutil.validators.iban_validator], verbose_name='IBAN')),
-                ('refund_date', models.DateField(blank=True, db_index=True, default=None, null=True, verbose_name='refund date')),
-                ('archive_identifier', models.CharField(blank=True, db_index=True, default='', max_length=32, verbose_name='archive identifier')),
-                ('state', models.CharField(blank=True, db_index=True, default='W', max_length=1, verbose_name='state')),
+                (
+                    "accountentry_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="jacc.AccountEntry",
+                    ),
+                ),
+                (
+                    "iban_account_number",
+                    models.CharField(max_length=35, validators=[jutil.validators.iban_validator], verbose_name="IBAN"),
+                ),
+                (
+                    "refund_date",
+                    models.DateField(blank=True, db_index=True, default=None, null=True, verbose_name="refund date"),
+                ),
+                (
+                    "archive_identifier",
+                    models.CharField(
+                        blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"
+                    ),
+                ),
+                ("state", models.CharField(blank=True, db_index=True, default="W", max_length=1, verbose_name="state")),
             ],
             options={
-                'verbose_name_plural': 'refunds',
-                'verbose_name': 'refund',
+                "verbose_name_plural": "refunds",
+                "verbose_name": "refund",
             },
-            bases=('jacc.accountentry',),
+            bases=("jacc.accountentry",),
         ),
         migrations.RemoveField(
-            model_name='refund',
-            name='source',
+            model_name="refund",
+            name="source",
         ),
         migrations.DeleteModel(
-            name='Refund',
+            name="Refund",
         ),
     ]

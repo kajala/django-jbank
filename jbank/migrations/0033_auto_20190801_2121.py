@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0032_auto_20190727_1655'),
+        ("jbank", "0032_auto_20190727_1655"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='currencyexchange',
-            name='exchange_rate',
-            field=models.DecimalField(blank=True, decimal_places=4, default=None, max_digits=12, null=True, verbose_name='exchange rate'),
+            model_name="currencyexchange",
+            name="exchange_rate",
+            field=models.DecimalField(
+                blank=True, decimal_places=4, default=None, max_digits=12, null=True, verbose_name="exchange rate"
+            ),
         ),
     ]

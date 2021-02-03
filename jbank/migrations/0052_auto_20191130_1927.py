@@ -7,13 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0051_payout_connection'),
+        ("jbank", "0051_payout_connection"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='payout',
-            name='connection',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='jbank.WsEdiConnection', verbose_name='WS-EDI connection'),
+            model_name="payout",
+            name="connection",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="jbank.WsEdiConnection",
+                verbose_name="WS-EDI connection",
+            ),
         ),
     ]

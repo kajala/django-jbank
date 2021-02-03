@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0025_auto_20181101_1430'),
+        ("jbank", "0025_auto_20181101_1430"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='referencepaymentrecord',
-            name='line_number',
-            field=models.SmallIntegerField(blank=True, default=0, verbose_name='line number'),
+            model_name="referencepaymentrecord",
+            name="line_number",
+            field=models.SmallIntegerField(blank=True, default=0, verbose_name="line number"),
         ),
         migrations.AddField(
-            model_name='statementrecord',
-            name='line_number',
-            field=models.SmallIntegerField(blank=True, default=0, verbose_name='line number'),
+            model_name="statementrecord",
+            name="line_number",
+            field=models.SmallIntegerField(blank=True, default=0, verbose_name="line number"),
         ),
     ]

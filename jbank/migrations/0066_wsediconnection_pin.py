@@ -7,13 +7,13 @@ import jutil.modelfields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0065_wsediconnection_bank_root_cert_file'),
+        ("jbank", "0065_wsediconnection_bank_root_cert_file"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='pin',
-            field=jutil.modelfields.SafeCharField(blank=True, default='', max_length=64, verbose_name='PIN'),
+            model_name="wsediconnection",
+            name="pin",
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=64, verbose_name="PIN"),
         ),
     ]

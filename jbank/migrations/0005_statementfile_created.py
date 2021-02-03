@@ -9,13 +9,15 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0004_statementfile'),
+        ("jbank", "0004_statementfile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='statementfile',
-            name='created',
-            field=models.DateTimeField(blank=True, db_index=True, default=django.utils.timezone.now, verbose_name='created'),
+            model_name="statementfile",
+            name="created",
+            field=models.DateTimeField(
+                blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="created"
+            ),
         ),
     ]

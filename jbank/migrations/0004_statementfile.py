@@ -8,19 +8,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0003_statement_account'),
+        ("jbank", "0003_statement_account"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='StatementFile',
+            name="StatementFile",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(upload_to='', verbose_name='file')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("file", models.FileField(upload_to="", verbose_name="file")),
             ],
             options={
-                'verbose_name': 'account statement file',
-                'verbose_name_plural': 'account statement files',
+                "verbose_name": "account statement file",
+                "verbose_name_plural": "account statement files",
             },
         ),
     ]

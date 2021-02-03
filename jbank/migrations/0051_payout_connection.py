@@ -7,13 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0050_remove_wsedisoapcall_payout'),
+        ("jbank", "0050_remove_wsedisoapcall_payout"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payout',
-            name='connection',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='jbank.WsEdiConnection'),
+            model_name="payout",
+            name="connection",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="jbank.WsEdiConnection",
+            ),
         ),
     ]

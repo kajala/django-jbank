@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0054_wsediconnection_environment'),
+        ("jbank", "0054_wsediconnection_environment"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='wsediconnection',
-            name='customer',
+            model_name="wsediconnection",
+            name="customer",
         ),
         migrations.AddField(
-            model_name='wsediconnection',
-            name='name',
-            field=models.CharField(default='', max_length=64, verbose_name='name'),
+            model_name="wsediconnection",
+            name="name",
+            field=models.CharField(default="", max_length=64, verbose_name="name"),
             preserve_default=False,
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0059_auto_20200324_0234'),
+        ("jbank", "0059_auto_20200324_0234"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='referencepaymentbatchfile',
-            name='original_filename',
-            field=models.CharField(blank=True, default='', max_length=256, verbose_name='original filename'),
+            model_name="referencepaymentbatchfile",
+            name="original_filename",
+            field=models.CharField(blank=True, default="", max_length=256, verbose_name="original filename"),
         ),
         migrations.AddField(
-            model_name='statementfile',
-            name='original_filename',
-            field=models.CharField(blank=True, default='', max_length=256, verbose_name='original filename'),
+            model_name="statementfile",
+            name="original_filename",
+            field=models.CharField(blank=True, default="", max_length=256, verbose_name="original filename"),
         ),
     ]

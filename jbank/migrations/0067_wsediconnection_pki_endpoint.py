@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('jbank', '0066_wsediconnection_pin'),
+        ("jbank", "0066_wsediconnection_pin"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wsediconnection',
-            name='pki_endpoint',
-            field=models.URLField(blank=True, default='', verbose_name='PKI endpoint'),
+            model_name="wsediconnection",
+            name="pki_endpoint",
+            field=models.URLField(blank=True, default="", verbose_name="PKI endpoint"),
         ),
     ]
