@@ -225,7 +225,7 @@ SVM_FILE_RECORD = (
     ("record_date", "9(6)", "P"),
     ("paid_date", "9(6)", "P"),
     ("archive_identifier", "X(16)", "P"),
-    ("remittance_info", "9(20)", "P"),
+    ("remittance_info", "X(20)", "P"),
     ("payer_name", "X(12)", "P"),
     ("currency_identifier", "X(1)", "P"),  # 1=eur
     ("name_source", "X", "V"),
