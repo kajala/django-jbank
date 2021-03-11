@@ -28,7 +28,9 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
-from jacc.models import Account, EntryType
+
+from jacc.admin import AccountEntryNoteInline
+from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
@@ -69,6 +71,28 @@ class BankAdminBase(ModelAdminBase):
         if change:
             admin_log_changed_fields(form.instance, form.changed_data, request.user, ip=get_ip(request))
         return form.save(commit=False)
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == AccountEntryNote:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                assert isinstance(instance, AccountEntryNote)
+                if not hasattr(instance, "created_by") or instance.created_by is None:
+                    instance.created_by = request.user
+                else:
+                    old = AccountEntryNote.objects.all().filter(id=instance.id).first()
+                    if old is not None:
+                        assert isinstance(old, AccountEntryNote)
+                        if old.note != instance.note:
+                            instance.created_by = request.user
+                            admin_log(
+                                [instance, instance.account_entry],
+                                "Note id={} modified, previously: {}".format(old.id, old.note),
+                                who=request.user,
+                            )
+                instance.save()
+        else:
+            formset.save()
 
 
 class SettlementEntryTypesFilter(SimpleListFilter):
@@ -418,6 +442,7 @@ class StatementRecordAdmin(BankAdminBase):
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
         StatementRecordDetailInlineAdmin,
+        AccountEntryNoteInline,
     )
     actions = (
         mark_as_manually_settled,
@@ -539,6 +564,9 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         mark_as_manually_settled,
         unmark_manually_settled_flag,
     )
+    inlines = [
+        AccountEntryNoteInline,
+    ]
 
     def file_link(self, obj):
         assert isinstance(obj, ReferencePaymentRecord)
@@ -902,7 +930,7 @@ class PayoutStatusInlineAdmin(admin.TabularInline):
 class PayoutAdmin(BankAdminBase):
     save_on_top = False
     exclude = ()
-    inlines = [PayoutStatusInlineAdmin]
+    inlines = [PayoutStatusInlineAdmin, AccountEntryNoteInline]
     date_hierarchy = "timestamp"
 
     raw_id_fields: Sequence[str] = (
@@ -1033,6 +1061,7 @@ class RefundAdmin(PayoutAdmin):
         "group_status",
         "created",
     )
+    inlines = [AccountEntryNoteInline]
 
 
 class CurrencyExchangeSourceAdmin(BankAdminBase):

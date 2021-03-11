@@ -257,7 +257,7 @@ class StatementRecordDetail(models.Model):
         default=None,
         null=True,
         db_index=True,
-    )  # noqa
+    )
     exchange = models.ForeignKey(
         CurrencyExchange,
         verbose_name=_("currency exchange"),
@@ -266,7 +266,7 @@ class StatementRecordDetail(models.Model):
         null=True,
         default=None,
         blank=True,
-    )  # noqa
+    )
     archive_identifier = SafeCharField(_("archive identifier"), max_length=64, blank=True)
     end_to_end_identifier = SafeCharField(_("end-to-end identifier"), max_length=64, blank=True)
     creditor_name = SafeCharField(_("creditor name"), max_length=128, blank=True)
@@ -275,6 +275,10 @@ class StatementRecordDetail(models.Model):
     ultimate_debtor_name = SafeCharField(_("ultimate debtor name"), max_length=128, blank=True)
     unstructured_remittance_info = SafeCharField(_("unstructured remittance info"), max_length=2048, blank=True)
     paid_date = models.DateTimeField(_("paid date"), db_index=True, blank=True, null=True, default=None)
+
+    class Meta:
+        verbose_name = _("statement record details")
+        verbose_name_plural = _("statement record details")
 
 
 class StatementRecordRemittanceInfo(models.Model):
@@ -288,6 +292,10 @@ class StatementRecordRemittanceInfo(models.Model):
         return "{} {} ref {} ({})".format(
             self.amount if self.amount is not None else "", self.currency_code, self.reference, self.additional_info
         )
+
+    class Meta:
+        verbose_name = _("statement record remittance info")
+        verbose_name_plural = _("statement record remittance info")
 
 
 class StatementRecordSepaInfo(models.Model):

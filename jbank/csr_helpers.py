@@ -40,7 +40,9 @@ def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
 
 def load_private_key_from_pem_data(pem_data: bytes, password: Optional[bytes] = None) -> RSAPrivateKey:
     backend = cryptography.hazmat.backends.default_backend()
-    return load_pem_private_key(pem_data, password=password, backend=backend)
+    res = load_pem_private_key(pem_data, password=password, backend=backend)
+    assert isinstance(res, RSAPrivateKey)
+    return res
 
 
 def load_private_key_from_pem_file(filename: str, password: Optional[bytes] = None) -> RSAPrivateKey:
