@@ -28,8 +28,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
-
-from jacc.admin import AccountEntryNoteInline
+from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.request import get_ip
@@ -74,23 +73,7 @@ class BankAdminBase(ModelAdminBase):
 
     def save_formset(self, request, form, formset, change):
         if formset.model == AccountEntryNote:
-            instances = formset.save(commit=False)
-            for instance in instances:
-                assert isinstance(instance, AccountEntryNote)
-                if not hasattr(instance, "created_by") or instance.created_by is None:
-                    instance.created_by = request.user
-                else:
-                    old = AccountEntryNote.objects.all().filter(id=instance.id).first()
-                    if old is not None:
-                        assert isinstance(old, AccountEntryNote)
-                        if old.note != instance.note:
-                            instance.created_by = request.user
-                            admin_log(
-                                [instance, instance.account_entry],
-                                "Note id={} modified, previously: {}".format(old.id, old.note),
-                                who=request.user,
-                            )
-                instance.save()
+            AccountEntryNoteAdmin.save_account_entry_note_formset(request, form, formset, change)
         else:
             formset.save()
 
