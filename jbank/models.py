@@ -565,7 +565,7 @@ class PayoutStatus(models.Model):
         null=True,
         default=None,
         blank=True,
-    )  # noqa
+    )
     created = models.DateTimeField(_("created"), default=now, db_index=True, editable=False, blank=True)
     file_name = SafeCharField(_("file name"), max_length=128, blank=True, db_index=True, editable=False)
     file_path = SafeCharField(_("file path"), max_length=255, blank=True, db_index=True, editable=False)
@@ -585,7 +585,7 @@ class PayoutStatus(models.Model):
 
     @property
     def full_path(self) -> str:
-        return get_media_full_path(self.file_path)
+        return get_media_full_path(self.file_path) if self.file_path else ""
 
     @property
     def is_accepted(self):
