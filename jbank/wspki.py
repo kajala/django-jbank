@@ -72,7 +72,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
     req_hdr_el = etree_get_element(envelope, pkif_ns, "RequestHeader")
     cmd_el = req_hdr_el.getparent()
 
-    if command == "GetBankCertificate":
+    if command in ["GetBankCertificate"]:
         if not ws.bank_root_cert_full_path:
             raise Exception("Bank root certificate missing")
 
