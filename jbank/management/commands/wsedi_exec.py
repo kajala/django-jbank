@@ -1,11 +1,13 @@
+import base64
 import logging
 import pytz
 from django.core.management.base import CommandParser
+from jutil.format import get_media_full_path
 from jutil.command import SafeCommand
 from jbank.helpers import parse_start_and_end_date
 from jbank.models import WsEdiConnection
 from jbank.wsedi import wsedi_execute
-
+from xml.etree import ElementTree
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ class Command(SafeCommand):
         parser.add_argument("--end-date", type=str)
         parser.add_argument("--status", type=str)
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-locals
         ws = WsEdiConnection.objects.get(id=options["ws"])
         assert isinstance(ws, WsEdiConnection)
         if ws and not ws.enabled:
@@ -36,7 +38,7 @@ class Command(SafeCommand):
         file_reference = options["file_reference"] or ""
         file_type = options["file_type"] or ""
         status = options["status"] or ""
-        wsedi_execute(
+        response = wsedi_execute(
             ws,
             command=cmd,
             file_reference=file_reference,
@@ -46,3 +48,14 @@ class Command(SafeCommand):
             end_date=end_date,
             verbose=True,
         )
+        print(response)
+        root_el = ElementTree.fromstring(response)
+        content_el = root_el.find("{http://bxd.fi/xmldata/}Content")
+        if content_el is not None:
+            content_bytes = base64.b64decode(content_el.text)
+            print(content_bytes.decode())
+            if file_reference:
+                full_path = get_media_full_path("downloads/" + file_reference + "." + file_type)
+                with open(full_path, "wb") as fp:
+                    fp.write(content_bytes)
+                    print(full_path, "written")
