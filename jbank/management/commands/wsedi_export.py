@@ -32,12 +32,15 @@ class Command(SafeCommand):
                 elif isinstance(v, date):
                     v = v.isoformat()
                 ws_data[k] = v
-                if k.endswith("_file"):
+                if k.endswith("_file") and v:
                     files.append(os.path.join(settings.MEDIA_ROOT, v))
 
         zf = zipfile.ZipFile(filename, "w", zipfile.ZIP_DEFLATED)
-        zf.writestr("ws.json", json.dumps(ws_data))
+        json_str = json.dumps(ws_data, indent=4)
+        print("Adding file ws.json:", json_str)
+        zf.writestr("ws.json", json_str)
         for file in files:
+            print("Adding file", file)
             zf.write(file, os.path.basename(file))
         zf.close()
-        print("{} written".format(filename))
+        print(filename, "written")
