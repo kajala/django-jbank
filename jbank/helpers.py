@@ -50,12 +50,14 @@ ASSIGNABLE_STATEMENT_HEADER_FIELDS = (
     "bic",
 )
 
+MESSAGE_STATEMENT_RECORD_FIELDS = ("messages", "client_messages", "bank_messages")
+
 ASSIGNABLE_STATEMENT_RECORD_FIELDS = (
-    "record_number",
-    "archive_identifier",
     "record_date",
     "value_date",
     "paid_date",
+    "record_number",
+    "archive_identifier",
     "entry_type",
     "record_code",
     "record_description",
@@ -164,7 +166,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
         for k in ASSIGNABLE_STATEMENT_RECORD_FIELDS:
             if k in rec_data:
                 setattr(rec, k, rec_data[k])
-        for k in ("messages", "client_messages", "bank_messages"):
+        for k in MESSAGE_STATEMENT_RECORD_FIELDS:
             if k in rec_data:
                 setattr(rec, k, "\n".join(rec_data[k]))
         rec.full_clean()

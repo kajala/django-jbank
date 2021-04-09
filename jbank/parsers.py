@@ -14,7 +14,7 @@ REGEX_SIMPLE_FIELD = re.compile(r"^(X|9)+$")
 
 REGEX_VARIABLE_FIELD = re.compile(r"^(X|9)\((\d+)\)$")
 
-TO_STATEMENT_SUFFIXES = ("TO", "TXT")
+TO_STATEMENT_SUFFIXES = ("TO", "TXT", "TITO")
 
 TO_FILE_HEADER_TYPES = ("T00",)
 
@@ -393,12 +393,18 @@ def parse_record_extra_info(record: Dict[str, Any], line: str, line_number: int)
 def convert_date(v: Optional[str], field_name: str) -> date:
     if v is None:
         raise ValidationError(_("Date field missing: {}").format(field_name))
-    if len(v) != 6:
+    if len(v) != 6 or v == "000000":
         raise ValidationError(_("Date format error in field {}: {}").format(field_name, v))
     year = int(v[0:2]) + 2000
     month = int(v[2:4])
     day = int(v[4:6])
     return date(year=year, month=month, day=day)
+
+
+def convert_date_opt(v: Optional[str], field_name: str) -> Optional[date]:
+    if v is None or v == "000000":
+        return None
+    return convert_date(v, field_name)
 
 
 def convert_time(v: Optional[str], field_name: str) -> time:
@@ -411,17 +417,14 @@ def convert_time(v: Optional[str], field_name: str) -> time:
 
 def convert_date_fields(data: dict, date_fields: tuple, tz: Any):
     for k in date_fields:
+        # logger.debug('%s = %s (%s)', k, data.get(k), type(data.get(k)))
         if isinstance(k, str):
-            v_date = data.get(k)
-            if v_date:
-                data[k] = convert_date(v_date, k)
+            data[k] = convert_date_opt(data.get(k), k)
         elif isinstance(k, tuple):
             if len(k) != 2:
                 raise ValidationError(_("Date format error in field {}").format(k))
             k_date, k_time = k
             v_date, v_time = data.get(k_date), data.get(k_time)
-            # print('Converting {}'.format(k))
-            # pprint(data)
             if v_date or v_time:
                 assert v_date is None or isinstance(v_date, str)
                 assert v_time is None or isinstance(v_time, str)
@@ -430,6 +433,7 @@ def convert_date_fields(data: dict, date_fields: tuple, tz: Any):
                 v_datetime = datetime.combine(v_date, v_time)
                 data[k_date] = tz.localize(v_datetime)
                 del data[k_time]
+        # logger.debug('%s = %s (%s)', k, data.get(k), type(data.get(k)))
 
 
 def convert_decimal_fields(data: dict, decimal_fields: tuple):
