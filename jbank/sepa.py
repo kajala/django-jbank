@@ -97,6 +97,7 @@ class Pain001:
     pain_element_name = "CstmrCdtTrfInitn"
     tz_str = "Europe/Helsinki"
     tz: Any = None
+    xml_declaration: Any = None
 
     def __init__(
         self,
@@ -471,7 +472,7 @@ class Pain001:
 
     def render_to_bytes(self, doc: Optional[Element] = None) -> bytes:
         doc = doc or self.render_to_element()
-        xml_bytes = ET.tostring(doc, encoding="utf-8", method="xml")
+        xml_bytes = ET.tostring(doc, encoding="utf-8", method="xml", xml_declaration=self.xml_declaration)
         return xml_bytes
 
     def render_to_file(self, filename: str, xml_bytes: Optional[bytes] = None):

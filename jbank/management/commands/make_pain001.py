@@ -35,6 +35,7 @@ class Command(SafeCommand):
         parser.add_argument("--verbose", action="store_true")
         parser.add_argument("--ws", type=int)
         parser.add_argument("--suffix", type=str, default="XL")
+        parser.add_argument("--xml-declaration", action="store_true")
 
     def do(self, *args, **options):
         target_dir = options["dir"]
@@ -75,6 +76,8 @@ class Command(SafeCommand):
                     p.payer.address_lines,
                     p.payer.country_code,
                 )
+                if options["xml_declaration"]:
+                    pain001.xml_declaration = options["xml_declaration"]
                 if p.messages:
                     remittance_info = p.messages
                     remittance_info_type = PAIN001_REMITTANCE_INFO_MSG
