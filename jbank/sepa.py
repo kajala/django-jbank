@@ -507,8 +507,14 @@ class Pain002:
 
         grp_inf = rpt.get("OrgnlGrpInfAndSts", {})
         self.original_msg_id = grp_inf.get("OrgnlMsgId")
+        pmt_inf = rpt.get("OrgnlPmtInfAndSts") or {}
+
         self.group_status = grp_inf.get("GrpSts")
+        if not self.group_status:
+            self.group_status = pmt_inf.get("PmtInfSts") or ""
         self.status_reason = grp_inf.get("StsRsnInf", {}).get("Rsn", {}).get("Prtry", "")
+        if not self.status_reason:
+            self.status_reason = (pmt_inf.get("StsRsnInf") or {}).get("AddtlInf") or ""
 
         if not self.msg_id:
             raise ValidationError("MsgId missing")
@@ -522,7 +528,23 @@ class Pain002:
 
     @property
     def is_accepted(self):
-        return self.group_status == "ACCP"
+        return self.group_status in ["ACCP", "ACSC", "ACSP"]
+
+    @property
+    def is_technically_accepted(self):
+        return self.group_status == "ACTC"
+
+    @property
+    def is_accepted_with_change(self):
+        return self.group_status == "ACWC"
+
+    @property
+    def is_partially_accepted(self):
+        return self.group_status == "PART"
+
+    @property
+    def is_pending(self):
+        return self.group_status == "PDNG"
 
     @property
     def is_rejected(self):
