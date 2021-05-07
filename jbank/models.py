@@ -90,11 +90,13 @@ CORRECTION_IDENTIFIER = (
     ("1", _("Correction Entry")),
 )
 
+DELIVERY_METHOD_UNKNOWN = ""
 DELIVERY_FROM_CUSTOMER = "A"
 DELIVERY_FROM_BANK_CLERK = "K"
 DELIVERY_FROM_BANK_SYSTEM = "J"
 
 DELIVERY_METHOD = (
+    (DELIVERY_METHOD_UNKNOWN, ""),
     (DELIVERY_FROM_CUSTOMER, _("From Customer")),
     (DELIVERY_FROM_BANK_CLERK, _("From Bank Clerk")),
     (DELIVERY_FROM_BANK_SYSTEM, _("From Bank System")),
@@ -175,7 +177,9 @@ class StatementRecord(AccountEntry):
     sub_family_code = SafeCharField(_("sub family code"), max_length=4, db_index=True, blank=True, default="")
     record_description = SafeCharField(_("record description"), max_length=128, blank=True, default="")
     receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
-    delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD)
+    delivery_method = SafeCharField(
+        _("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True
+    )
     name = SafeCharField(_("name"), max_length=64, blank=True, db_index=True)
     name_source = SafeCharField(_("name source"), max_length=1, blank=True, choices=NAME_SOURCES)
     recipient_account_number = SafeCharField(_("recipient account number"), max_length=32, blank=True, db_index=True)
