@@ -72,6 +72,7 @@ RECORD_DOMAIN = (
 
 RECEIPT_CODE = (
     ("", ""),
+    ("0", "(0)"),
     ("E", _("Separate")),
     ("P", _("Separate/Paper")),
 )
