@@ -18,7 +18,7 @@ from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, QuerySet
 from django.db.models.aggregates import Sum
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
@@ -76,6 +76,16 @@ class BankAdminBase(ModelAdminBase):
             AccountEntryNoteAdmin.save_account_entry_note_formset(request, form, formset, change)
         else:
             formset.save()
+
+    @staticmethod
+    def format_admin_obj_link_list(qs: QuerySet, route: str):
+        out = ""
+        for e_id in list(qs.order_by("id").values_list("id", flat=True)):
+            if out:
+                out += " | "
+            url_path = reverse(route, args=[e_id])
+            out += f'<a href="{url_path}">id={e_id}</a>'
+        return mark_safe(out)
 
 
 class SettlementEntryTypesFilter(SimpleListFilter):
@@ -192,7 +202,7 @@ class StatementAdmin(BankAdminBase):
     )
     list_display = (
         "id",
-        "record_date",
+        "record_date_short",
         "account_number",
         "statement_number",
         "begin_balance",
@@ -200,6 +210,12 @@ class StatementAdmin(BankAdminBase):
         "file_link",
         "account_entry_list",
     )
+
+    def record_date_short(self, obj):
+        return date_format(obj.record_date, "SHORT_DATE_FORMAT")
+
+    record_date_short.short_description = _("record date")  # type: ignore
+    record_date_short.admin_order_field = "record_date"  # type: ignore
 
     def account_entry_list(self, obj):
         assert isinstance(obj, Statement)
@@ -337,11 +353,10 @@ def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=un
 
 
 class StatementRecordAdmin(BankAdminBase):
-    exclude = ()
     list_per_page = 25
     save_on_top = False
     date_hierarchy = "record_date"
-    readonly_fields = (
+    fields = (
         "id",
         "entry_type",
         "statement",
@@ -370,21 +385,22 @@ class StatementRecordAdmin(BankAdminBase):
         "client_messages",
         "bank_messages",
         "archived",
-        "manually_settled",
         # from AccountEntry
         "account",
         "timestamp",
         "created",
         "last_modified",
-        "type",
         "description",
-        "amount",
         "source_file",
-        "source_invoice",
-        "settled_invoice",
-        "settled_item",
-        "parent",
+        # "source_invoice",
+        # "settled_invoice",
+        # "settled_item",
+        # "parent",
+        "manually_settled",
+        "is_settled",
+        "child_links",
     )
+    readonly_fields = fields
     raw_id_fields = (
         "statement",
         # from AccountEntry
@@ -413,14 +429,13 @@ class StatementRecordAdmin(BankAdminBase):
     )
     list_display = (
         "id",
-        "record_date",
+        "record_date_short",
         "type",
         "record_code",
         "amount",
         "name",
-        "recipient_account_number",
-        "remittance_info",
         "source_file_link",
+        "is_settled",
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
@@ -431,6 +446,25 @@ class StatementRecordAdmin(BankAdminBase):
         mark_as_manually_settled,
         unmark_manually_settled_flag,
     )
+
+    def record_date_short(self, obj):
+        return date_format(obj.record_date, "SHORT_DATE_FORMAT")
+
+    record_date_short.short_description = _("record date")  # type: ignore
+    record_date_short.admin_order_field = "record_date"  # type: ignore
+
+    def is_settled(self, obj):
+        assert isinstance(obj, StatementRecord)
+        return obj.manually_settled or obj.child_set.exists()
+
+    is_settled.short_description = _("settled")  # type: ignore
+    is_settled.boolean = True  # type: ignore
+
+    def child_links(self, obj) -> str:
+        assert isinstance(obj, StatementRecord)
+        return self.format_admin_obj_link_list(obj.child_set, "admin:jacc_accountentry_change")
+
+    child_links.short_description = _("derived entries")  # type: ignore
 
     def get_urls(self):
         return [
@@ -487,6 +521,39 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "settled_invoice",
         "settled_item",
     )
+    fields = [
+        "id",
+        "batch",
+        "line_number",
+        "file_link",
+        "record_type",
+        "account_number",
+        "record_date",
+        "paid_date",
+        "archive_identifier",
+        "remittance_info",
+        "payer_name",
+        "currency_identifier",
+        "name_source",
+        "amount",
+        "correction_identifier",
+        "delivery_method",
+        "receipt_code",
+        "archived",
+        "manually_settled",
+        "account",
+        "created",
+        "last_modified",
+        "timestamp",
+        "type",
+        "description",
+        # 'source_invoice',
+        # 'settled_invoice',
+        # 'settled_item',
+        # 'parent',
+        "is_settled",
+        "child_links",
+    ]
     readonly_fields = (
         "id",
         "batch",
@@ -520,6 +587,8 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "settled_invoice",
         "settled_item",
         "parent",
+        "is_settled",
+        "child_links",
     )
     list_filter = (
         "batch__file__tag",
@@ -542,6 +611,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "payer_name",
         "remittance_info",
         "source_file_link",
+        "is_settled",
     )
     actions = (
         mark_as_manually_settled,
@@ -550,6 +620,25 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     inlines = [
         AccountEntryNoteInline,
     ]
+
+    def record_date_short(self, obj):
+        return date_format(obj.record_date, "SHORT_DATE_FORMAT")
+
+    record_date_short.short_description = _("record date")  # type: ignore
+    record_date_short.admin_order_field = "record_date"  # type: ignore
+
+    def is_settled(self, obj):
+        assert isinstance(obj, ReferencePaymentRecord)
+        return obj.manually_settled or obj.child_set.exists()
+
+    is_settled.short_description = _("settled")  # type: ignore
+    is_settled.boolean = True  # type: ignore
+
+    def child_links(self, obj) -> str:
+        assert isinstance(obj, ReferencePaymentRecord)
+        return self.format_admin_obj_link_list(obj.child_set, "admin:jacc_accountentry_change")
+
+    child_links.short_description = _("derived entries")  # type: ignore
 
     def file_link(self, obj):
         assert isinstance(obj, ReferencePaymentRecord)
@@ -587,7 +676,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.name)
 
     source_file_link.admin_order_field = "batch"  # type: ignore
-    source_file_link.short_description = _("account entry source file")  # type: ignore
+    source_file_link.short_description = _("source file")  # type: ignore
 
 
 class ReferencePaymentBatchAdmin(BankAdminBase):
@@ -623,11 +712,17 @@ class ReferencePaymentBatchAdmin(BankAdminBase):
     list_display = (
         "id",
         "name",
-        "record_date",
+        "record_date_short",
         "service_identifier",
         "currency_identifier",
         "account_entry_list",
     )
+
+    def record_date_short(self, obj):
+        return date_format(obj.record_date, "SHORT_DATE_FORMAT")
+
+    record_date_short.short_description = _("record date")  # type: ignore
+    record_date_short.admin_order_field = "record_date"  # type: ignore
 
     def account_entry_list(self, obj):
         assert isinstance(obj, ReferencePaymentBatch)
