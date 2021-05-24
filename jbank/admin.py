@@ -23,7 +23,7 @@ from django.db.models.aggregates import Sum
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse
-from django.utils.formats import date_format
+from django.utils.formats import date_format, localize
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
@@ -657,6 +657,11 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_referencepaymentrecord_batch_changelist",
             ),
+            url(
+                r"^by-statement-file/(?P<stm_id>\d+)/$",
+                self.admin_site.admin_view(self.kw_changelist_view),
+                name="jbank_referencepaymentrecord_statementfile_changelist",
+            ),
         ] + super().get_urls()
 
     def get_queryset(self, request: HttpRequest):
@@ -666,6 +671,9 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         batch_id = rm.kwargs.get("batch_id", None)
         if batch_id:
             qs = qs.filter(batch_id=batch_id)
+        stm_id = rm.kwargs.get("stm_id", None)
+        if stm_id:
+            qs = qs.filter(batch__file_id=stm_id)
         return qs
 
     def source_file_link(self, obj):
@@ -873,6 +881,7 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "id",
         "created",
         "file",
+        "total",
     )
 
     list_filter = ("tag",)
@@ -888,6 +897,13 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
+
+    def total(self, obj):
+        assert isinstance(obj, ReferencePaymentBatchFile)
+        path = reverse("admin:jbank_referencepaymentrecord_statementfile_changelist", args=[obj.id])
+        return format_html('<a href="{}">{}</a>', path, localize(obj.total_amount))
+
+    total.short_description = _("total amount")  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
         if add:

@@ -16,6 +16,7 @@ from django.db import models
 from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from jacc.helpers import sum_queryset
 from jacc.models import AccountEntry, AccountEntrySourceFile, Account, AccountEntryManager
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.modelfields import SafeCharField, SafeTextField
@@ -416,10 +417,25 @@ class ReferencePaymentBatchFile(models.Model):
     original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256)
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
+    cached_total_amount = models.DecimalField(
+        _("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True
+    )
 
     class Meta:
         verbose_name = _("reference payment batch file")
         verbose_name_plural = _("reference payment batch files")
+
+    def get_total_amount(self, force: bool = False) -> Decimal:
+        if self.cached_total_amount is None or force:
+            self.cached_total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch__file=self))
+            self.save(update_fields=["cached_total_amount"])
+        return self.cached_total_amount
+
+    @property
+    def total_amount(self) -> Decimal:
+        return self.get_total_amount()
+
+    total_amount.fget.short_description = _("total amount")  # type: ignore
 
     @property
     def full_path(self):

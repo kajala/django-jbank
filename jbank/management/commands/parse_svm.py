@@ -74,5 +74,7 @@ class Command(SafeCommand):
                         create_reference_payment_batch(
                             data, name=plain_filename, file=file
                         )  # pytype: disable=not-callable
+
+                    file.get_total_amount(force=True)
             else:
                 print("Skipping reference payment file {}".format(filename))
