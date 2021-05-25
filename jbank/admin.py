@@ -413,7 +413,7 @@ class StatementRecordAdmin(BankAdminBase):
     list_filter = (
         "statement__file__tag",
         AccountNameFilter,
-        AccountEntryMatchedFilter,
+        "manually_settled",
         SettlementEntryTypesFilter,
         "record_code",
     )
@@ -583,7 +583,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     list_filter = (
         "batch__file__tag",
         AccountNameFilter,
-        AccountEntryMatchedFilter,
+        "manually_settled",
         "correction_identifier",
     )
     search_fields = (
