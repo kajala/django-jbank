@@ -315,7 +315,14 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                 d_cdtr = d_parties.get("Cdtr", {})
                 d.creditor_name = d_cdtr.get("Nm", "")
                 d_cdtr_acct = d_parties.get("CdtrAcct", {})
-                d.creditor_account = d_cdtr_acct.get("Id", {}).get("IBAN", "")
+                d_cdtr_acct_id = d_cdtr_acct.get("Id", {})
+                d.creditor_account = d_cdtr_acct_id.get("IBAN", "")
+                if d.creditor_account:
+                    d.creditor_account_scheme = "IBAN"
+                else:
+                    d_cdtr_acct_id_othr = d_cdtr_acct_id.get("Othr") or {}
+                    d.creditor_account_scheme = d_cdtr_acct_id_othr.get("SchmeNm", {}).get("Cd", "")
+                    d.creditor_account = d_cdtr_acct_id_othr.get("Id") or ""
 
                 d_rmt = dtl.get("RmtInf", {})
                 d.unstructured_remittance_info = d_rmt.get("Ustrd", "")

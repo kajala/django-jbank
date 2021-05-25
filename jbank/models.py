@@ -277,6 +277,7 @@ class StatementRecordDetail(models.Model):
     end_to_end_identifier = SafeCharField(_("end-to-end identifier"), max_length=64, blank=True)
     creditor_name = SafeCharField(_("creditor name"), max_length=128, blank=True)
     creditor_account = SafeCharField(_("creditor account"), max_length=35, blank=True)
+    creditor_account_scheme = SafeCharField(_("creditor account scheme"), max_length=8, blank=True)
     debtor_name = SafeCharField(_("debtor name"), max_length=128, blank=True)
     ultimate_debtor_name = SafeCharField(_("ultimate debtor name"), max_length=128, blank=True)
     unstructured_remittance_info = SafeCharField(_("unstructured remittance info"), max_length=2048, blank=True)

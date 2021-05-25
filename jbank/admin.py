@@ -264,6 +264,8 @@ class StatementRecordDetailInlineAdmin(admin.StackedInline):
     fields = (
         "batch_identifier",
         "amount",
+        "creditor_account",
+        "creditor_account_scheme",
         "currency_code",
         "instructed_amount",
         "exchange",
@@ -465,6 +467,11 @@ class StatementRecordAdmin(BankAdminBase):
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_statementrecord_statement_changelist",
             ),
+            url(
+                r"^by-statement-file/(?P<statement_file_id>\d+)/$",
+                self.admin_site.admin_view(self.kw_changelist_view),
+                name="jbank_statementrecord_statementfile_changelist",
+            ),
         ] + super().get_urls()
 
     def get_queryset(self, request: HttpRequest):
@@ -474,6 +481,9 @@ class StatementRecordAdmin(BankAdminBase):
         statement_id = rm.kwargs.get("statement_id", None)
         if statement_id:
             qs = qs.filter(statement__id=statement_id)
+        statement_file_id = rm.kwargs.get("statement_file_id", None)
+        if statement_file_id:
+            qs = qs.filter(statement__file_id=statement_file_id)
         return qs
 
     def source_file_link(self, obj):
@@ -794,6 +804,7 @@ class StatementFileAdmin(BankAdminBase):
         "id",
         "created",
         "file",
+        "records",
     )
 
     readonly_fields = (
@@ -801,7 +812,15 @@ class StatementFileAdmin(BankAdminBase):
         "errors",
         "file",
         "original_filename",
+        "records",
     )
+
+    def records(self, obj):
+        assert isinstance(obj, StatementFile)
+        url = reverse("admin:jbank_statementrecord_statementfile_changelist", args=[obj.id])
+        return format_html('<a href="{}">{}</a>', url, _("statement records"))
+
+    records.short_description = _("statement records")  # type: ignore
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False

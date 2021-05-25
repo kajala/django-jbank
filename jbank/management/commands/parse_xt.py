@@ -49,13 +49,13 @@ class Command(SafeCommand):
                     found.save(update_fields=["original_filename"])
                     logger.info("Original XML statement filename of %s resolved to %s", found, filename)
 
-            if options["delete_old"]:
-                Statement.objects.filter(name=plain_filename).delete()
-
             if options["test"]:
                 statement = camt053_parse_statement_from_file(filename)
                 pprint(statement)
                 continue
+
+            if options["delete_old"]:
+                Statement.objects.filter(name=plain_filename).delete()
 
             if not Statement.objects.filter(name=plain_filename).first():
                 print("Importing statement file {}".format(plain_filename))
