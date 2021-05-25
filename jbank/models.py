@@ -343,10 +343,25 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     institution_identifier = SafeCharField(_("institution identifier"), max_length=2, blank=True)
     service_identifier = SafeCharField(_("service identifier"), max_length=9, blank=True)
     currency_identifier = SafeCharField(_("currency identifier"), max_length=3, choices=CURRENCY_IDENTIFIERS)
+    cached_total_amount = models.DecimalField(
+        _("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True
+    )
 
     class Meta:
         verbose_name = _("reference payment batch")
         verbose_name_plural = _("reference payment batches")
+
+    def get_total_amount(self, force: bool = False) -> Decimal:
+        if self.cached_total_amount is None or force:
+            self.cached_total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch=self))
+            self.save(update_fields=["cached_total_amount"])
+        return self.cached_total_amount
+
+    @property
+    def total_amount(self) -> Decimal:
+        return self.get_total_amount()
+
+    total_amount.fget.short_description = _("total amount")  # type: ignore
 
 
 class ReferencePaymentRecord(AccountEntry):
