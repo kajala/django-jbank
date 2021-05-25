@@ -2,6 +2,8 @@
 import logging
 import os
 from pprint import pprint
+
+from django.core.exceptions import ValidationError
 from django.core.management.base import CommandParser
 from django.db import transaction
 from jbank.camt import (
@@ -9,10 +11,11 @@ from jbank.camt import (
     camt053_create_statement,
     camt053_parse_statement_from_file,
     CAMT053_STATEMENT_SUFFIXES,
+    camt053_get_unified_str,
 )
 from jbank.helpers import get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
-from jbank.models import Statement, StatementFile
+from jbank.models import Statement, StatementFile, StatementRecord, StatementRecordDetail
 from jbank.parsers import parse_filename_suffix
 from jutil.command import SafeCommand
 
@@ -31,8 +34,62 @@ class Command(SafeCommand):
         parser.add_argument("--suffix", type=str)
         parser.add_argument("--resolve-original-filenames", action="store_true")
         parser.add_argument("--tag", type=str, default="")
+        parser.add_argument("--parse-creditor-account-data", action="store_true", help="For data migration")
+
+    def parse_creditor_account_data(self):  # pylint: disable=too-many-locals
+        for sf in StatementFile.objects.all():  # pylint: disable=too-many-nested-blocks
+            assert isinstance(sf, StatementFile)
+            full_path = sf.full_path
+            if os.path.isfile(full_path) and parse_filename_suffix(full_path).upper() in CAMT053_STATEMENT_SUFFIXES:
+                logger.info("Parsing creditor account data of %s", full_path)
+                statement_data = camt053_parse_statement_from_file(full_path)
+                d_stmt = statement_data.get("BkToCstmrStmt", {}).get("Stmt", {})
+                d_ntry = d_stmt.get("Ntry", [])
+                recs = list(StatementRecord.objects.all().filter(statement__file=sf).order_by("id"))
+                if len(recs) != len(d_ntry):
+                    raise ValidationError(f"Statement record counts do not match in id={sf.id} ({sf})")
+                for ix, ntry in enumerate(d_ntry):
+                    rec = recs[ix]
+                    assert isinstance(rec, StatementRecord)
+                    for dtl_batch in ntry.get("NtryDtls", []):
+                        rec_detail_list = list(StatementRecordDetail.objects.all().filter(record=rec))
+                        if len(rec_detail_list) != len(dtl_batch.get("TxDtls", [])):
+                            raise ValidationError(f"Statement record detail counts do not match in id={sf.id} ({sf})")
+                        for dtl_ix, dtl in enumerate(dtl_batch.get("TxDtls", [])):
+                            d = rec_detail_list[dtl_ix]
+                            assert isinstance(d, StatementRecordDetail)
+                            d_parties = dtl.get("RltdPties", {})
+                            d_dbt = d_parties.get("Dbtr", {})
+                            d.debtor_name = d_dbt.get("Nm", "")
+                            d_udbt = d_parties.get("UltmtDbtr", {})
+                            d.ultimate_debtor_name = d_udbt.get("Nm", "")
+                            d_cdtr = d_parties.get("Cdtr", {})
+                            d.creditor_name = d_cdtr.get("Nm", "")
+                            d_cdtr_acct = d_parties.get("CdtrAcct", {})
+                            d_cdtr_acct_id = d_cdtr_acct.get("Id", {})
+                            d.creditor_account = d_cdtr_acct_id.get("IBAN", "")
+                            if d.creditor_account:
+                                d.creditor_account_scheme = "IBAN"
+                            else:
+                                d_cdtr_acct_id_othr = d_cdtr_acct_id.get("Othr") or {}
+                                d.creditor_account_scheme = d_cdtr_acct_id_othr.get("SchmeNm", {}).get("Cd", "")
+                                d.creditor_account = d_cdtr_acct_id_othr.get("Id") or ""
+                            logger.info(
+                                "%s creditor_account %s (%s)", rec, d.creditor_account, d.creditor_account_scheme
+                            )
+                            d.save()
+
+                    if not rec.recipient_account_number:
+                        rec.recipient_account_number = camt053_get_unified_str(rec.detail_set.all(), "creditor_account")
+                        if rec.recipient_account_number:
+                            rec.save(update_fields=["recipient_account_number"])
+                            logger.info("%s recipient_account_number %s", rec, rec.recipient_account_number)
 
     def do(self, *args, **options):
+        if options["parse_creditor_account_data"]:
+            self.parse_creditor_account_data()
+            return
+
         files = list_dir_files(options["path"], options["suffix"])
         for filename in files:  # pylint: disable=too-many-nested-blocks
             plain_filename = os.path.basename(filename)
