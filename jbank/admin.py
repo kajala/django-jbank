@@ -397,7 +397,6 @@ class StatementRecordAdmin(BankAdminBase):
         # "settled_item",
         # "parent",
         "manually_settled",
-        "is_settled",
         "child_links",
     )
     readonly_fields = fields
@@ -435,7 +434,7 @@ class StatementRecordAdmin(BankAdminBase):
         "amount",
         "name",
         "source_file_link",
-        "is_settled",
+        "manually_settled",
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
@@ -452,13 +451,6 @@ class StatementRecordAdmin(BankAdminBase):
 
     record_date_short.short_description = _("record date")  # type: ignore
     record_date_short.admin_order_field = "record_date"  # type: ignore
-
-    def is_settled(self, obj):
-        assert isinstance(obj, StatementRecord)
-        return obj.manually_settled or obj.child_set.exists()
-
-    is_settled.short_description = _("settled")  # type: ignore
-    is_settled.boolean = True  # type: ignore
 
     def child_links(self, obj) -> str:
         assert isinstance(obj, StatementRecord)
@@ -540,7 +532,6 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "delivery_method",
         "receipt_code",
         "archived",
-        "manually_settled",
         "account",
         "created",
         "last_modified",
@@ -551,7 +542,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         # 'settled_invoice',
         # 'settled_item',
         # 'parent',
-        "is_settled",
+        "manually_settled",
         "child_links",
     ]
     readonly_fields = (
@@ -587,7 +578,6 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "settled_invoice",
         "settled_item",
         "parent",
-        "is_settled",
         "child_links",
     )
     list_filter = (
@@ -611,7 +601,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "payer_name",
         "remittance_info",
         "source_file_link",
-        "is_settled",
+        "manually_settled",
     )
     actions = (
         mark_as_manually_settled,
@@ -626,13 +616,6 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
 
     record_date_short.short_description = _("record date")  # type: ignore
     record_date_short.admin_order_field = "record_date"  # type: ignore
-
-    def is_settled(self, obj):
-        assert isinstance(obj, ReferencePaymentRecord)
-        return obj.manually_settled or obj.child_set.exists()
-
-    is_settled.short_description = _("settled")  # type: ignore
-    is_settled.boolean = True  # type: ignore
 
     def child_links(self, obj) -> str:
         assert isinstance(obj, ReferencePaymentRecord)
