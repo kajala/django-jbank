@@ -122,6 +122,7 @@ class AccountEntryMatchedFilter(SimpleListFilter):
         return [
             ("1", capfirst(_("account.entry.not.matched"))),
             ("2", capfirst(_("account.entry.is.matched"))),
+            ("4", capfirst(_("not marked as settled"))),
             ("3", capfirst(_("marked as settled"))),
         ]
 
@@ -142,6 +143,9 @@ class AccountEntryMatchedFilter(SimpleListFilter):
             if val == "3":
                 # return only manually marked as settled
                 return queryset.filter(manually_settled=True)
+            if val == "4":
+                # return everything but manually marked as settled
+                return queryset.filter(manually_settled=False)
         return queryset
 
 
