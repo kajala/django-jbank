@@ -384,7 +384,9 @@ class ReferencePaymentRecord(AccountEntry):
     currency_identifier = SafeCharField(_("currency identifier"), max_length=1, choices=CURRENCY_IDENTIFIERS)
     name_source = SafeCharField(_("name source"), max_length=1, choices=NAME_SOURCES, blank=True)
     correction_identifier = SafeCharField(_("correction identifier"), max_length=1, choices=CORRECTION_IDENTIFIER)
-    delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD)
+    delivery_method = SafeCharField(
+        _("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True
+    )
     receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
     manually_settled = models.BooleanField(_("manually settled"), db_index=True, default=False, blank=True)
 
