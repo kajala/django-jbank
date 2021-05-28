@@ -390,19 +390,15 @@ class StatementRecordAdmin(BankAdminBase):
         "messages",
         "client_messages",
         "bank_messages",
-        "archived",
-        # from AccountEntry
         "account",
         "timestamp",
         "created",
         "last_modified",
         "description",
         "source_file",
-        # "source_invoice",
-        # "settled_invoice",
-        # "settled_item",
-        # "parent",
+        "archived",
         "manually_settled",
+        "is_settled_bool",
         "child_links",
     )
     readonly_fields = fields
@@ -440,7 +436,7 @@ class StatementRecordAdmin(BankAdminBase):
         "amount",
         "name",
         "source_file_link",
-        "manually_settled",
+        "is_settled_bool",
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
@@ -451,6 +447,12 @@ class StatementRecordAdmin(BankAdminBase):
         mark_as_manually_settled,
         unmark_manually_settled_flag,
     )
+
+    def is_settled_bool(self, obj):
+        return obj.is_settled
+
+    is_settled_bool.short_description = _("settled")  # type: ignore
+    is_settled_bool.boolean = True  # type: ignore
 
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")
@@ -552,11 +554,8 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "timestamp",
         "type",
         "description",
-        # 'source_invoice',
-        # 'settled_invoice',
-        # 'settled_item',
-        # 'parent',
         "manually_settled",
+        "is_settled_bool",
         "child_links",
     ]
     readonly_fields = (
@@ -579,7 +578,6 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "receipt_code",
         "archived",
         "manually_settled",
-        # from AccountEntry
         "account",
         "timestamp",
         "created",
@@ -592,12 +590,13 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "settled_invoice",
         "settled_item",
         "parent",
+        "is_settled_bool",
         "child_links",
     )
     list_filter = (
         "batch__file__tag",
         AccountNameFilter,
-        "manually_settled",
+        AccountEntryMatchedFilter,
         "correction_identifier",
     )
     search_fields = (
@@ -615,7 +614,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "payer_name",
         "remittance_info",
         "source_file_link",
-        "manually_settled",
+        "is_settled_bool",
     )
     actions = (
         mark_as_manually_settled,
@@ -624,6 +623,12 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     inlines = [
         AccountEntryNoteInline,
     ]
+
+    def is_settled_bool(self, obj):
+        return obj.is_settled
+
+    is_settled_bool.short_description = _("settled")  # type: ignore
+    is_settled_bool.boolean = True  # type: ignore
 
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")

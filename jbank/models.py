@@ -203,8 +203,6 @@ class StatementRecord(AccountEntry):
         """
         return self.manually_settled or sum_queryset(self.child_set) == self.amount
 
-    is_settled.fget.short_description = _("settled")  # type: ignore
-
     def clean(self):
         self.source_file = self.statement
         self.timestamp = pytz.utc.localize(datetime.combine(self.record_date, time(0, 0)))
@@ -409,8 +407,6 @@ class ReferencePaymentRecord(AccountEntry):
         True if entry is either manually settled or has SUM(children)==amount.
         """
         return self.manually_settled or sum_queryset(self.child_set) == self.amount
-
-    is_settled.fget.short_description = _("settled")  # type: ignore
 
     @property
     def remittance_info_short(self) -> str:
