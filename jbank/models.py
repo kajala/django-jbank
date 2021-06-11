@@ -693,11 +693,11 @@ class WsEdiSoapCall(models.Model):
 
     @property
     def debug_request_full_path(self) -> str:
-        return self.debug_get_file_path(self.debug_get_filename("a"))
+        return self.debug_get_file_path(self.debug_get_filename("q"))
 
     @property
     def debug_response_full_path(self) -> str:
-        return self.debug_get_file_path(self.debug_get_filename("r"))
+        return self.debug_get_file_path(self.debug_get_filename("s"))
 
     @staticmethod
     def debug_get_file_path(filename: str) -> str:

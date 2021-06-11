@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:opc="http://mlp.op.fi/OPCertificateService">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <opc:getCertificateIn>
+      <opc:RequestHeader>
+        <opc:SenderId>{{ ws.sender_identifier }}</opc:SenderId>
+        <opc:RequestId>{{ soap_call.request_identifier }}</opc:RequestId>
+        <opc:Timestamp>{{ soap_call.timestamp.isoformat }}</opc:Timestamp>
+      </opc:RequestHeader>
+    </opc:getCertificateIn>
+  </soapenv:Body>
+</soapenv:Envelope>

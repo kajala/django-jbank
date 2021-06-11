@@ -1208,6 +1208,10 @@ class CurrencyExchangeAdmin(BankAdminBase):
 class WsEdiConnectionAdmin(BankAdminBase):
     save_on_top = False
 
+    ordering = [
+        "name",
+    ]
+
     list_display = (
         "id",
         "created",
