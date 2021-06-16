@@ -205,7 +205,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             return_code = el.text
             return_text_el = list(envelope.iter(el.tag[:-4] + "Text"))[0]
             return_text = return_text_el.text if return_text_el is not None else ""
-    if return_code != "00":
+    if return_code not in ["00", "0"]:
         raise Exception("WS-PKI {} call failed, ReturnCode {} ({})".format(command, return_code, return_text))
 
     # find namespaces
