@@ -1,7 +1,7 @@
 import base64
 import logging
 import traceback
-from typing import Callable, Optional
+from typing import Optional
 import requests
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
@@ -60,7 +60,7 @@ def strip_xml_header_bytes(xml: bytes) -> bytes:
     return b"\n".join(xml.split(b"\n")[1:])
 
 
-def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statements
+def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     soap_call: WsEdiSoapCall, payout_party: PayoutParty, **kwargs
 ) -> bytes:
     ws = soap_call.connection
