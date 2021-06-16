@@ -163,8 +163,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             cmd_el.insert(cmd_el.index(req_hdr_el) + 1, req_el)
         else:
             logger.debug("Base64 encoding PKI request...")
-            req_without_xml_header = req
-            req_b64 = base64.encodebytes(req_without_xml_header)
+            req_b64 = base64.encodebytes(req)
             req_el = etree.SubElement(cmd_el, "{}ApplicationRequest".format(elem_ns))
             req_el.text = req_b64
 
@@ -194,6 +193,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
 def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
     ws = soap_call.connection
     command = soap_call.command
+    command_lower = command.lower()
     envelope = etree.fromstring(content)
 
     # check for errors
@@ -217,16 +217,16 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             elem_ns = "{" + ns_url + "}"
         elif ns_url.endswith("PKIFactoryService"):
             pkif_ns = "{" + ns_url + "}"
+        elif ns_url.endswith("OPCertificateService"):
+            pkif_ns = "{" + ns_url + "}"
+            elem_ns = "{http://op.fi/mlp/xmldata/}"
     if not pkif_ns:
         raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService namespace missing".format(command))
     if not elem_ns:
         raise Exception("WS-PKI {} SOAP response invalid, PKIFactoryService/elements namespace missing".format(command))
 
-    # find response element
-    res_el = etree_get_element(envelope, elem_ns, command + "Response")
-    command_lower = command.lower()
-
     if command_lower == "getbankcertificate":
+        res_el = etree_get_element(envelope, elem_ns, command + "Response")
         for cert_name in ["BankEncryptionCert", "BankSigningCert", "BankRootCert"]:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
             filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
@@ -240,7 +240,51 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             ws.save()
             admin_log([ws], "{} set by system from SOAP call response id={}".format(cert_name, soap_call.id))
 
-    elif command_lower in ["createcertificate", "renewcertificate", "getcertificate"]:
+    elif command_lower in ["createcertificate", "renewcertificate"]:
+        res_el = etree_get_element(envelope, elem_ns, command + "Response")
+        for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
+            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
+            filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+            write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
+            if cert_name == "EncryptionCert":
+                ws.encryption_cert_file.name = filename
+                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.id, filename))
+            elif cert_name == "SigningCert":
+                ws.signing_cert_file.name = filename
+                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
+            elif cert_name == "CACert":
+                ws.ca_cert_file.name = filename
+                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.id, filename))
+            ws.save()
+
+    elif command_lower in ["getcertificate"]:
+        app_res = envelope.find(
+            "{http://schemas.xmlsoap.org/soap/envelope/}Body/{http://mlp.op.fi/OPCertificateService}getCertificateout/{http://mlp.op.fi/OPCertificateService}ApplicationResponse"
+        )
+        if app_res is None:
+            raise Exception("{} not found from {}".format("ApplicationResponse", envelope))
+        data_base64 = base64.decodebytes(str(app_res.text).encode())
+        cert_app_res = etree.fromstring(data_base64)
+        if cert_app_res is None:
+            raise Exception("Failed to create XML document from decoded ApplicationResponse")
+        cert_el = cert_app_res.find(
+            "./{http://op.fi/mlp/xmldata/}Certificates/{http://op.fi/mlp/xmldata/}Certificate/{http://op.fi/mlp/xmldata/}Certificate"
+        )
+        if cert_el is None:
+            raise Exception("{} not found from {}".format("Certificate", cert_app_res))
+        cert_bytes = base64.decodebytes(str(cert_el.text).encode())
+        cert_name = "SigningCert"
+        filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+        cert_full_path = get_media_full_path(filename)
+        with open(cert_full_path, "wb") as fp:
+            fp.write(cert_bytes)
+            logger.info("%s written", cert_full_path)
+        ws.signing_cert_file.name = filename
+        admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
+        ws.save()
+
+    elif command_lower in ["createcertificate", "renewcertificate"]:
+        res_el = etree_get_element(envelope, elem_ns, command + "Response")
         for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
             filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
