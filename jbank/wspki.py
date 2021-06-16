@@ -68,7 +68,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
     command_lower = command.lower()
 
     if command_lower == "getcertificate":
-        soap_template_name = "jbank/pki_soap_template2.xml"
+        soap_template_name = "jbank/pki_get_certificate_soap_template.xml"
     else:
         soap_template_name = "jbank/pki_soap_template.xml"
     soap_body_bytes = ws.get_pki_template(soap_template_name, soap_call, **kwargs)
@@ -162,7 +162,9 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             req_el = etree.fromstring(enc_req_bytes)
             cmd_el.insert(cmd_el.index(req_hdr_el) + 1, req_el)
         else:
+            logger.debug("Base64 encoding PKI request...")
             req_without_xml_header = strip_xml_header_bytes(req)
+            # req_without_xml_header = req
             req_b64 = base64.encodebytes(req_without_xml_header)
             req_el = etree.SubElement(cmd_el, "{}ApplicationRequest".format(elem_ns))
             req_el.text = req_b64
@@ -199,7 +201,8 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
     return_code: str = ""
     return_text: str = ""
     for el in envelope.iter():
-        if el.tag and el.tag.endswith("}ReturnCode"):
+        # print(el.tag)
+        if el.tag and el.tag.endswith("}ResponseCode"):
             return_code = el.text
             return_text_el = list(envelope.iter(el.tag[:-4] + "Text"))[0]
             return_text = return_text_el.text if return_text_el is not None else ""
@@ -279,8 +282,23 @@ def wspki_execute(
     soap_call.save()
     call_str = "WsEdiSoapCall({})".format(soap_call.id)
     try:
+        http_headers = {
+            "Connection": "Close",
+            "Content-Type": "text/xml",
+            # "Content-Type": 'application/soap+xml;charset=UTF8;action="{}"'.format(command),
+            "Method": "POST",
+            "SOAPAction": "",
+            # "SOAPAction": '"{}"'.format(command),
+            "User-Agent": "Kajala WS",
+        }
+
         body_bytes: bytes = generate_wspki_request(soap_call, payout_party, **kwargs)
         if verbose:
+            logger.info(
+                "------------------------------------------------------ %s http_headers\n%s",
+                call_str,
+                "\n".join(["{}: {}".format(k, v) for k, v in http_headers.items()]),
+            )
             logger.info(
                 "------------------------------------------------------ %s body_bytes\n%s",
                 call_str,
@@ -291,13 +309,6 @@ def wspki_execute(
             with open(soap_call.debug_request_full_path, "wb") as fp:
                 fp.write(body_bytes)
 
-        http_headers = {
-            "Connection": "Close",
-            "Content-Type": "text/xml",
-            "Method": "POST",
-            "SOAPAction": "",
-            "User-Agent": "Kajala WS",
-        }
         res = requests.post(ws.pki_endpoint, data=body_bytes, headers=http_headers)
         if verbose:
             logger.info(

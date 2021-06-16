@@ -1370,7 +1370,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         assert isinstance(obj, WsEdiSoapCall)
         if not os.path.isfile(obj.debug_request_full_path):
             return ""
-        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "a"])
+        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "q"])
         return mark_safe(
             format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_request_full_path))
         )
@@ -1381,7 +1381,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         assert isinstance(obj, WsEdiSoapCall)
         if not os.path.isfile(obj.debug_response_full_path):
             return ""
-        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "r"])
+        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "s"])
         return mark_safe(
             format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_response_full_path))
         )
