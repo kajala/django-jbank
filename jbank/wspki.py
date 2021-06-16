@@ -163,8 +163,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             cmd_el.insert(cmd_el.index(req_hdr_el) + 1, req_el)
         else:
             logger.debug("Base64 encoding PKI request...")
-            req_without_xml_header = strip_xml_header_bytes(req)
-            # req_without_xml_header = req
+            req_without_xml_header = req
             req_b64 = base64.encodebytes(req_without_xml_header)
             req_el = etree.SubElement(cmd_el, "{}ApplicationRequest".format(elem_ns))
             req_el.text = req_b64

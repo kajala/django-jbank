@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<opc:CertApplicationRequest xmlns:xe="http://www.w3.org/2000/09/xmldsig#" xmlns:opc="http://mlp.op.fi/OPCertificateService">
-    <opc:CustomerId>{{ ws.sender_identifier }}</opc:CustomerId>
-    <opc:Timestamp>{{ soap_call.timestamp.isoformat }}</opc:Timestamp>
-    <opc:Environment>{{ ws.environment }}</opc:Environment>
-    <opc:SoftwareId>Kajala WS</opc:SoftwareId>
-    <opc:Command>{{ command }}</opc:Command>
-    <opc:Content>{{ signing_cert_pkcs10 }}</opc:Content>
-    <opc:TransferKey>{{ ws.pin }}</opc:TransferKey>
-</opc:CertApplicationRequest>
+<CertApplicationRequest xmlns="http://op.fi/mlp/xmldata/">
+    <CustomerId>{{ ws.sender_identifier }}</CustomerId>
+    <Timestamp>{{ soap_call.timestamp.isoformat }}</Timestamp>
+    <Environment>{{ ws.environment }}</Environment>
+    <SoftwareId>Kajala WS</SoftwareId>
+    <Service>MATU</Service>
+    <Command>{{ command }}</Command>
+    <Content>{{ signing_cert_pkcs10 }}</Content>
+    <TransferKey>{{ ws.pin }}</TransferKey>
+</CertApplicationRequest>
