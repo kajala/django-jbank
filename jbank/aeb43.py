@@ -98,7 +98,7 @@ def parse_aeb43_statements_from_file(filename: str) -> list:
         return parse_aeb43_statements(fp.read(), filename=os.path.basename(filename))  # type: ignore
 
 
-def parse_aeb43_statements(content: str, filename: str) -> list:
+def parse_aeb43_statements(content: str, filename: str) -> list:  # pylint: disable=too-many-locals,unused-argument
     lines = content.split("\n")
     nlines = len(lines)
     line_number = 0

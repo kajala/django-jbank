@@ -2,10 +2,9 @@ import csv
 import logging
 from pprint import pprint
 from typing import List
-
 from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
-from jutil.validators import ascii_filter, variable_name_sanitizer
+from jutil.validators import variable_name_sanitizer
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ class Command(SafeCommand):
         parser.add_argument("--count-col-index", type=int, default=1)
         parser.add_argument("--verbose", action="store_true")
 
-    def do(self, *args, **kwargs):
+    def do(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
         verbose = kwargs["verbose"]
 
         lines: List[List[str]] = []

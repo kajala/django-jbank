@@ -122,7 +122,9 @@ def convert_time(v: Optional[str], field_name: str) -> time:
     return time(int(v[0:2]), int(v[2:4]))
 
 
-def convert_date_fields(data: dict, date_fields: tuple, tz: Any, date_fmt: str = "YYMMDD"):
+def convert_date_fields(
+    data: dict, date_fields: Sequence[Union[str, Tuple[str, str]]], tz: Any, date_fmt: str = "YYMMDD"
+):
     for k in date_fields:
         # logger.debug('%s = %s (%s)', k, data.get(k), type(data.get(k)))
         if isinstance(k, str):
