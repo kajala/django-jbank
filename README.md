@@ -6,10 +6,14 @@ Basic Finnish bank file format support for Django projects. Django 3.0 support a
 Features
 ========
 
-* Parsing TO/TITO and camt.053.001.02 files
-* Parsing SVM/KTL files
-* Parsing pain.002.001.03 (XP/NDCORPAYL) files
-* Generating pain.001.001.03 (XL/NDCORPAYS) files
+* Finnish banks:
+  * Parsing TO/TITO files
+  * Parsing SVM/KTL files
+  * Parsing camt.053.001.02 files
+  * Parsing pain.002.001.03 files
+  * Generating pain.001.001.03 files
+* Spanish banks:
+  * Parsing AEB43 statement files
 
 
 Pre-Requisites
