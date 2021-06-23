@@ -77,14 +77,12 @@ def parse_svm_batches_from_file(filename: str) -> list:
 def parse_svm_batches(content: str, filename: str) -> list:
     lines = content.split("\n")
     nlines = len(lines)
-
     line_number = 1
     tz = timezone("Europe/Helsinki")
-
     batches = []
-    header: Union[Dict[str, Union[int, str]], None] = None
-    summary: Union[Dict[str, Union[int, str]], None] = None
+    header: Optional[Dict[str, Union[int, str]]] = None
     records: List[Dict[str, Union[int, str]]] = []
+    summary: Optional[Dict[str, Union[int, str]]] = None
 
     while line_number <= nlines:
         line = lines[line_number - 1]
