@@ -2,7 +2,7 @@
 import logging
 from django.core.management.base import CommandParser
 from jbank.models import StatementFile, StatementRecord
-from jbank.parsers import parse_tiliote_statements_from_file
+from jbank.tito import parse_tiliote_statements_from_file
 from jutil.command import SafeCommand
 
 

@@ -2,7 +2,7 @@
 import logging
 from django.core.management.base import CommandParser
 from jbank.models import ReferencePaymentBatchFile, ReferencePaymentRecord
-from jbank.parsers import parse_svm_batches_from_file
+from jbank.svm import parse_svm_batches_from_file
 from jutil.command import SafeCommand
 
 

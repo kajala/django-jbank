@@ -7,7 +7,8 @@ from django.db import transaction
 from jbank.helpers import create_statement, get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
-from jbank.parsers import parse_tiliote_statements_from_file, parse_filename_suffix, TO_STATEMENT_SUFFIXES
+from jbank.parsers import parse_filename_suffix
+from jbank.tito import parse_tiliote_statements_from_file, TO_STATEMENT_SUFFIXES
 from jutil.command import SafeCommand
 
 logger = logging.getLogger(__name__)

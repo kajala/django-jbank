@@ -54,12 +54,8 @@ from jbank.models import (
     WsEdiConnection,
     WsEdiSoapCall,
 )
-from jbank.parsers import (
-    parse_tiliote_statements,
-    parse_tiliote_statements_from_file,
-    parse_svm_batches_from_file,
-    parse_svm_batches,
-)
+from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
+from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
 from jutil.admin import ModelAdminBase, admin_log, admin_log_changed_fields
 
 logger = logging.getLogger(__name__)

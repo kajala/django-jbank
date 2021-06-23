@@ -15,7 +15,8 @@ from jbank.csr_helpers import create_private_key, create_csr_pem, get_private_ke
 from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.helpers import validate_xml
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
-from jbank.parsers import parse_tiliote_statements_from_file, parse_svm_batches_from_file
+from jbank.tito import parse_tiliote_statements_from_file
+from jbank.svm import parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.format import format_xml

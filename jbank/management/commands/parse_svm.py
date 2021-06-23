@@ -7,7 +7,8 @@ from django.db import transaction
 from jbank.helpers import create_reference_payment_batch, get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
-from jbank.parsers import parse_svm_batches_from_file, parse_filename_suffix, SVM_STATEMENT_SUFFIXES
+from jbank.parsers import parse_filename_suffix
+from jbank.svm import parse_svm_batches_from_file, SVM_STATEMENT_SUFFIXES
 from jutil.command import SafeCommand
 
 logger = logging.getLogger(__name__)

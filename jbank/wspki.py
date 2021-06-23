@@ -259,7 +259,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
 
     elif command_lower in ["getcertificate"]:
         app_res = envelope.find(
-            "{http://schemas.xmlsoap.org/soap/envelope/}Body/{http://mlp.op.fi/OPCertificateService}getCertificateout/{http://mlp.op.fi/OPCertificateService}ApplicationResponse"
+            "{http://schemas.xmlsoap.org/soap/envelope/}Body/{http://mlp.op.fi/OPCertificateService}getCertificateout/{http://mlp.op.fi/OPCertificateService}ApplicationResponse"  # noqa
         )
         if app_res is None:
             raise Exception("{} not found from {}".format("ApplicationResponse", envelope))

@@ -1,6 +1,6 @@
 from pprint import pprint
 from django.core.management.base import CommandParser
-from jbank.parsers import parse_svm_batches_from_file
+from jbank.svm import parse_svm_batches_from_file
 from jutil.command import SafeCommand
 
 
