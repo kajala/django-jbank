@@ -140,14 +140,14 @@ def parse_aeb43_statements(content: str, filename: str) -> list:  # pylint: disa
             sub_rec = parse_records(lines[line_number - 1], CONCEPT_RECORD, line_number=line_number)
             prev = records[len(records) - 1]
             prev.setdefault("concept_records", [])
-            prev["concept_records"].append(sub_rec)
+            prev["concept_records"].append(sub_rec)  # type: ignore
             rec_count += 1
         elif record_type == "24":
             sub_rec = parse_records(lines[line_number - 1], AMOUNT_EQUIVALENCE_RECORD, line_number=line_number)
             convert_decimal_fields(sub_rec, AMOUNT_EQUIVALENCE_DECIMALS, DEBIT_REC_TYPE)
             prev = records[len(records) - 1]
             prev.setdefault("amount_equivalence_records", [])
-            prev["amount_equivalence_records"].append(sub_rec)
+            prev["amount_equivalence_records"].append(sub_rec)  # type: ignore
             rec_count += 1
         elif record_type == "88":
             eof = parse_records(lines[line_number - 1], END_OF_FILE_RECORD, line_number=line_number)
