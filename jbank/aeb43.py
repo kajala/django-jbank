@@ -14,9 +14,9 @@ ACCOUNT_HEADER_RECORD: List[Tuple[str, str, str]] = [
     ("entity_key", "X(4)", "P"),
     ("office_key", "X(4)", "P"),
     ("account_number", "X(10)", "P"),
-    ("initial_date", "9(6)", "P"),
-    ("final_date", "9(6)", "P"),
-    ("initial_balance_code", "9(1)", "P"),  # 1=debit, 2=credit
+    ("begin_date", "9(6)", "P"),
+    ("end_date", "9(6)", "P"),
+    ("initial_balance_debit_or_credit_code", "9(1)", "P"),  # 1=debit, 2=credit
     ("initial_balance_amount", "X(14)", "P"),
     ("currency_key", "X(3)", "P"),
     ("information_mode", "X(1)", "P"),
@@ -24,26 +24,26 @@ ACCOUNT_HEADER_RECORD: List[Tuple[str, str, str]] = [
     ("free", "X(3)", "P"),
 ]
 
-ACCOUNT_HEADER_DATES = ["final_date", "initial_date"]
-ACCOUNT_HEADER_DECIMALS = [("initial_balance_amount", "debt_or_credit_code")]
+ACCOUNT_HEADER_DATES = ["begin_date", "end_date"]
+ACCOUNT_HEADER_DECIMALS = [("initial_balance_amount", "initial_balance_debit_or_credit_code")]
 
 TRANSACTION_RECORD: List[Tuple[str, str, str]] = [
     ("registration_code", "9(2)", "P"),  # 22
     ("free", "X(4)", "P"),
     ("origin_office_code", "X(4)", "P"),
-    ("date_of_transaction", "X(6)", "P"),
+    ("transaction_date", "X(6)", "P"),
     ("value_date", "X(6)", "P"),
     ("common_concept", "X(2)", "P"),
     ("own_concept", "X(3)", "P"),
-    ("amount_code", "X(1)", "P"),  # 1=debit, 2=credit
+    ("debit_or_credit_code", "X(1)", "P"),  # 1=debit, 2=credit
     ("amount", "X(14)", "P"),  # cents, left-padded with zeros
     ("document_number", "X(10)", "P"),
     ("reference_1", "X(12)", "P"),
     ("reference_2", "X(16)", "P"),
 ]
 
-TRANSACTION_DATES = ["date_of_transaction", "value_date"]
-TRANSACTION_DECIMALS = [("amount", "debt_or_credit_code")]
+TRANSACTION_DATES = ["transaction_date", "value_date"]
+TRANSACTION_DECIMALS = [("amount", "debit_or_credit_code")]
 
 CONCEPT_RECORD: List[Tuple[str, str, str]] = [
     ("registration_code", "9(2)", "P"),  # 23
@@ -60,7 +60,7 @@ AMOUNT_EQUIVALENCE_RECORD: List[Tuple[str, str, str]] = [
     ("free", "X(59)", "P"),
 ]
 
-AMOUNT_EQUIVALENCE_DECIMALS = [("amount", "debt_or_credit_code")]
+AMOUNT_EQUIVALENCE_DECIMALS = [("amount", "data_code")]
 
 ACCOUNT_SUMMARY_RECORD: List[Tuple[str, str, str]] = [
     ("registration_code", "9(2)", "P"),  # 33
@@ -71,13 +71,17 @@ ACCOUNT_SUMMARY_RECORD: List[Tuple[str, str, str]] = [
     ("total_amount_debits", "X(14)", "P"),
     ("no_of_notes_to_have", "X(5)", "P"),
     ("total_amount_credits", "X(14)", "P"),
-    ("final_balance_code", "X(1)", "P"),
+    ("final_balance_debit_or_credit_code", "X(1)", "P"),
     ("final_balance", "X(14)", "P"),
     ("currency_code", "X(3)", "P"),
     ("free", "X(4)", "P"),
 ]
 
-ACCOUNT_SUMMARY_DECIMALS = ["final_balance", "total_amounts_debit", "total_amounts_credit"]
+ACCOUNT_SUMMARY_DECIMALS = [
+    ("final_balance", "final_balance_debit_or_credit_code"),
+    "total_amounts_debit",
+    "total_amounts_credit",
+]
 
 END_OF_FILE_RECORD: List[Tuple[str, str, str]] = [
     ("registration_code", "9(2)", "P"),  # 88
