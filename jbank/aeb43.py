@@ -17,7 +17,7 @@ ACCOUNT_HEADER_RECORD: List[Tuple[str, str, str]] = [
     ("begin_date", "9(6)", "P"),
     ("end_date", "9(6)", "P"),
     ("initial_balance_debit_or_credit_code", "9(1)", "P"),  # 1=debit, 2=credit
-    ("initial_balance_amount", "X(14)", "P"),
+    ("initial_balance", "X(14)", "P"),
     ("currency_key", "X(3)", "P"),
     ("information_mode", "X(1)", "P"),
     ("name", "X(26)", "P"),
@@ -25,7 +25,7 @@ ACCOUNT_HEADER_RECORD: List[Tuple[str, str, str]] = [
 ]
 
 ACCOUNT_HEADER_DATES = ["begin_date", "end_date"]
-ACCOUNT_HEADER_DECIMALS = [("initial_balance_amount", "initial_balance_debit_or_credit_code")]
+ACCOUNT_HEADER_DECIMALS = [("initial_balance", "initial_balance_debit_or_credit_code")]
 
 TRANSACTION_RECORD: List[Tuple[str, str, str]] = [
     ("registration_code", "9(2)", "P"),  # 22
