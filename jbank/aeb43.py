@@ -79,8 +79,8 @@ ACCOUNT_SUMMARY_RECORD: List[Tuple[str, str, str]] = [
 
 ACCOUNT_SUMMARY_DECIMALS = [
     ("final_balance", "final_balance_debit_or_credit_code"),
-    "total_amounts_debit",
-    "total_amounts_credit",
+    "total_amount_credits",
+    "total_amount_debits",
 ]
 
 END_OF_FILE_RECORD: List[Tuple[str, str, str]] = [
