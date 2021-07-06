@@ -1,4 +1,4 @@
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Tuple, List, Optional, Dict, Any, Union
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from pytz import timezone
@@ -77,7 +77,7 @@ ACCOUNT_SUMMARY_RECORD: List[Tuple[str, str, str]] = [
     ("free", "X(4)", "P"),
 ]
 
-ACCOUNT_SUMMARY_DECIMALS = [
+ACCOUNT_SUMMARY_DECIMALS: List[Union[Tuple[str, str], str]] = [
     ("final_balance", "final_balance_debit_or_credit_code"),
     "total_amount_credits",
     "total_amount_debits",

@@ -16,4 +16,4 @@ pre-commit
 black
 types-pytz
 types-requests
-
+types-python-dateutil
