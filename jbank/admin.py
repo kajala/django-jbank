@@ -330,7 +330,7 @@ def mark_as_manually_settled(modeladmin, request, qs):  # pylint: disable=unused
                 e.save(update_fields=["manually_settled"])
                 msg = "{}: {}".format(capfirst(_("marked as manually settled")), description)
                 admin_log([e], msg, who=user)
-                messages.info(request, msg)
+                messages.info(request, "{}: {}".format(e, msg))
         else:
             cx = {
                 "qs": qs,
@@ -351,7 +351,7 @@ def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=un
         e.save(update_fields=["manually_settled"])
         msg = capfirst(_("manually settled flag cleared"))
         admin_log([e], msg, who=user)
-        messages.info(request, msg)
+        messages.info(request, "{}: {}".format(e, msg))
 
 
 class StatementRecordAdmin(BankAdminBase):
