@@ -115,9 +115,7 @@ def parse_svm_batches(content: str, filename: str) -> list:
     return batches
 
 
-def combine_svm_batch(
-    header: Optional[Dict[str, Any]], records: List[Dict[str, Union[int, str]]], summary: Optional[Dict[str, Any]]
-) -> Dict[str, Any]:
+def combine_svm_batch(header: Optional[Dict[str, Any]], records: List[Dict[str, Union[int, str]]], summary: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     data = {"header": header, "records": records}
     if summary is not None:
         data["summary"] = summary

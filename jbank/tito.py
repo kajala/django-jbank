@@ -223,9 +223,7 @@ def parse_tiliote_statements(content: str, filename: str) -> List[dict]:  # pyli
 
         if record_type in TO_FILE_HEADER_TYPES:
             if header:
-                statements.append(
-                    combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records)
-                )
+                statements.append(combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records))
                 header, records, balance, cumulative, cumulative_adjustment, special_records = (
                     None,
                     [],
@@ -274,9 +272,7 @@ def parse_tiliote_statements(content: str, filename: str) -> List[dict]:  # pyli
             convert_decimal_fields(cumulative_adjustment, TO_CUMULATIVE_RECORD_DECIMALS)
             line_number += 1
         elif record_type in ("T60", "T70"):
-            special_records.append(
-                parse_records(line, TO_SPECIAL_RECORD, line_number=line_number, check_record_length=False)
-            )
+            special_records.append(parse_records(line, TO_SPECIAL_RECORD, line_number=line_number, check_record_length=False))
             line_number += 1
         else:
             raise ValidationError(_("Unknown record type on {}({}): {}").format(filename, line_number, record_type))
@@ -285,9 +281,7 @@ def parse_tiliote_statements(content: str, filename: str) -> List[dict]:  # pyli
     return statements
 
 
-def combine_statement(  # pylint: disable=too-many-arguments
-    header, records, balance, cumulative, cumulative_adjustment, special_records
-) -> Dict[str, Any]:
+def combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records) -> Dict[str, Any]:  # pylint: disable=too-many-arguments
     data = {
         "header": header,
         "records": records,
@@ -321,13 +315,9 @@ def parse_record_extra_info(record: Dict[str, Any], line: str, line_number: int)
     elif extra_info_type == "03":
         record["card"] = parse_records(extra_data, TO_FILE_RECORD_EXTRA_INFO_CARD, line_number, record_length=34)
     elif extra_info_type == "04":
-        record["correction"] = parse_records(
-            extra_data, TO_FILE_RECORD_EXTRA_INFO_CORRECTION, line_number, record_length=18
-        )
+        record["correction"] = parse_records(extra_data, TO_FILE_RECORD_EXTRA_INFO_CORRECTION, line_number, record_length=18)
     elif extra_info_type == "05":
-        record["currency"] = parse_records(
-            extra_data, TO_FILE_RECORD_EXTRA_INFO_CURRENCY, line_number, record_length=41
-        )
+        record["currency"] = parse_records(extra_data, TO_FILE_RECORD_EXTRA_INFO_CURRENCY, line_number, record_length=41)
         convert_decimal_fields(record["currency"], TO_FILE_RECORD_EXTRA_INFO_CURRENCY_DECIMALS)
     elif extra_info_type == "06":
         record["client_messages"] = parse_record_messages(extra_data)
@@ -336,17 +326,11 @@ def parse_record_extra_info(record: Dict[str, Any], line: str, line_number: int)
     elif extra_info_type == "08":
         record["reason"] = parse_records(extra_data, TO_FILE_RECORD_EXTRA_INFO_REASON, line_number, record_length=35)
     elif extra_info_type == "09":
-        record["name_detail"] = parse_records(
-            extra_data, TO_FILE_RECORD_EXTRA_INFO_NAME_DETAIL, line_number, record_length=35
-        )
+        record["name_detail"] = parse_records(extra_data, TO_FILE_RECORD_EXTRA_INFO_NAME_DETAIL, line_number, record_length=35)
     elif extra_info_type == "11":
         record["sepa"] = parse_records(extra_data, TO_FILE_RECORD_EXTRA_INFO_SEPA, line_number, record_length=323)
     else:
-        raise ValidationError(
-            _('Line {line}: Invalid record extra info type "{extra_info_type}"').format(
-                line=line_number, extra_info_type=extra_info_type
-            )
-        )
+        raise ValidationError(_('Line {line}: Invalid record extra info type "{extra_info_type}"').format(line=line_number, extra_info_type=extra_info_type))
 
 
 def parse_record_messages(extra_data: str) -> List[str]:

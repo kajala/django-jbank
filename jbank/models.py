@@ -125,9 +125,7 @@ class Statement(AccountEntrySourceFile):
     file = models.ForeignKey("StatementFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, related_name="+", on_delete=models.PROTECT)
     account_number = SafeCharField(_("account number"), max_length=32, db_index=True)
-    statement_identifier = SafeCharField(
-        _("statement identifier"), max_length=48, db_index=True, blank=True, default=""
-    )
+    statement_identifier = SafeCharField(_("statement identifier"), max_length=48, db_index=True, blank=True, default="")
     statement_number = models.SmallIntegerField(_("statement number"), db_index=True)
     begin_date = models.DateField(_("begin date"), db_index=True)
     end_date = models.DateField(_("end date"), db_index=True)
@@ -138,9 +136,7 @@ class Statement(AccountEntrySourceFile):
     record_count = models.IntegerField(_("record count"), null=True, default=None)
     currency_code = SafeCharField(_("currency code"), max_length=3)
     account_name = SafeCharField(_("account name"), max_length=32, blank=True, default="")
-    account_limit = models.DecimalField(
-        _("account limit"), max_digits=10, decimal_places=2, blank=True, default=None, null=True
-    )
+    account_limit = models.DecimalField(_("account limit"), max_digits=10, decimal_places=2, blank=True, default=None, null=True)
     owner_name = SafeCharField(_("owner name"), max_length=64)
     contact_info_1 = SafeCharField(_("contact info (1)"), max_length=64, blank=True, default="")
     contact_info_2 = SafeCharField(_("contact info (2)"), max_length=64, blank=True, default="")
@@ -163,9 +159,7 @@ class PaymentRecordManager(AccountEntryManager):
 
 class StatementRecord(AccountEntry):
     objects: models.Manager = PaymentRecordManager()  # type: ignore
-    statement = models.ForeignKey(
-        Statement, verbose_name=_("statement"), related_name="record_set", on_delete=models.CASCADE
-    )
+    statement = models.ForeignKey(Statement, verbose_name=_("statement"), related_name="record_set", on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_("line number"), default=None, null=True, blank=True)
     record_number = models.IntegerField(_("record number"), default=None, null=True, blank=True)
     archive_identifier = SafeCharField(_("archive identifier"), max_length=64, blank=True, default="", db_index=True)
@@ -179,9 +173,7 @@ class StatementRecord(AccountEntry):
     sub_family_code = SafeCharField(_("sub family code"), max_length=4, db_index=True, blank=True, default="")
     record_description = SafeCharField(_("record description"), max_length=128, blank=True, default="")
     receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
-    delivery_method = SafeCharField(
-        _("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True
-    )
+    delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True)
     name = SafeCharField(_("name"), max_length=64, blank=True, db_index=True)
     name_source = SafeCharField(_("name source"), max_length=1, blank=True, choices=NAME_SOURCES)
     recipient_account_number = SafeCharField(_("recipient account number"), max_length=32, blank=True, db_index=True)
@@ -207,9 +199,7 @@ class StatementRecord(AccountEntry):
         self.source_file = self.statement
         self.timestamp = pytz.utc.localize(datetime.combine(self.record_date, time(0, 0)))
         if self.name:
-            self.description = "{name}: {record_description}".format(
-                record_description=self.record_description, name=self.name
-            )
+            self.description = "{name}: {record_description}".format(record_description=self.record_description, name=self.name)
         else:
             self.description = "{record_description}".format(record_description=self.record_description)
 
@@ -231,9 +221,7 @@ class CurrencyExchange(models.Model):
     source_currency = SafeCharField(_("source currency"), max_length=3, blank=True)
     target_currency = SafeCharField(_("target currency"), max_length=3, blank=True)
     unit_currency = SafeCharField(_("unit currency"), max_length=3, blank=True)
-    exchange_rate = models.DecimalField(
-        _("exchange rate"), decimal_places=6, max_digits=12, null=True, default=None, blank=True
-    )
+    exchange_rate = models.DecimalField(_("exchange rate"), decimal_places=6, max_digits=12, null=True, default=None, blank=True)
     source = models.ForeignKey(
         CurrencyExchangeSource,
         verbose_name=_("currency exchange source"),
@@ -248,19 +236,13 @@ class CurrencyExchange(models.Model):
         verbose_name_plural = _("currency exchanges")
 
     def __str__(self):
-        return "{src} = {rate} {tgt}".format(
-            src=self.source_currency, tgt=self.target_currency, rate=self.exchange_rate
-        )
+        return "{src} = {rate} {tgt}".format(src=self.source_currency, tgt=self.target_currency, rate=self.exchange_rate)
 
 
 class StatementRecordDetail(models.Model):
-    record = models.ForeignKey(
-        StatementRecord, verbose_name=_("record"), related_name="detail_set", on_delete=models.CASCADE
-    )
+    record = models.ForeignKey(StatementRecord, verbose_name=_("record"), related_name="detail_set", on_delete=models.CASCADE)
     batch_identifier = SafeCharField(_("batch message id"), max_length=64, db_index=True, blank=True, default="")
-    amount = models.DecimalField(
-        verbose_name=_("amount"), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True
-    )
+    amount = models.DecimalField(verbose_name=_("amount"), max_digits=10, decimal_places=2, blank=True, default=None, null=True, db_index=True)
     currency_code = SafeCharField(_("currency code"), max_length=3)
     instructed_amount = models.DecimalField(
         verbose_name=_("instructed amount"),
@@ -303,9 +285,7 @@ class StatementRecordRemittanceInfo(models.Model):
     reference = SafeCharField(_("reference"), max_length=35, blank=True, db_index=True)
 
     def __str__(self):
-        return "{} {} ref {} ({})".format(
-            self.amount if self.amount is not None else "", self.currency_code, self.reference, self.additional_info
-        )
+        return "{} {} ref {} ({})".format(self.amount if self.amount is not None else "", self.currency_code, self.reference, self.additional_info)
 
     class Meta:
         verbose_name = _("statement record remittance info")
@@ -313,9 +293,7 @@ class StatementRecordRemittanceInfo(models.Model):
 
 
 class StatementRecordSepaInfo(models.Model):
-    record = models.OneToOneField(
-        StatementRecord, verbose_name=_("record"), related_name="sepa_info", on_delete=models.CASCADE
-    )
+    record = models.OneToOneField(StatementRecord, verbose_name=_("record"), related_name="sepa_info", on_delete=models.CASCADE)
     reference = SafeCharField(_("reference"), max_length=35, blank=True)
     iban_account_number = SafeCharField(_("IBAN"), max_length=35, blank=True)
     bic_code = SafeCharField(_("BIC"), max_length=35, blank=True)
@@ -350,9 +328,7 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     institution_identifier = SafeCharField(_("institution identifier"), max_length=2, blank=True)
     service_identifier = SafeCharField(_("service identifier"), max_length=9, blank=True)
     currency_identifier = SafeCharField(_("currency identifier"), max_length=3, choices=CURRENCY_IDENTIFIERS)
-    cached_total_amount = models.DecimalField(
-        _("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True
-    )
+    cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
 
     class Meta:
         verbose_name = _("reference payment batch")
@@ -377,9 +353,7 @@ class ReferencePaymentRecord(AccountEntry):
     """
 
     objects = PaymentRecordManager()  # type: ignore
-    batch = models.ForeignKey(
-        ReferencePaymentBatch, verbose_name=_("batch"), related_name="record_set", on_delete=models.CASCADE
-    )
+    batch = models.ForeignKey(ReferencePaymentBatch, verbose_name=_("batch"), related_name="record_set", on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_("line number"), default=0, blank=True)
     record_type = SafeCharField(_("record type"), max_length=1)
     account_number = SafeCharField(_("account number"), max_length=32, db_index=True)
@@ -391,9 +365,7 @@ class ReferencePaymentRecord(AccountEntry):
     currency_identifier = SafeCharField(_("currency identifier"), max_length=1, choices=CURRENCY_IDENTIFIERS)
     name_source = SafeCharField(_("name source"), max_length=1, choices=NAME_SOURCES, blank=True)
     correction_identifier = SafeCharField(_("correction identifier"), max_length=1, choices=CORRECTION_IDENTIFIER)
-    delivery_method = SafeCharField(
-        _("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True
-    )
+    delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True)
     receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
     manually_settled = models.BooleanField(_("manually settled"), db_index=True, default=False, blank=True)
 
@@ -449,9 +421,7 @@ class ReferencePaymentBatchFile(models.Model):
     original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256)
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
-    cached_total_amount = models.DecimalField(
-        _("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True
-    )
+    cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
 
     class Meta:
         verbose_name = _("reference payment batch file")
@@ -484,9 +454,7 @@ class PayoutParty(models.Model):
     org_id = SafeCharField(_("organization id"), max_length=32, db_index=True, blank=True, default="")
     address = SafeTextField(_("address"), blank=True, default="")
     country_code = SafeCharField(_("country code"), max_length=2, default="FI", blank=True, db_index=True)
-    payouts_account = models.ForeignKey(
-        Account, verbose_name=_("payouts account"), null=True, default=None, blank=True, on_delete=models.PROTECT
-    )
+    payouts_account = models.ForeignKey(Account, verbose_name=_("payouts account"), null=True, default=None, blank=True, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name = _("payout party")
@@ -528,9 +496,7 @@ class Payout(AccountEntry):
     file_reference = SafeCharField(_("file reference"), max_length=255, blank=True, db_index=True, editable=False)
     due_date = models.DateField(_("due date"), db_index=True, blank=True, null=True, default=None)
     paid_date = models.DateTimeField(_("paid date"), db_index=True, blank=True, null=True, default=None)
-    state = SafeCharField(
-        _("state"), max_length=1, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True
-    )
+    state = SafeCharField(_("state"), max_length=1, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True)
 
     class Meta:
         verbose_name = _("payout")
@@ -701,11 +667,7 @@ class WsEdiSoapCall(models.Model):
 
     @staticmethod
     def debug_get_file_path(filename: str) -> str:
-        return (
-            os.path.join(settings.WSEDI_LOG_PATH, filename)
-            if hasattr(settings, "WSEDI_LOG_PATH") and settings.WSEDI_LOG_PATH
-            else ""
-        )
+        return os.path.join(settings.WSEDI_LOG_PATH, filename) if hasattr(settings, "WSEDI_LOG_PATH") and settings.WSEDI_LOG_PATH else ""
 
 
 class WsEdiConnectionManager(models.Manager):
@@ -713,9 +675,9 @@ class WsEdiConnectionManager(models.Manager):
         objs = list(self.filter(receiver_identifier=receiver_identifier))
         if len(objs) != 1:
             raise ValidationError(
-                _(
-                    "WS-EDI connection cannot be found by receiver identifier {receiver_identifier} since there are {matches} matches"
-                ).format(receiver_identifier=receiver_identifier, matches=len(objs))
+                _("WS-EDI connection cannot be found by receiver identifier {receiver_identifier} since there are {matches} matches").format(
+                    receiver_identifier=receiver_identifier, matches=len(objs)
+                )
             )
         return objs[0]
 
@@ -734,18 +696,12 @@ class WsEdiConnection(models.Model):
     soap_endpoint = models.URLField(_("EDI endpoint"))
     signing_cert_file = models.FileField(verbose_name=_("signing certificate file"), blank=True, upload_to="certs")
     signing_key_file = models.FileField(verbose_name=_("signing key file"), blank=True, upload_to="certs")
-    encryption_cert_file = models.FileField(
-        verbose_name=_("encryption certificate file"), blank=True, upload_to="certs"
-    )
+    encryption_cert_file = models.FileField(verbose_name=_("encryption certificate file"), blank=True, upload_to="certs")
     encryption_key_file = models.FileField(verbose_name=_("encryption key file"), blank=True, upload_to="certs")
-    bank_encryption_cert_file = models.FileField(
-        verbose_name=_("bank encryption cert file"), blank=True, upload_to="certs"
-    )
+    bank_encryption_cert_file = models.FileField(verbose_name=_("bank encryption cert file"), blank=True, upload_to="certs")
     bank_signing_cert_file = models.FileField(verbose_name=_("bank signing cert file"), blank=True, upload_to="certs")
     ca_cert_file = models.FileField(verbose_name=_("CA certificate file"), blank=True, upload_to="certs")
-    debug_commands = SafeTextField(
-        _("debug commands"), blank=True, help_text=_("wsedi.connection.debug.commands.help.text")
-    )
+    debug_commands = SafeTextField(_("debug commands"), blank=True, help_text=_("wsedi.connection.debug.commands.help.text"))
     created = models.DateTimeField(_("created"), default=now, db_index=True, editable=False, blank=True)
     _signing_cert = None
 

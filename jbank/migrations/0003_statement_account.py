@@ -17,9 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="statement",
             name="account",
-            field=models.ForeignKey(
-                default=None, on_delete=django.db.models.deletion.CASCADE, related_name="+", to="jacc.Account"
-            ),
+            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, related_name="+", to="jacc.Account"),
             preserve_default=False,
         ),
     ]

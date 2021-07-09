@@ -44,9 +44,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "archive_identifier",
-                    models.CharField(
-                        blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"),
                 ),
                 ("remittance_info", models.CharField(db_index=True, max_length=32, verbose_name="remittance info")),
                 ("payer_name", models.CharField(db_index=True, max_length=12, verbose_name="payer name")),
@@ -163,9 +161,7 @@ class Migration(migrations.Migration):
                 ("record_number", models.IntegerField(verbose_name="record number")),
                 (
                     "archive_identifier",
-                    models.CharField(
-                        blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"),
                 ),
                 ("record_date", models.DateField(db_index=True, verbose_name="record date")),
                 (

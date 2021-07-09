@@ -74,9 +74,7 @@ class Command(SafeCommand):
                                 d_cdtr_acct_id_othr = d_cdtr_acct_id.get("Othr") or {}
                                 d.creditor_account_scheme = d_cdtr_acct_id_othr.get("SchmeNm", {}).get("Cd", "")
                                 d.creditor_account = d_cdtr_acct_id_othr.get("Id") or ""
-                            logger.info(
-                                "%s creditor_account %s (%s)", rec, d.creditor_account, d.creditor_account_scheme
-                            )
+                            logger.info("%s creditor_account %s (%s)", rec, d.creditor_account, d.creditor_account_scheme)
                             d.save()
 
                     if not rec.recipient_account_number:

@@ -35,16 +35,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="payout",
             name="file_name",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, editable=False, max_length=255, verbose_name="file name"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file name"),
         ),
         migrations.AlterField(
             model_name="payout",
             name="file_reference",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, editable=False, max_length=255, verbose_name="file reference"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file reference"),
         ),
         migrations.AlterField(
             model_name="payout",
@@ -59,16 +55,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="payout",
             name="msg_id",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, editable=False, max_length=64, verbose_name="message id"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, editable=False, max_length=64, verbose_name="message id"),
         ),
         migrations.AlterField(
             model_name="payout",
             name="reference",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=32, verbose_name="recipient reference"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=32, verbose_name="recipient reference"),
         ),
         migrations.AlterField(
             model_name="payout",
@@ -112,9 +104,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="payoutparty",
             name="country_code",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="FI", max_length=2, verbose_name="country code"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="FI", max_length=2, verbose_name="country code"),
         ),
         migrations.AlterField(
             model_name="payoutparty",
@@ -124,23 +114,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="payoutparty",
             name="org_id",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=32, verbose_name="organization id"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=32, verbose_name="organization id"),
         ),
         migrations.AlterField(
             model_name="payoutstatus",
             name="file_name",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, editable=False, max_length=128, verbose_name="file name"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, editable=False, max_length=128, verbose_name="file name"),
         ),
         migrations.AlterField(
             model_name="payoutstatus",
             name="file_path",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, editable=False, max_length=255, verbose_name="file path"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file path"),
         ),
         migrations.AlterField(
             model_name="payoutstatus",
@@ -155,16 +139,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="payoutstatus",
             name="original_msg_id",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, max_length=64, verbose_name="original message id"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, max_length=64, verbose_name="original message id"),
         ),
         migrations.AlterField(
             model_name="payoutstatus",
             name="response_code",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, max_length=4, verbose_name="response code"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, max_length=4, verbose_name="response code"),
         ),
         migrations.AlterField(
             model_name="payoutstatus",
@@ -179,9 +159,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="referencepaymentbatch",
             name="currency_identifier",
-            field=jutil.modelfields.SafeCharField(
-                choices=[("1", "EUR")], max_length=3, verbose_name="currency identifier"
-            ),
+            field=jutil.modelfields.SafeCharField(choices=[("1", "EUR")], max_length=3, verbose_name="currency identifier"),
         ),
         migrations.AlterField(
             model_name="referencepaymentbatch",
@@ -201,16 +179,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="referencepaymentbatchfile",
             name="original_filename",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=256, verbose_name="original filename"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=256, verbose_name="original filename"),
         ),
         migrations.AlterField(
             model_name="referencepaymentbatchfile",
             name="tag",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=64, verbose_name="tag"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=64, verbose_name="tag"),
         ),
         migrations.AlterField(
             model_name="referencepaymentrecord",
@@ -220,9 +194,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="referencepaymentrecord",
             name="archive_identifier",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"),
         ),
         migrations.AlterField(
             model_name="referencepaymentrecord",
@@ -236,9 +208,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="referencepaymentrecord",
             name="currency_identifier",
-            field=jutil.modelfields.SafeCharField(
-                choices=[("1", "EUR")], max_length=1, verbose_name="currency identifier"
-            ),
+            field=jutil.modelfields.SafeCharField(choices=[("1", "EUR")], max_length=1, verbose_name="currency identifier"),
         ),
         migrations.AlterField(
             model_name="referencepaymentrecord",
@@ -299,9 +269,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statement",
             name="bank_specific_info_1",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=1024, verbose_name="bank specific info (1)"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=1024, verbose_name="bank specific info (1)"),
         ),
         migrations.AlterField(
             model_name="statement",
@@ -311,16 +279,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statement",
             name="contact_info_1",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=64, verbose_name="contact info (1)"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=64, verbose_name="contact info (1)"),
         ),
         migrations.AlterField(
             model_name="statement",
             name="contact_info_2",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=64, verbose_name="contact info (2)"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=64, verbose_name="contact info (2)"),
         ),
         migrations.AlterField(
             model_name="statement",
@@ -330,9 +294,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statement",
             name="customer_identifier",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=64, verbose_name="customer identifier"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=64, verbose_name="customer identifier"),
         ),
         migrations.AlterField(
             model_name="statement",
@@ -347,9 +309,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statement",
             name="statement_identifier",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=48, verbose_name="statement identifier"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=48, verbose_name="statement identifier"),
         ),
         migrations.AlterField(
             model_name="statementfile",
@@ -359,23 +319,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementfile",
             name="original_filename",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=256, verbose_name="original filename"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=256, verbose_name="original filename"),
         ),
         migrations.AlterField(
             model_name="statementfile",
             name="tag",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=64, verbose_name="tag"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=64, verbose_name="tag"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
             name="archive_identifier",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=64, verbose_name="archive identifier"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=64, verbose_name="archive identifier"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
@@ -415,9 +369,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecord",
             name="family_code",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=4, verbose_name="family code"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=4, verbose_name="family code"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
@@ -453,16 +405,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecord",
             name="recipient_account_number",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, max_length=32, verbose_name="recipient account number"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, max_length=32, verbose_name="recipient account number"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
             name="recipient_account_number_changed",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, max_length=1, verbose_name="recipient account number changed"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, max_length=1, verbose_name="recipient account number changed"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
@@ -499,9 +447,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecord",
             name="record_description",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, default="", max_length=128, verbose_name="record description"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, default="", max_length=128, verbose_name="record description"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
@@ -527,16 +473,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecord",
             name="remittance_info",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, max_length=35, verbose_name="remittance info"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, max_length=35, verbose_name="remittance info"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
             name="sub_family_code",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=4, verbose_name="sub family code"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=4, verbose_name="sub family code"),
         ),
         migrations.AlterField(
             model_name="statementrecorddetail",
@@ -546,9 +488,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecorddetail",
             name="batch_identifier",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=64, verbose_name="batch message id"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=64, verbose_name="batch message id"),
         ),
         migrations.AlterField(
             model_name="statementrecorddetail",
@@ -583,16 +523,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecorddetail",
             name="unstructured_remittance_info",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, max_length=2048, verbose_name="unstructured remittance info"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, max_length=2048, verbose_name="unstructured remittance info"),
         ),
         migrations.AlterField(
             model_name="statementrecordremittanceinfo",
             name="additional_info",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, max_length=256, verbose_name="additional remittance info"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, max_length=256, verbose_name="additional remittance info"),
         ),
         migrations.AlterField(
             model_name="statementrecordremittanceinfo",

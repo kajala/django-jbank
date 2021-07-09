@@ -38,16 +38,12 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "archive_identifier",
-                    models.CharField(
-                        blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"),
                 ),
                 ("state", models.CharField(blank=True, db_index=True, default="W", max_length=1, verbose_name="state")),
                 (
                     "source",
-                    models.OneToOneField(
-                        on_delete=django.db.models.deletion.PROTECT, related_name="+", to="jacc.AccountEntry"
-                    ),
+                    models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, related_name="+", to="jacc.AccountEntry"),
                 ),
             ],
             options={
@@ -58,15 +54,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="referencepaymentbatchfile",
             name="created",
-            field=models.DateTimeField(
-                blank=True, db_index=True, default=django.utils.timezone.now, editable=False, verbose_name="created"
-            ),
+            field=models.DateTimeField(blank=True, db_index=True, default=django.utils.timezone.now, editable=False, verbose_name="created"),
         ),
         migrations.AlterField(
             model_name="statementfile",
             name="created",
-            field=models.DateTimeField(
-                blank=True, db_index=True, default=django.utils.timezone.now, editable=False, verbose_name="created"
-            ),
+            field=models.DateTimeField(blank=True, db_index=True, default=django.utils.timezone.now, editable=False, verbose_name="created"),
         ),
     ]

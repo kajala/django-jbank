@@ -36,25 +36,17 @@ def parse_record_format(fmt: str) -> Tuple[str, int]:
 def parse_record_value(data_type, data_len, data, name: str, line_number: int) -> str:
     value = data[:data_len]
     if len(value) != data_len:
-        raise ValidationError(
-            _('Line {line}: Invalid field "{field}" value "{value}"').format(line=line_number, field=name, value=value)
-        )
+        raise ValidationError(_('Line {line}: Invalid field "{field}" value "{value}"').format(line=line_number, field=name, value=value))
     if data_type == "X":
         pass
     elif data_type == "9":
         charset = "0123456789"
         for ch in value:
             if ch not in charset:
-                raise ValidationError(
-                    _('Line {line}: Invalid field "{field}" value "{value}"').format(
-                        line=line_number, field=name, value=value
-                    )
-                )
+                raise ValidationError(_('Line {line}: Invalid field "{field}" value "{value}"').format(line=line_number, field=name, value=value))
         # logger.info('jbank.parsers.parse_record_value: {} = {}'.format(name, value))
     else:
-        raise ValidationError(
-            _('Line {line}: Invalid field "{field}" value "{value}"').format(line=line_number, field=name, value=value)
-        )
+        raise ValidationError(_('Line {line}: Invalid field "{field}" value "{value}"').format(line=line_number, field=name, value=value))
     return value
 
 
@@ -81,10 +73,7 @@ def parse_records(
         data["extra_data"] = str(data["extra_data"]).strip()
         if i != rec_len and data["extra_data"] != "":
             raise ValidationError(
-                _(
-                    "Line {line}: Record length ({record_length}) does not match length of "
-                    'parsed data ({data_length}). Extra data: "{extra_data}"'
-                ).format(
+                _("Line {line}: Record length ({record_length}) does not match length of " 'parsed data ({data_length}). Extra data: "{extra_data}"').format(
                     line=line_number,
                     data_length=i + len(str(data["extra_data"])),
                     record_length=rec_len,
@@ -122,9 +111,7 @@ def convert_time(v: Optional[str], field_name: str) -> time:
     return time(int(v[0:2]), int(v[2:4]))
 
 
-def convert_date_fields(
-    data: dict, date_fields: Sequence[Union[str, Tuple[str, str]]], tz: Any, date_fmt: str = "YYMMDD"
-):
+def convert_date_fields(data: dict, date_fields: Sequence[Union[str, Tuple[str, str]]], tz: Any, date_fmt: str = "YYMMDD"):
     for k in date_fields:
         # logger.debug('%s = %s (%s)', k, data.get(k), type(data.get(k)))
         if isinstance(k, str):

@@ -18,15 +18,11 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 (
                     "timestamp",
-                    models.DateTimeField(
-                        blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="timestamp"
-                    ),
+                    models.DateTimeField(blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="timestamp"),
                 ),
                 (
                     "request_identifier",
-                    models.CharField(
-                        blank=True, db_index=True, max_length=64, unique=True, verbose_name="request identifier"
-                    ),
+                    models.CharField(blank=True, db_index=True, max_length=64, unique=True, verbose_name="request identifier"),
                 ),
                 ("command", models.CharField(blank=True, db_index=True, max_length=64, verbose_name="command")),
                 (
@@ -41,9 +37,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "executed",
-                    models.DateTimeField(
-                        blank=True, db_index=True, default=None, editable=False, null=True, verbose_name="executed"
-                    ),
+                    models.DateTimeField(blank=True, db_index=True, default=None, editable=False, null=True, verbose_name="executed"),
                 ),
                 (
                     "connection",

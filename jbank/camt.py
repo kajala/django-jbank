@@ -65,9 +65,7 @@ def camt053_get_dt(data: Dict[str, Any], key: str, name: str = "") -> datetime:
     s = camt053_get_val(data, key, None, True, name)
     val = parse_datetime(s)
     if val is None:
-        raise ValidationError(
-            _("camt.053 field {} type {} missing or invalid").format(name, "datetime") + ": {}".format(s)
-        )
+        raise ValidationError(_("camt.053 field {} type {} missing or invalid").format(name, "datetime") + ": {}".format(s))
     return val
 
 
@@ -80,9 +78,7 @@ def camt053_get_int(data: Dict[str, Any], key: str, name: str = "") -> int:
     raise ValidationError(_("camt.053 field {} type {} missing or invalid").format(name, "int"))
 
 
-def camt053_get_date(
-    data: dict, key: str, default: Optional[date] = None, required: bool = True, name: str = ""
-) -> date:
+def camt053_get_date(data: dict, key: str, default: Optional[date] = None, required: bool = True, name: str = "") -> date:
     s = camt053_get_val(data, key, default, required, name)
     try:
         val = parse_date(s[:10])
@@ -156,9 +152,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=""))
     accounts = list(Account.objects.filter(name=account_number))
     if len(accounts) != 1:
-        raise ValidationError(
-            "{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number)
-        )
+        raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number))
     account = accounts[0]
     assert isinstance(account, Account)
 
@@ -192,9 +186,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     stm.begin_balance, stm.begin_balance_date = camt053_get_stmt_bal(d_stmt, "OPBD")
     if stm.begin_balance_date is None:
         stm.begin_balance_date = stm.begin_date
-    stm.record_count = camt053_get_int(
-        d_txsummary.get("TtlNtries", {}), "NbOfNtries", name="Stmt.TxsSummry.TtlNtries.NbOfNtries"
-    )
+    stm.record_count = camt053_get_int(d_txsummary.get("TtlNtries", {}), "NbOfNtries", name="Stmt.TxsSummry.TtlNtries.NbOfNtries")
     stm.bank_specific_info_1 = camt053_get_str(d_stmt, "AddtlStmtInf", required=False)[:1024]
     for k, v in kw.items():
         setattr(stm, k, v)
@@ -203,15 +195,11 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
 
     e_deposit = EntryType.objects.filter(code=settings.E_BANK_DEPOSIT).first()
     if not e_deposit:
-        raise ValidationError(
-            _("entry.type.missing") + " ({}): {}".format("settings.E_BANK_DEPOSIT", settings.E_BANK_DEPOSIT)
-        )
+        raise ValidationError(_("entry.type.missing") + " ({}): {}".format("settings.E_BANK_DEPOSIT", settings.E_BANK_DEPOSIT))
     assert isinstance(e_deposit, EntryType)
     e_withdraw = EntryType.objects.filter(code=settings.E_BANK_WITHDRAW).first()
     if not e_withdraw:
-        raise ValidationError(
-            _("entry.type.missing") + " ({}): {}".format("settings.E_BANK_WITHDRAW", settings.E_BANK_WITHDRAW)
-        )
+        raise ValidationError(_("entry.type.missing") + " ({}): {}".format("settings.E_BANK_WITHDRAW", settings.E_BANK_WITHDRAW))
     assert isinstance(e_withdraw, EntryType)
     e_types = {
         "CRDT": e_deposit,
@@ -243,9 +231,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         rec.amount = amount
         rec.archive_identifier = archive_id
         rec.entry_type = record_type_map[cdt_dbt_ind]
-        rec.record_date = record_date = camt053_get_date(
-            ntry.get("BookgDt", {}), "Dt", name="Stmt.Ntry[{}].BkkgDt.Dt".format(archive_id)
-        )
+        rec.record_date = record_date = camt053_get_date(ntry.get("BookgDt", {}), "Dt", name="Stmt.Ntry[{}].BkkgDt.Dt".format(archive_id))
         rec.value_date = camt053_get_date(ntry.get("ValDt", {}), "Dt", name="Stmt.Ntry[{}].ValDt.Dt".format(archive_id))
         rec.delivery_method = DELIVERY_FROM_BANK_SYSTEM
 
@@ -253,14 +239,10 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         d_domn = d_bktxcd.get("Domn", {})
         d_family = d_domn.get("Fmly", {})
         d_prtry = d_bktxcd.get("Prtry", {})
-        rec.record_domain = record_domain = camt053_get_str(
-            d_domn, "Cd", name="Stmt.Ntry[{}].BkTxCd.Domn.Cd".format(archive_id)
-        )
+        rec.record_domain = record_domain = camt053_get_str(d_domn, "Cd", name="Stmt.Ntry[{}].BkTxCd.Domn.Cd".format(archive_id))
         rec.record_code = camt053_domain_from_record_code(record_domain)
         rec.family_code = camt053_get_str(d_family, "Cd", name="Stmt.Ntry[{}].BkTxCd.Domn.Family.Cd".format(archive_id))
-        rec.sub_family_code = camt053_get_str(
-            d_family, "SubFmlyCd", name="Stmt.Ntry[{}].BkTxCd.Domn.Family.SubFmlyCd".format(archive_id)
-        )
+        rec.sub_family_code = camt053_get_str(d_family, "SubFmlyCd", name="Stmt.Ntry[{}].BkTxCd.Domn.Family.SubFmlyCd".format(archive_id))
         rec.record_description = camt053_get_str(d_prtry, "Cd", required=False)
 
         rec.full_clean()
@@ -277,15 +259,9 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                 d_xchg = d_txamt.get("CcyXchg", None)
 
                 d.amount, d.currency_code = camt053_get_currency(d_txamt, "Amt", required=False)
-                d.instructed_amount, source_currency = camt053_get_currency(
-                    d_amt_dtl.get("InstdAmt", {}), "Amt", required=False
-                )
-                if (not d_xchg and source_currency and source_currency != d.currency_code) or (
-                    d_xchg and not source_currency
-                ):
-                    raise ValidationError(
-                        _("Inconsistent Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls".format(archive_id, dtl_ix))
-                    )
+                d.instructed_amount, source_currency = camt053_get_currency(d_amt_dtl.get("InstdAmt", {}), "Amt", required=False)
+                if (not d_xchg and source_currency and source_currency != d.currency_code) or (d_xchg and not source_currency):
+                    raise ValidationError(_("Inconsistent Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls".format(archive_id, dtl_ix)))
 
                 if source_currency and source_currency != d.currency_code:
                     source_currency = camt053_get_str(d_xchg, "SrcCcy", default=source_currency, required=False)
@@ -368,9 +344,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         if not rec.recipient_account_number:
             rec.recipient_account_number = camt053_get_unified_str(rec.detail_set.all(), "creditor_account")
         if not rec.remittance_info:
-            rec.remittance_info = camt053_get_unified_str(
-                StatementRecordRemittanceInfo.objects.all().filter(detail__record=rec), "reference"
-            )
+            rec.remittance_info = camt053_get_unified_str(StatementRecordRemittanceInfo.objects.all().filter(detail__record=rec), "reference")
         if not rec.paid_date:
             paid_date = camt053_get_unified_val(rec.detail_set.all(), "paid_date", default=None)
             if paid_date:

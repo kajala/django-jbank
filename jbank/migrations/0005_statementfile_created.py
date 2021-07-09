@@ -16,8 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="statementfile",
             name="created",
-            field=models.DateTimeField(
-                blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="created"
-            ),
+            field=models.DateTimeField(blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="created"),
         ),
     ]

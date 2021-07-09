@@ -13,8 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecordremittanceinfo",
             name="additional_info",
-            field=models.CharField(
-                blank=True, db_index=True, max_length=256, verbose_name="additional remittance info"
-            ),
+            field=models.CharField(blank=True, db_index=True, max_length=256, verbose_name="additional remittance info"),
         ),
     ]

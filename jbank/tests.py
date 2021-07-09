@@ -44,9 +44,7 @@ class Tests(TestCase):
             "FI",
         )
         creditor_acc = "FI8847304720017517"
-        p.add_payment(
-            "201802071339A0001", "Jani Kajala", creditor_acc, iban_bic(creditor_acc), Decimal("49.00"), "vuokratilitys"
-        )
+        p.add_payment("201802071339A0001", "Jani Kajala", creditor_acc, iban_bic(creditor_acc), Decimal("49.00"), "vuokratilitys")
         p.add_payment(
             "201802071339A0001",
             "Jani Kajala",
@@ -137,15 +135,11 @@ class Tests(TestCase):
         doc.find(".//{http://www.w3.org/2000/09/xmldsig#}DigestValue").text = "x"
         doc.find(".//{http://www.w3.org/2000/09/xmldsig#}Reference").attrib["URI"] = "x"
         doc.find(".//{http://www.w3.org/2000/09/xmldsig#}SignatureValue").text = "x"
-        doc.find(
-            ".//{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Reference"
-        ).attrib["URI"] = "x"
-        doc.find(
-            ".//{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}BinarySecurityToken"
-        ).attrib["{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Id"] = "x"
-        doc.find(
-            ".//{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}BinarySecurityToken"
-        ).text = "x"
+        doc.find(".//{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Reference").attrib["URI"] = "x"
+        doc.find(".//{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}BinarySecurityToken").attrib[
+            "{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Id"
+        ] = "x"
+        doc.find(".//{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}BinarySecurityToken").text = "x"
         doc.find(".//{http://schemas.xmlsoap.org/soap/envelope/}Body").attrib[
             "{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd}Id"
         ] = "x"
@@ -165,9 +159,7 @@ class Tests(TestCase):
         ws.signing_key_file.name = "data/x509/key.pem"
         ws.save()
         cert = get_x509_cert_from_file("data/x509/cert.pem")
-        not_valid_before, not_valid_after = pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(
-            cert.not_valid_after
-        )
+        not_valid_before, not_valid_after = pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(cert.not_valid_after)
         self.assertEqual(not_valid_before, datetime(2019, 12, 3, 17, 54, 41, tzinfo=tzutc()))
         self.assertEqual(not_valid_after, datetime(2019, 12, 13, 17, 54, 41, tzinfo=tzutc()))
         self.assertEqual(WsEdiConnection.objects.get_by_receiver_identifier("123192031").id, ws.id)
@@ -180,9 +172,7 @@ class Tests(TestCase):
         self.assertEqual(encoded, ref_encoded)
         timestamp = pytz.timezone("Europe/Helsinki").localize(datetime(2015, 2, 3, 14, 30))
         soap_call = WsEdiSoapCall.objects.create(connection=ws, command="HelloWorld", created=timestamp)
-        soap_body = get_template("jbank/soap_template.xml").render(
-            {"soap_call": soap_call, "payload": encoded.decode()}
-        )
+        soap_body = get_template("jbank/soap_template.xml").render({"soap_call": soap_call, "payload": encoded.decode()})
         body_bytes = soap_body.encode()
         envelope = etree.fromstring(body_bytes)
         binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)

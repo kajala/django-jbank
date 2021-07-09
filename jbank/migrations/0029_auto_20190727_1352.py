@@ -38,9 +38,7 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 (
                     "batch_identifier",
-                    models.CharField(
-                        blank=True, db_index=True, default="", max_length=64, verbose_name="batch message id"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="", max_length=64, verbose_name="batch message id"),
                 ),
                 (
                     "amount",
@@ -104,9 +102,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="statement",
             name="statement_identifier",
-            field=models.CharField(
-                blank=True, db_index=True, default="", max_length=48, verbose_name="statement identifier"
-            ),
+            field=models.CharField(blank=True, db_index=True, default="", max_length=48, verbose_name="statement identifier"),
         ),
         migrations.AddField(
             model_name="statementrecord",
@@ -162,9 +158,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="statementrecord",
             name="archive_identifier",
-            field=models.CharField(
-                blank=True, db_index=True, default="", max_length=64, verbose_name="archive identifier"
-            ),
+            field=models.CharField(blank=True, db_index=True, default="", max_length=64, verbose_name="archive identifier"),
         ),
         migrations.AlterField(
             model_name="statementrecord",
@@ -228,15 +222,11 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 (
                     "additional_info",
-                    models.CharField(
-                        blank=True, db_index=True, max_length=64, verbose_name="additional remittance info"
-                    ),
+                    models.CharField(blank=True, db_index=True, max_length=64, verbose_name="additional remittance info"),
                 ),
                 (
                     "amount",
-                    models.DecimalField(
-                        blank=True, decimal_places=2, default=None, max_digits=10, null=True, verbose_name="amount"
-                    ),
+                    models.DecimalField(blank=True, decimal_places=2, default=None, max_digits=10, null=True, verbose_name="amount"),
                 ),
                 ("currency_code", models.CharField(blank=True, max_length=3, verbose_name="currency code")),
                 ("reference", models.CharField(blank=True, db_index=True, max_length=35, verbose_name="reference")),

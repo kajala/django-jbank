@@ -36,9 +36,7 @@ class Command(SafeCommand):
             assert isinstance(obj, PayoutStatus)
             full_path = os.path.join(default_path, obj.file_name)
             if not os.path.isfile(full_path):
-                msg = "Error while updating file path of PayoutStatus id={}: File {} not found".format(
-                    obj.id, full_path
-                )
+                msg = "Error while updating file path of PayoutStatus id={}: File {} not found".format(obj.id, full_path)
                 if not options["ignore_errors"]:
                     raise Exception(msg)
                 logger.error(msg)

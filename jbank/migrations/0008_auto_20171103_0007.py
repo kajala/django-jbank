@@ -20,9 +20,7 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 (
                     "created",
-                    models.DateTimeField(
-                        blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="created"
-                    ),
+                    models.DateTimeField(blank=True, db_index=True, default=django.utils.timezone.now, verbose_name="created"),
                 ),
                 ("file", models.FileField(upload_to="uploads", verbose_name="file")),
                 ("errors", models.TextField(blank=True, default="", max_length=4086, verbose_name="errors")),

@@ -220,9 +220,7 @@ class StatementAdmin(BankAdminBase):
     def account_entry_list(self, obj):
         assert isinstance(obj, Statement)
         admin_url = reverse("admin:jbank_statementrecord_statement_changelist", args=(obj.id,))
-        return format_html(
-            "<a href='{}'>{}</a>", mark_safe(admin_url), StatementRecord.objects.filter(statement=obj).count()
-        )
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), StatementRecord.objects.filter(statement=obj).count())
 
     account_entry_list.short_description = _("account entries")  # type: ignore
 
@@ -733,9 +731,7 @@ class ReferencePaymentBatchAdmin(BankAdminBase):
     def account_entry_list(self, obj):
         assert isinstance(obj, ReferencePaymentBatch)
         admin_url = reverse("admin:jbank_referencepaymentrecord_batch_changelist", args=(obj.id,))
-        return format_html(
-            "<a href='{}'>{}</a>", mark_safe(admin_url), ReferencePaymentRecord.objects.filter(batch=obj).count()
-        )
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), ReferencePaymentRecord.objects.filter(batch=obj).count())
 
     account_entry_list.short_description = _("account entries")  # type: ignore
 
@@ -963,9 +959,7 @@ class PayoutStatusAdmin(BankAdminBase):
         "group_status",
     )
 
-    def file_download_view(
-        self, request, pk, filename, form_url="", extra_context=None
-    ):  # pylint: disable=unused-argument
+    def file_download_view(self, request, pk, filename, form_url="", extra_context=None):  # pylint: disable=unused-argument
         user = request.user
         if not user.is_authenticated or not user.is_staff:
             raise Http404(_("File {} not found").format(filename))
@@ -1347,9 +1341,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
             fields = fields[:-2]
         return fields
 
-    def soap_download_view(
-        self, request, object_id, file_type, form_url="", extra_context=None
-    ):  # pylint: disable=unused-argument
+    def soap_download_view(self, request, object_id, file_type, form_url="", extra_context=None):  # pylint: disable=unused-argument
         user = request.user
         if not user.is_authenticated or not user.is_superuser:
             raise Http404("File not found")
@@ -1367,9 +1359,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         if not os.path.isfile(obj.debug_request_full_path):
             return ""
         download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "q"])
-        return mark_safe(
-            format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_request_full_path))
-        )
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_request_full_path)))
 
     admin_application_request.short_description = _("application request")  # type: ignore
 
@@ -1378,9 +1368,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         if not os.path.isfile(obj.debug_response_full_path):
             return ""
         download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "s"])
-        return mark_safe(
-            format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_response_full_path))
-        )
+        return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_response_full_path)))
 
     admin_application_response.short_description = _("application response")  # type: ignore
 

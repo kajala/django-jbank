@@ -14,8 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="wsediconnection",
             name="debug_commands",
-            field=jutil.modelfields.SafeTextField(
-                blank=True, help_text="wsedi.connection.debug.commands.help.text", verbose_name="debug commands"
-            ),
+            field=jutil.modelfields.SafeTextField(blank=True, help_text="wsedi.connection.debug.commands.help.text", verbose_name="debug commands"),
         ),
     ]

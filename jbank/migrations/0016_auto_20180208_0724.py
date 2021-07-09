@@ -29,16 +29,12 @@ class Migration(migrations.Migration):
                 ("bic", models.CharField(blank=True, db_index=True, max_length=16, verbose_name="BIC")),
                 (
                     "org_id",
-                    models.CharField(
-                        blank=True, db_index=True, default="", max_length=32, verbose_name="organization id"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="", max_length=32, verbose_name="organization id"),
                 ),
                 ("address", models.TextField(blank=True, default="", verbose_name="address")),
                 (
                     "country_code",
-                    models.CharField(
-                        blank=True, db_index=True, default="FI", max_length=2, verbose_name="country code"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="FI", max_length=2, verbose_name="country code"),
                 ),
             ],
             options={

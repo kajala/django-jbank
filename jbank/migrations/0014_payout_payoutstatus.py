@@ -40,15 +40,11 @@ class Migration(migrations.Migration):
                 ("messages", models.TextField(blank=True, verbose_name="recipient messages")),
                 (
                     "msg_id",
-                    models.CharField(
-                        blank=True, db_index=True, editable=False, max_length=64, verbose_name="message id"
-                    ),
+                    models.CharField(blank=True, db_index=True, editable=False, max_length=64, verbose_name="message id"),
                 ),
                 (
                     "file_name",
-                    models.CharField(
-                        blank=True, db_index=True, editable=False, max_length=255, verbose_name="file name"
-                    ),
+                    models.CharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file name"),
                 ),
                 (
                     "paid_date",
@@ -88,9 +84,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "file_name",
-                    models.CharField(
-                        blank=True, db_index=True, editable=False, max_length=255, verbose_name="file name"
-                    ),
+                    models.CharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file name"),
                 ),
                 ("msg_id", models.CharField(db_index=True, max_length=64, verbose_name="message id")),
                 ("original_msg_id", models.CharField(db_index=True, max_length=64, verbose_name="original message id")),

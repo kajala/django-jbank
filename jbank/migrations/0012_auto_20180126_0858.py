@@ -37,9 +37,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "archive_identifier",
-                    models.CharField(
-                        blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"
-                    ),
+                    models.CharField(blank=True, db_index=True, default="", max_length=32, verbose_name="archive identifier"),
                 ),
                 ("state", models.CharField(blank=True, db_index=True, default="W", max_length=1, verbose_name="state")),
             ],

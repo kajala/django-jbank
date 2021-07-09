@@ -117,9 +117,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             ws.save()
             admin_log(
                 [ws],
-                "Encryption and signing private keys set as {} and {}".format(
-                    encryption_pk_filename, signing_pk_filename
-                ),
+                "Encryption and signing private keys set as {} and {}".format(encryption_pk_filename, signing_pk_filename),
             )
             write_private_key_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
             write_private_key_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
@@ -267,9 +265,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         cert_app_res = etree.fromstring(data_base64)
         if cert_app_res is None:
             raise Exception("Failed to create XML document from decoded ApplicationResponse")
-        cert_el = cert_app_res.find(
-            "./{http://op.fi/mlp/xmldata/}Certificates/{http://op.fi/mlp/xmldata/}Certificate/{http://op.fi/mlp/xmldata/}Certificate"
-        )
+        cert_el = cert_app_res.find("./{http://op.fi/mlp/xmldata/}Certificates/{http://op.fi/mlp/xmldata/}Certificate/{http://op.fi/mlp/xmldata/}Certificate")
         if cert_el is None:
             raise Exception("{} not found from {}".format("Certificate", cert_app_res))
         cert_bytes = base64.decodebytes(str(cert_el.text).encode())
@@ -307,9 +303,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         raise Exception("{} not implemented".format(command))
 
 
-def wspki_execute(
-    ws: WsEdiConnection, payout_party: PayoutParty, command: str, verbose: bool = False, **kwargs
-) -> bytes:
+def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str, verbose: bool = False, **kwargs) -> bytes:
     """
     :param ws:
     :param payout_party:

@@ -20,9 +20,7 @@ def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RS
     :return: RSAPrivateKey
     """
     backend = cryptography.hazmat.backends.default_backend()
-    return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(
-        public_exponent=public_exponent, key_size=key_size, backend=backend
-    )
+    return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(public_exponent=public_exponent, key_size=key_size, backend=backend)
 
 
 def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
@@ -57,9 +55,7 @@ def write_private_key_pem_file(filename: str, key_base64: bytes):
     :param cert_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
     """
     if b"BEGIN" not in key_base64 or b"END" not in key_base64:
-        raise ValidationError(
-            "write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer"
-        )
+        raise ValidationError("write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer")
     with open(filename, "wb") as fp:
         fp.write(key_base64)
         logger.info("%s written", filename)

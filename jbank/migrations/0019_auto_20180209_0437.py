@@ -13,9 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="payout",
             name="file_reference",
-            field=models.CharField(
-                blank=True, db_index=True, editable=False, max_length=255, verbose_name="file reference"
-            ),
+            field=models.CharField(blank=True, db_index=True, editable=False, max_length=255, verbose_name="file reference"),
         ),
         migrations.AddField(
             model_name="payoutstatus",

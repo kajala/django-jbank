@@ -120,9 +120,7 @@ class Pain001:
         iban_validator(debtor_account)
 
         self.msg_id = msg_id
-        self.debtor = Pain001Party(
-            debtor_name, debtor_account, debtor_bic, debtor_org_id, debtor_address_lines, debtor_country_code
-        )
+        self.debtor = Pain001Party(debtor_name, debtor_account, debtor_bic, debtor_org_id, debtor_address_lines, debtor_country_code)
         self.payments: List[Pain001Payment] = []
 
     def add_payment(

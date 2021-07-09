@@ -14,8 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="referencepaymentrecord",
             name="payer_name",
-            field=jutil.modelfields.SafeCharField(
-                blank=True, db_index=True, default="", max_length=12, verbose_name="payer name"
-            ),
+            field=jutil.modelfields.SafeCharField(blank=True, db_index=True, default="", max_length=12, verbose_name="payer name"),
         ),
     ]

@@ -13,8 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="currencyexchange",
             name="exchange_rate",
-            field=models.DecimalField(
-                blank=True, decimal_places=6, default=None, max_digits=12, null=True, verbose_name="exchange rate"
-            ),
+            field=models.DecimalField(blank=True, decimal_places=6, default=None, max_digits=12, null=True, verbose_name="exchange rate"),
         ),
     ]

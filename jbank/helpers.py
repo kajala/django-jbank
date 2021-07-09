@@ -118,9 +118,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     :return: Statement
     """
     if "header" not in statement_data or not statement_data["header"]:
-        raise ValidationError(
-            "Invalid header field in statement data {}: {}".format(name, statement_data.get("header"))
-        )
+        raise ValidationError("Invalid header field in statement data {}: {}".format(name, statement_data.get("header")))
     header = statement_data["header"]
 
     account_number = header["account_number"]
@@ -128,9 +126,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
         raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=""))
     accounts = list(Account.objects.filter(name=account_number))
     if len(accounts) != 1:
-        raise ValidationError(
-            "{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number)
-        )
+        raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number))
     account = accounts[0]
     assert isinstance(account, Account)
 
@@ -147,13 +143,9 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     stm.save()
 
     if EntryType.objects.filter(code=settings.E_BANK_DEPOSIT).count() == 0:
-        raise ValidationError(
-            _("entry.type.missing") + " ({}): {}".format("settings.E_BANK_DEPOSIT", settings.E_BANK_DEPOSIT)
-        )
+        raise ValidationError(_("entry.type.missing") + " ({}): {}".format("settings.E_BANK_DEPOSIT", settings.E_BANK_DEPOSIT))
     if EntryType.objects.filter(code=settings.E_BANK_WITHDRAW).count() == 0:
-        raise ValidationError(
-            _("entry.type.missing") + " ({}): {}".format("settings.E_BANK_WITHDRAW", settings.E_BANK_WITHDRAW)
-        )
+        raise ValidationError(_("entry.type.missing") + " ({}): {}".format("settings.E_BANK_WITHDRAW", settings.E_BANK_WITHDRAW))
     entry_types = {
         "1": EntryType.objects.get(code=settings.E_BANK_DEPOSIT),
         "2": EntryType.objects.get(code=settings.E_BANK_WITHDRAW),
@@ -186,9 +178,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
 
 
 @transaction.atomic
-def create_reference_payment_batch(
-    batch_data: dict, name: str, file: ReferencePaymentBatchFile, **kw
-) -> ReferencePaymentBatch:
+def create_reference_payment_batch(batch_data: dict, name: str, file: ReferencePaymentBatchFile, **kw) -> ReferencePaymentBatch:
     """
     Creates ReferencePaymentBatch from data parsed by parse_svm_batches()
     :param batch_data: See parse_svm_batches
@@ -199,9 +189,7 @@ def create_reference_payment_batch(
         raise ValidationError("Reference payment batch file {} already exists".format(name))
 
     if "header" not in batch_data or not batch_data["header"]:
-        raise ValidationError(
-            "Invalid header field in reference payment batch data {}: {}".format(name, batch_data.get("header"))
-        )
+        raise ValidationError("Invalid header field in reference payment batch data {}: {}".format(name, batch_data.get("header")))
     header = batch_data["header"]
 
     batch = ReferencePaymentBatch(name=name, file=file)
@@ -222,9 +210,7 @@ def create_reference_payment_batch(
             raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=""))
         accounts = list(Account.objects.filter(name=account_number))
         if len(accounts) != 1:
-            raise ValidationError(
-                "{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number)
-            )
+            raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number))
         account = accounts[0]
         assert isinstance(account, Account)
 
@@ -263,9 +249,7 @@ def get_or_create_bank_account_entry_types() -> List[EntryType]:
 
 
 def get_or_create_bank_account(account_number: str, currency: str = "EUR") -> Account:
-    a_type = AccountType.objects.get_or_create(
-        code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={"name": _("bank account")}
-    )[0]
+    a_type = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={"name": _("bank account")})[0]
     acc, created = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)
     if created:
         get_or_create_bank_account_entry_types()

@@ -83,9 +83,7 @@ class Command(SafeCommand):
                     remittance_info_type = PAIN001_REMITTANCE_INFO_MSG
                 else:
                     remittance_info = p.reference
-                    remittance_info_type = (
-                        PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == "RF" else PAIN001_REMITTANCE_INFO_OCR
-                    )
+                    remittance_info_type = PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == "RF" else PAIN001_REMITTANCE_INFO_OCR
                 pain001.add_payment(
                     p.msg_id,
                     p.recipient.name,
@@ -105,9 +103,7 @@ class Command(SafeCommand):
                 p.state = PAYOUT_WAITING_UPLOAD
                 p.save(update_fields=["full_path", "state"])
 
-                PayoutStatus.objects.create(
-                    payout=p, file_name=p.file_name, msg_id=p.msg_id, status_reason="File generation OK"
-                )
+                PayoutStatus.objects.create(payout=p, file_name=p.file_name, msg_id=p.msg_id, status_reason="File generation OK")
             except Exception as e:
                 short_err = "File generation failed: " + str(e)
                 long_err = "File generation failed ({}): ".format(p.file_name) + traceback.format_exc()
