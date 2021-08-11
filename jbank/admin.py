@@ -9,7 +9,6 @@ from typing import Optional, Sequence
 import pytz
 from django import forms
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib import admin
 from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
@@ -22,7 +21,7 @@ from django.db.models import F, Q, QuerySet
 from django.db.models.aggregates import Sum
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
-from django.urls import ResolverMatch, reverse
+from django.urls import ResolverMatch, reverse, path, re_path
 from django.utils.formats import date_format, localize
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -236,8 +235,8 @@ class StatementAdmin(BankAdminBase):
 
     def get_urls(self):
         return [
-            url(
-                r"^by-file/(?P<file_id>\d+)/$",
+            path(
+                "by-file/<int:file_id>/",
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_statement_file_changelist",
             ),
@@ -462,13 +461,13 @@ class StatementRecordAdmin(BankAdminBase):
 
     def get_urls(self):
         return [
-            url(
-                r"^by-statement/(?P<statement_id>\d+)/$",
+            path(
+                "by-statement/<int:statement_id>/",
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_statementrecord_statement_changelist",
             ),
-            url(
-                r"^by-statement-file/(?P<statement_file_id>\d+)/$",
+            path(
+                "by-statement-file/<int:statement_file_id>/",
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_statementrecord_statementfile_changelist",
             ),
@@ -648,13 +647,13 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
 
     def get_urls(self):
         return [
-            url(
-                r"^by-batch/(?P<batch_id>\d+)/$",
+            path(
+                "by-batch/<int:batch_id>/",
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_referencepaymentrecord_batch_changelist",
             ),
-            url(
-                r"^by-statement-file/(?P<stm_id>\d+)/$",
+            path(
+                "by-statement-file/<int:stm_id>/",
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_referencepaymentrecord_statementfile_changelist",
             ),
@@ -747,8 +746,8 @@ class ReferencePaymentBatchAdmin(BankAdminBase):
 
     def get_urls(self):
         return [
-            url(
-                r"^by-file/(?P<file_id>\d+)/$",
+            path(
+                "by-file/<int:file_id>/",
                 self.admin_site.admin_view(self.kw_changelist_view),
                 name="jbank_referencepaymentbatch_file_changelist",
             ),
@@ -818,8 +817,8 @@ class StatementFileAdmin(BankAdminBase):
 
     def records(self, obj):
         assert isinstance(obj, StatementFile)
-        url = reverse("admin:jbank_statementrecord_statementfile_changelist", args=[obj.id])
-        return format_html('<a href="{}">{}</a>', url, _("statement records"))
+        admin_url = reverse("admin:jbank_statementrecord_statementfile_changelist", args=[obj.id])
+        return format_html('<a href="{}">{}</a>', admin_url, _("statement records"))
 
     records.short_description = _("statement records")  # type: ignore
 
@@ -988,7 +987,7 @@ class PayoutStatusAdmin(BankAdminBase):
 
     def get_urls(self):
         urls = [
-            url(
+            re_path(
                 r"^(\d+)/change/status-downloads/(.+)/$",
                 self.file_download_view,
                 name="jbank_payoutstatus_file_download",
@@ -1393,12 +1392,6 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         return mark_safe(obj.error.replace("\n", "<br>"))
 
     error_fmt.short_description = _("error")  # type: ignore
-
-    def get_urls(self):
-        info = self.model._meta.app_label, self.model._meta.model_name
-        return [
-            url(r"^soap-download/(\d+)/(.+)$", self.soap_download_view, name="%s_%s_soap_download" % info),
-        ] + super().get_urls()
 
 
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
