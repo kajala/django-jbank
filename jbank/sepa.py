@@ -1,4 +1,5 @@
 # pylint: disable=too-many-arguments
+import sys
 from collections import OrderedDict
 from datetime import datetime, date
 from typing import Optional, List, Sequence, Union, Any, Dict, Tuple
@@ -470,7 +471,10 @@ class Pain001:
 
     def render_to_bytes(self, doc: Optional[Element] = None) -> bytes:
         doc = doc or self.render_to_element()
-        xml_bytes = ET.tostring(doc, encoding="utf-8", method="xml", xml_declaration=self.xml_declaration)
+        if sys.version_info.major == 3 and sys.version_info.minor < 8:
+            xml_bytes = ET.tostring(doc, encoding="utf-8", method="xml")
+        else:
+            xml_bytes = ET.tostring(doc, encoding="utf-8", method="xml", xml_declaration=self.xml_declaration)
         return xml_bytes
 
     def render_to_file(self, filename: str, xml_bytes: Optional[bytes] = None):
