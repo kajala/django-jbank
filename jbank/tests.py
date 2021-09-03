@@ -67,7 +67,7 @@ class Tests(TestCase):
         # print(xml_str)
 
         filename = "/tmp/pain001.xml"
-        with open(filename, "wt") as fp:
+        with open(filename, "wt", encoding="utf-8") as fp:
             fp.write(xml_str)
             # print(filename, 'written')
 
