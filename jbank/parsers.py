@@ -58,8 +58,7 @@ def parse_records(
     record_length: Optional[int] = None,
 ) -> Dict[str, Union[int, str]]:
     i = 0
-    data: Dict[str, Union[int, str]] = dict()
-    data["line_number"] = line_number
+    data: Dict[str, Union[int, str]] = {str(line_number): line_number}
     for name, fmt, req in specs:  # pylint: disable=unused-variable
         data_type, data_len = parse_record_format(fmt)
         value = parse_record_value(data_type, data_len, line[i:], name=name, line_number=line_number)

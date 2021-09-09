@@ -1,4 +1,3 @@
-# pylint: disable=too-many-branches
 import logging
 import os
 from pprint import pprint
@@ -26,9 +25,9 @@ class Command(SafeCommand):
         parser.add_argument("--resolve-original-filenames", action="store_true")
         parser.add_argument("--tag", type=str, default="")
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
         files = list_dir_files(options["path"])
-        for filename in files:  # pylint: disable=too-many-nested-blocks
+        for filename in files:
             plain_filename = os.path.basename(filename)
 
             if parse_filename_suffix(plain_filename).upper() not in TO_STATEMENT_SUFFIXES:

@@ -1,4 +1,4 @@
-# pylint: disable=logging-format-interpolation,too-many-locals,too-many-branches
+# pylint: disable=logging-format-interpolation,too-many-locals
 import logging
 import traceback
 from django.core.management.base import CommandParser
@@ -24,7 +24,7 @@ class Command(SafeCommand):
         parser.add_argument("--default-ws", type=int)
         parser.add_argument("--ws", type=int)
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
         default_ws = WsEdiConnection.objects.get(id=options["default_ws"]) if options["default_ws"] else None
         assert default_ws is None or isinstance(default_ws, WsEdiConnection)
         file_type = options["file_type"]
@@ -57,7 +57,7 @@ class Command(SafeCommand):
             try:
                 # upload file
                 logger.info("Uploading payment id={} {} file {}".format(p.id, file_type, p.full_path))
-                with open(p.full_path, "rt") as fp:
+                with open(p.full_path, "rt", encoding="utf-8") as fp:
                     file_content = fp.read()
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=["state"])

@@ -193,7 +193,7 @@ class StatementRecord(AccountEntry):
         """
         True if entry is either manually settled or has SUM(children)==amount.
         """
-        return self.manually_settled or sum_queryset(self.child_set) == self.amount
+        return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     def clean(self):
         self.source_file = self.statement
@@ -378,7 +378,7 @@ class ReferencePaymentRecord(AccountEntry):
         """
         True if entry is either manually settled or has SUM(children)==amount.
         """
-        return self.manually_settled or sum_queryset(self.child_set) == self.amount
+        return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     @property
     def remittance_info_short(self) -> str:

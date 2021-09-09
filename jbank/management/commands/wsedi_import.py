@@ -1,4 +1,4 @@
-# pylint: disable=too-many-locals,logging-format-interpolation,too-many-branches
+# pylint: disable=too-many-locals
 import json
 import logging
 import os
@@ -21,8 +21,8 @@ class Command(SafeCommand):
         parser.add_argument("file", type=str)
         parser.add_argument("--verbose", action="store_true")
 
-    def do(self, *args, **options):
-        zf = zipfile.ZipFile(options["file"])
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
+        zf = zipfile.ZipFile(options["file"])  # noqa
         ws_data = {}
         today = now()
 
@@ -56,4 +56,4 @@ class Command(SafeCommand):
         if "created" in ws_data:
             del ws_data["created"]
         ws = WsEdiConnection.objects.create(**ws_data)
-        logger.info("WsEdiConnection id={} created".format(ws.id))
+        logger.info("WsEdiConnection id=%s created", ws.id)

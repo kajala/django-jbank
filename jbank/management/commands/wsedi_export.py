@@ -35,7 +35,7 @@ class Command(SafeCommand):
                 if k.endswith("_file") and v:
                     files.append(os.path.join(settings.MEDIA_ROOT, v))
 
-        zf = zipfile.ZipFile(filename, "w", zipfile.ZIP_DEFLATED)
+        zf = zipfile.ZipFile(filename, "w", zipfile.ZIP_DEFLATED)  # noqa
         json_str = json.dumps(ws_data, indent=4)
         print("Adding file ws.json:", json_str)
         zf.writestr("ws.json", json_str)

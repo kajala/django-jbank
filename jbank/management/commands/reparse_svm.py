@@ -25,7 +25,7 @@ class Command(SafeCommand):
             logger.info("Processing {} BEGIN".format(file))
             batches = parse_svm_batches_from_file(file.full_path)
             for batch in batches:
-                for e in batch["records"]:
+                for e in batch["records"]:  # pylint: disable=too-many-branches
                     # check missing line_number
                     e2 = ReferencePaymentRecord.objects.filter(
                         batch__file=file,

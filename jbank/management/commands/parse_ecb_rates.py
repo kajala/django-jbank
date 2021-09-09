@@ -1,4 +1,4 @@
-# pylint: disable=too-many-locals,too-many-branches,logging-format-interpolation
+# pylint: disable=too-many-locals,logging-format-interpolation
 import logging
 from datetime import timedelta
 from django.core.management.base import CommandParser
@@ -23,9 +23,9 @@ class Command(SafeCommand):
         parser.add_argument("--xml-only", action="store_true")
         parser.add_argument("--delete-older-than-days", type=int)
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
         if options["file"]:
-            with open(options["file"], "rt") as fp:
+            with open(options["file"], "rt", encoding="utf-8") as fp:
                 content = fp.read()
         else:
             content = download_euro_exchange_rates_xml()

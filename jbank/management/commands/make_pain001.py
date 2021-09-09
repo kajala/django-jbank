@@ -1,4 +1,4 @@
-# pylint: disable=logging-format-interpolation,too-many-branches
+# pylint: disable=logging-format-interpolation
 import logging
 import os
 import traceback
@@ -37,7 +37,7 @@ class Command(SafeCommand):
         parser.add_argument("--suffix", type=str, default="XL")
         parser.add_argument("--xml-declaration", action="store_true")
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
         target_dir = options["dir"]
         if options["verbose"]:
             logger.info("Writing pain.001 files to {}".format(target_dir))

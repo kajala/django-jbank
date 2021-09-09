@@ -133,7 +133,7 @@ class Pain001:
         amount: Decimal,
         remittance_info: str,
         remittance_info_type: str = PAIN001_REMITTANCE_INFO_MSG,
-        due_date: date = None,
+        due_date: Optional[date] = None,
     ):
         if not due_date:
             due_date = self._local_time().date()

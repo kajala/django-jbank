@@ -1,4 +1,3 @@
-# pylint: disable=too-many-branches
 import logging
 import os
 from pprint import pprint
@@ -36,7 +35,7 @@ class Command(SafeCommand):
         parser.add_argument("--tag", type=str, default="")
         parser.add_argument("--parse-creditor-account-data", action="store_true", help="For data migration")
 
-    def parse_creditor_account_data(self):  # pylint: disable=too-many-locals
+    def parse_creditor_account_data(self):  # pylint: disable=too-many-locals,too-many-branches
         for sf in StatementFile.objects.all():  # pylint: disable=too-many-nested-blocks
             assert isinstance(sf, StatementFile)
             full_path = sf.full_path
@@ -83,13 +82,13 @@ class Command(SafeCommand):
                             rec.save(update_fields=["recipient_account_number"])
                             logger.info("%s recipient_account_number %s", rec, rec.recipient_account_number)
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
         if options["parse_creditor_account_data"]:
             self.parse_creditor_account_data()
             return
 
         files = list_dir_files(options["path"], options["suffix"])
-        for filename in files:  # pylint: disable=too-many-nested-blocks
+        for filename in files:
             plain_filename = os.path.basename(filename)
 
             if parse_filename_suffix(plain_filename).upper() not in CAMT053_STATEMENT_SUFFIXES:

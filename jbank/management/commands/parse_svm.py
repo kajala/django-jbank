@@ -1,4 +1,3 @@
-# pylint: disable=too-many-branches,logging-format-interpolation
 import logging
 import os
 from pprint import pprint
@@ -26,7 +25,7 @@ class Command(SafeCommand):
         parser.add_argument("--resolve-original-filenames", action="store_true")
         parser.add_argument("--tag", type=str, default="")
 
-    def do(self, *args, **options):
+    def do(self, *args, **options):  # pylint: disable=too-many-branches
         files = list_dir_files(options["path"])
         # pprint(files)
         for filename in files:

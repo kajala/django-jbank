@@ -4,6 +4,7 @@ import logging
 import os
 import traceback
 from datetime import datetime
+from decimal import Decimal
 from os.path import basename
 from typing import Optional, Sequence
 import pytz
@@ -28,6 +29,7 @@ from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
+from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.request import get_ip
@@ -311,7 +313,7 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
     )
     raw_id_fields = ("record",)
 
-    def has_add_permission(self, request, obj=None):  # pylint: disable=unused-argument
+    def has_add_permission(self, request, obj=None):
         return False
 
 
@@ -322,6 +324,7 @@ def mark_as_manually_settled(modeladmin, request, qs):  # pylint: disable=unused
         if "description" in data:
             description = data["description"]
             user = request.user
+            assert isinstance(user, User)
             for e in list(qs.filter(manually_settled=False)):
                 e.manually_settled = True
                 e.save(update_fields=["manually_settled"])
@@ -349,6 +352,25 @@ def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=un
         msg = capfirst(_("manually settled flag cleared"))
         admin_log([e], msg, who=user)
         messages.info(request, "{}: {}".format(e, msg))
+
+
+def summarize_records(modeladmin, request, qs):  # pylint: disable=unused-argument
+    total = Decimal("0.00")
+    out = "<table><tr><td style='text-align: left'>" + _("type") + "</td>" + "<td style='text-align: right'>" + _("amount") + "</td></tr>"
+    for e_type in qs.order_by("type").distinct("type"):
+        amt = sum_queryset(qs.filter(type=e_type.type))
+        type_name = e_type.type.name if e_type.type else ""
+        out += "<tr>"
+        out += "<td style='text-align: left'>" + type_name + "</td>"
+        out += "<td style='text-align: right'>" + localize(amt) + "</td>"
+        out += "</tr>"
+        total += amt
+    out += "<tr>"
+    out += "<td style='text-align: left'>" + _("total") + "</td>"
+    out += "<td style='text-align: right'>" + localize(total) + "</td>"
+    out += "</tr>"
+    out += "</table>"
+    messages.info(request, mark_safe(out))
 
 
 class StatementRecordAdmin(BankAdminBase):
@@ -439,6 +461,7 @@ class StatementRecordAdmin(BankAdminBase):
     actions = (
         mark_as_manually_settled,
         unmark_manually_settled_flag,
+        summarize_records,
     )
 
     def is_settled_bool(self, obj):
@@ -455,7 +478,7 @@ class StatementRecordAdmin(BankAdminBase):
 
     def child_links(self, obj) -> str:
         assert isinstance(obj, StatementRecord)
-        return self.format_admin_obj_link_list(obj.child_set, "admin:jacc_accountentry_change")
+        return self.format_admin_obj_link_list(obj.child_set, "admin:jacc_accountentry_change")  # type: ignore
 
     child_links.short_description = _("derived entries")  # type: ignore
 
@@ -612,6 +635,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     actions = (
         mark_as_manually_settled,
         unmark_manually_settled_flag,
+        summarize_records,
     )
     inlines = [
         AccountEntryNoteInline,
@@ -631,7 +655,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
 
     def child_links(self, obj) -> str:
         assert isinstance(obj, ReferencePaymentRecord)
-        return self.format_admin_obj_link_list(obj.child_set, "admin:jacc_accountentry_change")
+        return self.format_admin_obj_link_list(obj.child_set, "admin:jacc_accountentry_change")  # type: ignore
 
     child_links.short_description = _("derived entries")  # type: ignore
 
@@ -784,8 +808,8 @@ class StatementFileForm(forms.ModelForm):
                     raise ValidationError(_("account.not.found").format(account_number=account_number))
         except ValidationError:
             raise
-        except Exception as e:
-            raise ValidationError(_("Unhandled error") + ": {}".format(e))
+        except Exception as err:
+            raise ValidationError(_("Unhandled error") + ": {}".format(err)) from err
         return file
 
 
@@ -868,8 +892,8 @@ class ReferencePaymentBatchFileForm(forms.ModelForm):
                         raise ValidationError(_("account.not.found").format(account_number=account_number))
         except ValidationError:
             raise
-        except Exception as e:
-            raise ValidationError(_("Unhandled error") + ": {}".format(e))
+        except Exception as err:
+            raise ValidationError(_("Unhandled error") + ": {}".format(err)) from err
         return file
 
 

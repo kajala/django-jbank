@@ -37,7 +37,7 @@ class Command(SafeCommand):
         verbose = kwargs["verbose"]
 
         lines: List[List[str]] = []
-        with open(kwargs["csv_file"], "rt") as fp:
+        with open(kwargs["csv_file"], "rt", encoding="utf-8") as fp:
             reader = csv.reader(fp, dialect="excel")
             for line in reader:
                 lines.append(line)
