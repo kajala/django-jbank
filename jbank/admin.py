@@ -13,7 +13,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User  # noqa
 from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -54,6 +54,7 @@ from jbank.models import (
     CurrencyExchangeSource,
     WsEdiConnection,
     WsEdiSoapCall,
+    EuriborRate,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
@@ -1418,6 +1419,30 @@ class WsEdiSoapCallAdmin(BankAdminBase):
     error_fmt.short_description = _("error")  # type: ignore
 
 
+class EuriborRateAdmin(BankAdminBase):
+    save_on_top = False
+    fields = [
+        "record_date",
+        "name",
+        "rate",
+        "created",
+    ]
+    date_hierarchy = "record_date"
+    list_filter = [
+        "name",
+    ]
+    list_display = [
+        "id",
+        "record_date",
+        "name",
+        "rate",
+    ]
+    readonly_fields = [
+        "id",
+        "created",
+    ]
+
+
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
 unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
 
@@ -1435,3 +1460,4 @@ admin.site.register(ReferencePaymentBatch, ReferencePaymentBatchAdmin)
 admin.site.register(ReferencePaymentBatchFile, ReferencePaymentBatchFileAdmin)
 admin.site.register(WsEdiConnection, WsEdiConnectionAdmin)
 admin.site.register(WsEdiSoapCall, WsEdiSoapCallAdmin)
+admin.site.register(EuriborRate, EuriborRateAdmin)

@@ -1,4 +1,3 @@
-# pylint: disable=too-many-locals,logging-format-interpolation
 import logging
 from datetime import timedelta
 from django.core.management.base import CommandParser
@@ -8,14 +7,11 @@ from jbank.ecb import download_euro_exchange_rates_xml, parse_euro_exchange_rate
 from jutil.format import format_xml
 from jbank.models import CurrencyExchangeSource, CurrencyExchange
 
-
 logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
-    help = """
-        Parses European Central Bank rates. Can use either pre-downloaded file or download from online (default). 
-        """
+    help = "Parses European Central Bank exchange rates. Can use either pre-downloaded file or download from online (default)."
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument("--file", type=str)
@@ -23,7 +19,7 @@ class Command(SafeCommand):
         parser.add_argument("--xml-only", action="store_true")
         parser.add_argument("--delete-older-than-days", type=int)
 
-    def do(self, *args, **options):  # pylint: disable=too-many-branches
+    def do(self, *args, **options):  # pylint: disable=too-many-branches,too-many-locals
         if options["file"]:
             with open(options["file"], "rt", encoding="utf-8") as fp:
                 content = fp.read()
@@ -67,4 +63,4 @@ class Command(SafeCommand):
                 try:
                     e.delete()
                 except Exception as err:
-                    logger.error("Failed to delete {}: {}".format(e, err))
+                    logger.error("Failed to delete %s: %s", e, err)

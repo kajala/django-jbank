@@ -6,17 +6,14 @@ from django.conf import settings
 from django.core.management.base import CommandParser
 from jbank.sepa import Pain001
 from jutil.command import SafeCommand
-from jutil.format import format_xml, format_xml_bytes
+from jutil.format import format_xml_bytes
 from jutil.validators import iban_bic
-
 
 logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
-    help = """
-        Generates pain.001.001.03 compatible SEPA payment file.
-        """
+    help = "Generates pain.001.001.03 compatible SEPA payment file."
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument("--verbose", action="store_true")
@@ -56,7 +53,8 @@ class Command(SafeCommand):
                     "--schema",
                     join(settings.BASE_DIR, "data/pain001/pain.001.001.03.xsd"),
                     filename,
-                ]
+                ],
+                check=False,
             )
             if res.returncode == 0:
                 print("OK")

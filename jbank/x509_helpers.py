@@ -10,7 +10,8 @@ def get_x509_cert_from_file(filename: str) -> x509.Certificate:
     """
     Load X509 certificate from file.
     """
-    pem_data = open(filename, "rb").read()
+    with open(filename, "rb") as fp:
+        pem_data = fp.read()
     return x509.load_pem_x509_certificate(pem_data, cryptography.hazmat.backends.default_backend())  # noqa
 
 

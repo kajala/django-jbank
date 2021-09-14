@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 import tempfile
-from datetime import datetime, time
+from datetime import datetime, time, date
 from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
@@ -512,7 +512,7 @@ class Payout(AccountEntry):
 
         # validate reference if any
         if self.reference:
-            if self.reference[:2] == "RF":
+            if self.reference[:2] == "RF":  # noqa
                 iso_payment_reference_validator(self.reference)
             else:
                 fi_payment_reference_validator(self.reference)
@@ -652,7 +652,7 @@ class WsEdiSoapCall(models.Model):
 
     @property
     def command_camelcase(self) -> str:
-        return self.command[0:1].lower() + self.command[1:]
+        return self.command[0:1].lower() + self.command[1:]  # noqa
 
     def debug_get_filename(self, file_type: str) -> str:
         return "{:08}{}.xml".format(self.id, file_type)
@@ -902,3 +902,20 @@ class WsEdiConnection(models.Model):
         else:
             xmlsec1_examples_path = os.path.join(str(os.getenv("HOME") or ""), "bin/xmlsec1-examples")
         return str(os.path.join(xmlsec1_examples_path, file))
+
+
+class EuriborRateManager(models.Manager):
+    def save_unique(self, record_date: date, name: str, rate: Decimal):
+        return self.get_or_create(record_date=record_date, name=name, defaults={"rate": rate})[0]
+
+
+class EuriborRate(models.Model):
+    objects = EuriborRateManager()
+    record_date = models.DateField(_("record date"), db_index=True)
+    name = SafeCharField(_("interest rate name"), db_index=True, max_length=64)
+    rate = models.DecimalField(_("interest rate %"), max_digits=10, decimal_places=4, db_index=True)
+    created = models.DateTimeField(_("created"), default=now, db_index=True, blank=True, editable=False)
+
+    class Meta:
+        verbose_name = _("euribor rate")
+        verbose_name_plural = _("euribor rates")

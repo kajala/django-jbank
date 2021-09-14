@@ -9,9 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
-    help = """
-    Executes WS-PKI command using direct bank connection.
-    """
+    help = "Executes WS-PKI command using direct bank connection."
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument("--ws", type=int, default=1)
@@ -25,7 +23,7 @@ class Command(SafeCommand):
             assert isinstance(soap_call, WsEdiSoapCall)
             if not soap_call.debug_response_full_path:
                 raise Exception("SOAP call response not available")
-            content = open(soap_call.debug_response_full_path, "rb").read()
+            content = open(soap_call.debug_response_full_path, "rb").read()  # noqa
             process_wspki_response(content, soap_call)
             return
 

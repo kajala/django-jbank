@@ -13,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(SafeCommand):
-    help = """
-    Executes WS-EDI command using direct bank connection.
-    """
+    help = "Executes WS-EDI command using direct bank connection."
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument("--ws", type=int, default=1)

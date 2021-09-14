@@ -5,7 +5,6 @@ from jutil.format import format_xml_bytes, format_xml
 from jbank.helpers import validate_xml
 from jbank.models import WsEdiConnection
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +20,7 @@ class Command(SafeCommand):
     def do(self, *args, **options):
         ws = WsEdiConnection.objects.get(id=options["ws"])
         if options["file"]:
-            content = open(options["file"], "rb").read()
+            content = open(options["file"], "rb").read()  # noqa
         else:
             content = ws.get_application_request(options["command"]).encode()
         print("------------------------------------------------- Application request")
