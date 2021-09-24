@@ -78,6 +78,17 @@ def camt053_get_int(data: Dict[str, Any], key: str, name: str = "") -> int:
     raise ValidationError(_("camt.053 field {} type {} missing or invalid").format(name, "int"))
 
 
+def camt053_get_int_or_none(data: Dict[str, Any], key: str, name: str = "") -> Optional[int]:
+    s = camt053_get_val(data, key, None, False, name)
+    if s is None:
+        return None
+    try:
+        return int(s)
+    except Exception:
+        pass
+    raise ValidationError(_("camt.053 field {} type {} missing or invalid").format(name, "int"))
+
+
 def camt053_get_date(data: dict, key: str, default: Optional[date] = None, required: bool = True, name: str = "") -> date:
     s = camt053_get_val(data, key, default, required, name)
     try:
@@ -157,6 +168,8 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     assert isinstance(account, Account)
 
     d_stmt = statement_data.get("BkToCstmrStmt", {}).get("Stmt", {})
+    if not d_stmt:
+        raise ValidationError(_("camt.053 field {} type {} missing or invalid").format("Stmt", "element"))
     d_acct = d_stmt.get("Acct", {})
     d_ownr = d_acct.get("Ownr", {})
     d_ntry = d_stmt.get("Ntry", [])
@@ -186,7 +199,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     stm.begin_balance, stm.begin_balance_date = camt053_get_stmt_bal(d_stmt, "OPBD")
     if stm.begin_balance_date is None:
         stm.begin_balance_date = stm.begin_date
-    stm.record_count = camt053_get_int(d_txsummary.get("TtlNtries", {}), "NbOfNtries", name="Stmt.TxsSummry.TtlNtries.NbOfNtries")
+    stm.record_count = camt053_get_int_or_none(d_txsummary.get("TtlNtries", {}), "NbOfNtries", name="Stmt.TxsSummry.TtlNtries.NbOfNtries") or 0
     stm.bank_specific_info_1 = camt053_get_str(d_stmt, "AddtlStmtInf", required=False)[:1024]
     for k, v in kw.items():
         setattr(stm, k, v)
