@@ -24,7 +24,7 @@ from jbank.parsers import parse_filename_suffix
 from jutil.xml import xml_to_dict
 
 
-CAMT053_STATEMENT_SUFFIXES = ("XML", "XT", "CAMT")
+CAMT053_STATEMENT_SUFFIXES = ("XML", "XT", "CAMT", "NDCAMT53L")
 
 CAMT053_ARRAY_TAGS = ["Bal", "Ntry", "NtryDtls", "TxDtls", "Strd"]
 
