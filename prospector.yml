@@ -1,16 +1,11 @@
-strictness: medium
-test-warnings: true
-doc-warnings: false
-
-ignore-paths:
-  - venv
-
-ignore-patterns:
-  - (^|/)migrations(/|$)
-  - (^|/)tests.py(/|$)
+uses:
+    - django
 
 pylint:
   disable:
-    - suppressed-message
+    - consider-using-f-string
+    - imported-auth-user
     - useless-suppression
-
+    - django-not-configured
+  load-plugins:
+    - pylint-django
