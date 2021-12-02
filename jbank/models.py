@@ -559,7 +559,11 @@ class Payout(AccountEntry):
         return self.has_group_status("RJCT")
 
     def has_group_status(self, group_status: str) -> bool:
-        return PayoutStatus.objects.filter(payout=self, group_status=group_status).first() is not None
+        ps = PayoutStatus.objects.filter(payout=self).order_by("-timestamp", "-id").first()
+        if ps is None:
+            return False
+        assert isinstance(ps, PayoutStatus)
+        return ps.group_status == group_status
 
     @property
     def group_status(self):
@@ -586,6 +590,7 @@ class PayoutStatus(models.Model):
         blank=True,
     )
     created = models.DateTimeField(_("created"), default=now, db_index=True, editable=False, blank=True)
+    timestamp = models.DateTimeField(_("timestamp"), default=None, null=True, blank=True, db_index=True)
     file_name = SafeCharField(_("file name"), max_length=128, blank=True, db_index=True, editable=False)
     file_path = SafeCharField(_("file path"), max_length=255, blank=True, db_index=True, editable=False)
     response_code = SafeCharField(_("response code"), max_length=4, blank=True, db_index=True)

@@ -64,6 +64,8 @@ logger = logging.getLogger(__name__)
 
 
 class BankAdminBase(ModelAdminBase):
+    save_on_top = False
+
     def save_form(self, request, form, change):
         if change:
             admin_log_changed_fields(form.instance, form.changed_data, request.user, ip=get_ip(request))
@@ -959,9 +961,41 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         return super().construct_change_message(request, form, formsets, add)
 
 
-class PayoutStatusAdmin(BankAdminBase):
+class PayoutStatusAdminMixin:
+    def created_brief(self, obj):
+        assert isinstance(obj, PayoutStatus)
+        return date_format(obj.created, "SHORT_DATETIME_FORMAT")
+
+    created_brief.short_description = _("created")  # type: ignore
+    created_brief.admin_order_field = "created"  # type: ignore
+
+    def timestamp_brief(self, obj):
+        assert isinstance(obj, PayoutStatus)
+        return date_format(obj.timestamp, "SHORT_DATETIME_FORMAT") if obj.timestamp else ""
+
+    timestamp_brief.short_description = _("timestamp")  # type: ignore
+    timestamp_brief.admin_order_field = "timestamp"  # type: ignore
+
+    def file_name_link(self, obj):
+        assert isinstance(obj, PayoutStatus)
+        if obj.id is None or not obj.full_path:
+            return obj.file_name
+        admin_url = reverse(
+            "admin:jbank_payoutstatus_file_download",
+            args=(
+                obj.id,
+                obj.file_name,
+            ),
+        )
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
+
+    file_name_link.short_description = _("file")  # type: ignore
+    file_name_link.admin_order_field = "file_name"  # type: ignore
+
+
+class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
     fields = (
-        "created",
+        "timestamp_brief",
         "payout",
         "file_name_link",
         "response_code",
@@ -970,11 +1004,13 @@ class PayoutStatusAdmin(BankAdminBase):
         "original_msg_id",
         "group_status",
         "status_reason",
+        "created_brief",
     )
+    date_hierarchy = "timestamp"
     readonly_fields = fields
     list_display = (
         "id",
-        "created",
+        "timestamp_brief",
         "payout",
         "file_name_link",
         "response_code",
@@ -994,22 +1030,6 @@ class PayoutStatusAdmin(BankAdminBase):
             raise Http404(_("File {} not found").format(filename))
         return FormattedXmlFileResponse(full_path)
 
-    def file_name_link(self, obj):
-        assert isinstance(obj, PayoutStatus)
-        if obj.id is None or not obj.full_path:
-            return obj.file_name
-        admin_url = reverse(
-            "admin:jbank_payoutstatus_file_download",
-            args=(
-                obj.id,
-                obj.file_name,
-            ),
-        )
-        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
-
-    file_name_link.short_description = _("file")  # type: ignore
-    file_name_link.admin_order_field = "file_name"  # type: ignore
-
     def get_urls(self):
         urls = [
             re_path(
@@ -1021,29 +1041,23 @@ class PayoutStatusAdmin(BankAdminBase):
         return urls + super().get_urls()
 
 
-class PayoutStatusInlineAdmin(admin.TabularInline):
+class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
     model = PayoutStatus
     can_delete = False
     extra = 0
-    ordering = ("-id",)
-    fields = PayoutStatusAdmin.fields
-    readonly_fields = PayoutStatusAdmin.readonly_fields
-
-    def file_name_link(self, obj):
-        assert isinstance(obj, PayoutStatus)
-        if obj.id is None or not obj.full_path:
-            return obj.file_name
-        admin_url = reverse(
-            "admin:jbank_payoutstatus_file_download",
-            args=(
-                obj.id,
-                obj.file_name,
-            ),
-        )
-        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file_name)
-
-    file_name_link.short_description = _("file")  # type: ignore
-    file_name_link.admin_order_field = "file_name"  # type: ignore
+    ordering = ("-timestamp", "-id")
+    fields = (
+        "timestamp_brief",
+        "payout",
+        "file_name_link",
+        "response_code",
+        "response_text",
+        "msg_id",
+        "original_msg_id",
+        "group_status",
+        "status_reason",
+    )
+    readonly_fields = fields
 
 
 class PayoutAdmin(BankAdminBase):
@@ -1090,7 +1104,7 @@ class PayoutAdmin(BankAdminBase):
         "timestamp",
         "recipient",
         "amount",
-        "paid_date",
+        "paid_date_brief",
         "state",
     )
 
@@ -1112,6 +1126,13 @@ class PayoutAdmin(BankAdminBase):
         "=msg_id",
         "=amount",
     )
+
+    def paid_date_brief(self, obj):
+        assert isinstance(obj, Payout)
+        return date_format(obj.paid_date, "SHORT_DATETIME_FORMAT") if obj.paid_date else ""
+
+    paid_date_brief.short_description = _("paid date")  # type: ignore
+    paid_date_brief.admin_order_field = "paid_date"  # type: ignore
 
     def save_model(self, request, obj, form, change):
         assert isinstance(obj, Payout)

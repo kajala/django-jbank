@@ -271,6 +271,7 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: Option
         group_status=s.group_status,
         status_reason=s.status_reason[:255],
         created=created,
+        timestamp=s.credit_datetime,
     )
     ps.full_clean()
     fields = (
