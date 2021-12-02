@@ -212,7 +212,7 @@ def wsedi_execute(  # noqa
         if verbose:
             logger.info("------------------------------------------------------ {} app_res_enc\n{}".format(call_str, app_res_enc.decode()))
 
-        if ws.encryption_key_file:
+        if ws.encryption_key_file and ws.encryption_cert_file:
             app_res = ws.decrypt_application_response(app_res_enc)
             if verbose:
                 logger.info("------------------------------------------------------ {} app_res\n{}".format(call_str, app_res.decode()))
@@ -221,7 +221,7 @@ def wsedi_execute(  # noqa
             if verbose:
                 logger.info(
                     "------------------------------------------------------ "
-                    "{} app_res\n(no encryption_key_file, assuming decrypted content)".format(call_str)
+                    "{} app_res\n(no encryption_key_file or encryption_cert_file, assuming decrypted content)".format(call_str)
                 )
 
         soap_call.executed = now()
