@@ -2,6 +2,12 @@
 
 from django.db import migrations, models
 import django.utils.timezone
+from django.db.models import F
+
+
+def migr_0016(apps, schema):
+    PayoutStatus = apps.get_model("jbank", "PayoutStatus")
+    PayoutStatus.objects.filter(timestamp=None).update(timestamp=F("created"))
 
 
 class Migration(migrations.Migration):
@@ -11,6 +17,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(migr_0016),
         migrations.AlterField(
             model_name="payoutstatus",
             name="timestamp",
