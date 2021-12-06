@@ -590,7 +590,7 @@ class PayoutStatus(models.Model):
         blank=True,
     )
     created = models.DateTimeField(_("created"), default=now, db_index=True, editable=False, blank=True)
-    timestamp = models.DateTimeField(_("timestamp"), default=None, null=True, blank=True, db_index=True)
+    timestamp = models.DateTimeField(_("timestamp"), default=now, db_index=True, editable=False, blank=True)
     file_name = SafeCharField(_("file name"), max_length=128, blank=True, db_index=True, editable=False)
     file_path = SafeCharField(_("file path"), max_length=255, blank=True, db_index=True, editable=False)
     response_code = SafeCharField(_("response code"), max_length=4, blank=True, db_index=True)
