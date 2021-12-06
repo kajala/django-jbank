@@ -559,15 +559,11 @@ class Payout(AccountEntry):
         return self.has_group_status("RJCT")
 
     def has_group_status(self, group_status: str) -> bool:
-        ps = PayoutStatus.objects.filter(payout=self).order_by("-timestamp", "-id").first()
-        if ps is None:
-            return False
-        assert isinstance(ps, PayoutStatus)
-        return ps.group_status == group_status
+        return PayoutStatus.objects.filter(payout=self, group_status=group_status).exists()
 
     @property
     def group_status(self):
-        status = PayoutStatus.objects.filter(payout=self).order_by("-id").first()
+        status = PayoutStatus.objects.filter(payout=self).order_by("-timestamp", "-id").first()
         return status.group_status if status else ""
 
     group_status.fget.short_description = _("payment.group.status")  # type: ignore  # pytype: disable=attribute-error

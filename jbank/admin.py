@@ -995,6 +995,7 @@ class PayoutStatusAdminMixin:
 
 class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
     fields = (
+        "created_brief",
         "timestamp_brief",
         "payout",
         "file_name_link",
@@ -1004,12 +1005,15 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
         "original_msg_id",
         "group_status",
         "status_reason",
-        "created_brief",
     )
-    date_hierarchy = "timestamp"
+    date_hierarchy = "created"
     readonly_fields = fields
+    list_filter = [
+        "group_status",
+    ]
     list_display = (
         "id",
+        "created_brief",
         "timestamp_brief",
         "payout",
         "file_name_link",
@@ -1045,8 +1049,9 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
     model = PayoutStatus
     can_delete = False
     extra = 0
-    ordering = ("-timestamp", "-id")
+    ordering = ("-id",)
     fields = (
+        "created_brief",
         "timestamp_brief",
         "payout",
         "file_name_link",
