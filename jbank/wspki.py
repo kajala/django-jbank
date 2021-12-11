@@ -199,7 +199,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
     return_text: str = ""
     for el in envelope.iter():
         # print(el.tag)
-        if el.tag and el.tag.endswith("}ResponseCode"):
+        if el.tag and (el.tag.endswith("}ResponseCode") or el.tag.endswith("}ReturnCode")):
             return_code = el.text
             return_text_el = list(envelope.iter(el.tag[:-4] + "Text"))[0]
             return_text = return_text_el.text if return_text_el is not None else ""
@@ -238,7 +238,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             ws.save()
             admin_log([ws], "{} set by system from SOAP call response id={}".format(cert_name, soap_call.id))
 
-    elif command_lower in ["createcertificate", "renewcertificate"]:
+    elif command_lower == "createcertificate":
         res_el = etree_get_element(envelope, elem_ns, command + "Response")
         for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
@@ -255,7 +255,24 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
                 admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.id, filename))
             ws.save()
 
-    elif command_lower in ["getcertificate"]:
+    elif command_lower == "renewcertificate":
+        res_el = etree_get_element(envelope, elem_ns, command + "Response")
+        for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
+            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
+            filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+            write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
+            if cert_name == "EncryptionCert":
+                ws.encryption_cert_file.name = filename
+                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.id, filename))
+            elif cert_name == "SigningCert":
+                ws.signing_cert_file.name = filename
+                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
+            elif cert_name == "CACert":
+                ws.ca_cert_file.name = filename
+                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.id, filename))
+            ws.save()
+
+    elif command_lower == "getcertificate":
         app_res = envelope.find(
             "{http://schemas.xmlsoap.org/soap/envelope/}Body/{http://mlp.op.fi/OPCertificateService}getCertificateout/{http://mlp.op.fi/OPCertificateService}ApplicationResponse"  # noqa
         )
@@ -279,28 +296,8 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
         ws.save()
 
-    elif command_lower in ["createcertificate", "renewcertificate"]:
-        res_el = etree_get_element(envelope, elem_ns, command + "Response")
-        for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
-            data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
-            filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
-            write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
-            if cert_name == "EncryptionCert":
-                ws.encryption_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.id, filename))
-            elif cert_name == "SigningCert":
-                ws.signing_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
-            elif cert_name == "CACert":
-                ws.ca_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.id, filename))
-            ws.save()
-
-    elif command_lower in ["certificatestatus", "getowncertificatelist"]:
-        pass
-
     else:
-        raise Exception("{} not implemented".format(command))
+        raise Exception("{} unsupported".format(command))
 
 
 def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str, verbose: bool = False, **kwargs) -> bytes:

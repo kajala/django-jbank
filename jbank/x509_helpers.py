@@ -28,7 +28,7 @@ def write_cert_pem_file(filename: str, cert_base64: bytes):
         blocks = cert_base64
         while blocks:
             block = blocks[:64]
-            fp.write(block + b"\n")
+            fp.write(block.strip() + b"\n")
             blocks = blocks[64:]
         fp.write(b"-----END CERTIFICATE-----\n")
         logger.info("%s written", filename)

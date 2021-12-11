@@ -714,6 +714,10 @@ class WsEdiConnection(models.Model):
         return "{} / {}".format(self.name, self.receiver_identifier)
 
     @property
+    def is_test(self) -> bool:
+        return str(self.environment).lower() in ["customertest"]
+
+    @property
     def signing_cert_full_path(self) -> str:
         return get_media_full_path(self.signing_cert_file.file.name) if self.signing_cert_file else ""
 
