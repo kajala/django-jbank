@@ -715,7 +715,7 @@ class WsEdiConnection(models.Model):
 
     @property
     def is_test(self) -> bool:
-        return str(self.environment).lower() in ["customertest"]
+        return str(self.environment).lower() in ["customertest", "test"]
 
     @property
     def signing_cert_full_path(self) -> str:
@@ -822,8 +822,8 @@ class WsEdiConnection(models.Model):
             # logger.info(' '.join(cmd))
             subprocess.check_output(cmd)
 
-    def sign_pki_request(self, content: bytes) -> bytes:
-        return self._sign_request(content, self.signing_key_full_path, self.signing_cert_full_path)
+    def sign_pki_request(self, content: bytes, signing_key_full_path: str, signing_cert_full_path: str) -> bytes:
+        return self._sign_request(content, signing_key_full_path, signing_cert_full_path)
 
     def sign_application_request(self, content: bytes) -> bytes:
         return self._sign_request(content, self.signing_key_full_path, self.signing_cert_full_path)

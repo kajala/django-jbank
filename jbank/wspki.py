@@ -100,12 +100,19 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
         el.text = soap_call.request_identifier
 
     elif command_lower in ["createcertificate", "renewcertificate", "getcertificate"]:
-        is_create = command_lower in ["createcertificate", "getcertificate"]
-        is_renew = command_lower == "renewcertificate"
-        is_encrypted = command_lower in ["createcertificate", "renewcertificate"]
-        template_name = "pki_" + camel_case_to_underscore(command) + "_request_template.xml"
+        old_signing_cert = ws.signing_cert if ws.signing_cert_file else None
+        old_signing_key_full_path = ws.signing_key_full_path if ws.signing_key_file else ""
+        old_signing_cert_full_path = ws.signing_cert_full_path if ws.signing_cert_file else ""
+        is_renewable = bool(ws.signing_cert_file and ws.signing_key_file)
+        is_renew = command_lower == "renewcertificate" or command_lower == "getcertificate" and is_renewable and not ws.pin
+        is_create = command_lower in ["createcertificate", "getcertificate"] and not is_renew
+        is_encrypted = command_lower in ["createcertificate", "renewcertificate"] and bool(ws.bank_encryption_cert_file)
+        if is_renew and command_lower == "getcertificate":
+            template_name = "pki_get_certificate_renew_request_template.xml"
+        else:
+            template_name = "pki_" + camel_case_to_underscore(command) + "_request_template.xml"
 
-        if is_create:
+        if is_create or is_renew:
             encryption_pk = create_private_key()
             signing_pk = create_private_key()
             encryption_pk_pem = get_private_key_pem(encryption_pk)
@@ -122,7 +129,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             write_private_key_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
             write_private_key_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
         else:
-            encryption_pk = load_private_key_from_pem_file(ws.encryption_key_full_path)
+            encryption_pk = load_private_key_from_pem_file(ws.encryption_key_full_path) if is_encrypted else None
             signing_pk = load_private_key_from_pem_file(ws.signing_key_full_path)
 
         csr_params = {
@@ -134,7 +141,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             "state_or_province_name": "Uusimaa",
             "surname": ws.sender_identifier,
         }
-        encryption_csr = create_csr_pem(encryption_pk, **csr_params)
+        encryption_csr = create_csr_pem(encryption_pk, **csr_params) if is_encrypted else None
         logger.info("encryption_csr: %s", encryption_csr)
         signing_csr = create_csr_pem(signing_pk, **csr_params)
         logger.info("signing_csr: %s", signing_csr)
@@ -142,15 +149,15 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             "jbank/" + template_name,
             soap_call,
             **{
-                "encryption_cert_pkcs10": strip_pem_header_and_footer(encryption_csr).decode().replace("\n", ""),
+                "encryption_cert_pkcs10": strip_pem_header_and_footer(encryption_csr).decode().replace("\n", "") if is_encrypted else None,
                 "signing_cert_pkcs10": strip_pem_header_and_footer(signing_csr).decode().replace("\n", ""),
-                "old_signing_cert": ws.signing_cert if is_renew else None,
+                "old_signing_cert": old_signing_cert if is_renew else None,
             }
         )
         logger.info("%s request:\n%s", command, format_xml_bytes(req).decode())
 
         if is_renew:
-            req = ws.sign_pki_request(req)
+            req = ws.sign_pki_request(req, old_signing_key_full_path, old_signing_cert_full_path)
             logger.info("%s request signed:\n%s", command, format_xml_bytes(req).decode())
 
         if is_encrypted:
@@ -176,7 +183,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
         )
         logger.info("%s request:\n%s", command, format_xml_bytes(req).decode())
 
-        req = ws.sign_pki_request(req)
+        req = ws.sign_pki_request(req, ws.signing_key_full_path, ws.signing_cert_full_path)
         logger.info("%s request signed:\n%s", command, format_xml_bytes(req).decode())
         req_el = etree.fromstring(req)
         cmd_el.insert(cmd_el.index(req_hdr_el) + 1, req_el)
