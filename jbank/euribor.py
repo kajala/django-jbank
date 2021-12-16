@@ -21,8 +21,8 @@ def fetch_latest_euribor_rates(commit: bool = False, verbose: bool = False) -> L
     results = xml_to_dict(res.content)
     list_period = results["data"]["period_Collection"]["period"]
     rates: List[EuriborRate] = []
-    assert( isinstance(list_period, list) and len(list_period) > 0)
-    data = list_period[len(list_period)-1]  # Get from newest date
+    assert isinstance(list_period, list) and len(list_period) > 0
+    data = list_period[len(list_period) - 1]  # Get from newest date
     record_date = parse_datetime(data["@value"]).date()
     for rate_data in data["matrix1_Title_Collection"]["rate"]:
         name = rate_data["@name"]
