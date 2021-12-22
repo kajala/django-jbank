@@ -307,11 +307,15 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         raise Exception("{} unsupported".format(command))
 
 
-def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str, verbose: bool = False, **kwargs) -> bytes:
+def wspki_execute(
+    ws: WsEdiConnection, payout_party: PayoutParty, command: str, soap_action_header: bool = False, xml_sig: bool = False, verbose: bool = False, **kwargs
+) -> bytes:
     """
     :param ws:
     :param payout_party:
     :param command:
+    :param soap_action_header:
+    :param xml_sig:
     :param verbose:
     :return: str
     """
@@ -321,28 +325,28 @@ def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str, 
     soap_call = WsEdiSoapCall(connection=ws, command=command, **kwargs)
     soap_call.full_clean()
     soap_call.save()
-    call_str = "WsEdiSoapCall({})".format(soap_call.id)
+    logger.info("Executing %s", soap_call)
     try:
         http_headers = {
             "Connection": "Close",
-            "Content-Type": "text/xml",
-            # "Content-Type": 'application/soap+xml;charset=UTF8;action="{}"'.format(command),
+            "Content-Type": "text/xml; charset=UTF-8",
             "Method": "POST",
-            "SOAPAction": "",
-            # "SOAPAction": '"{}"'.format(command),
+            "SOAPAction": '"{}"'.format(command) if soap_action_header else "",
             "User-Agent": "Kajala WS",
         }
 
         body_bytes: bytes = generate_wspki_request(soap_call, payout_party, **kwargs)
+        if xml_sig and not body_bytes.startswith(b'<?xml version="1.0"'):
+            body_bytes = b'<?xml version="1.0" encoding="UTF-8"?>\n' + body_bytes
+        pki_endpoint = ws.pki_endpoint
         if verbose:
+            logger.info("------------------------------------------------------ HTTP POST %s\n%s", now().isoformat(), pki_endpoint)
             logger.info(
-                "------------------------------------------------------ %s http_headers\n%s",
-                call_str,
+                "------------------------------------------------------ HTTP headers\n%s",
                 "\n".join(["{}: {}".format(k, v) for k, v in http_headers.items()]),
             )
             logger.info(
-                "------------------------------------------------------ %s body_bytes\n%s",
-                call_str,
+                "------------------------------------------------------ HTTP request body\n%s",
                 body_bytes.decode(),
             )
         debug_output = command in ws.debug_command_list or "ALL" in ws.debug_command_list
@@ -350,11 +354,10 @@ def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str, 
             with open(soap_call.debug_request_full_path, "wb") as fp:
                 fp.write(body_bytes)
 
-        res = requests.post(ws.pki_endpoint, data=body_bytes, headers=http_headers)
-        if verbose:
+        res = requests.post(pki_endpoint, data=body_bytes, headers=http_headers)
+        if verbose and res.status_code < 300:
             logger.info(
-                "------------------------------------------------------ %s HTTP response %s\n%s",
-                call_str,
+                "------------------------------------------------------ HTTP response %s\n%s",
                 res.status_code,
                 format_xml_bytes(res.content).decode(),
             )
@@ -363,8 +366,7 @@ def wspki_execute(ws: WsEdiConnection, payout_party: PayoutParty, command: str, 
                 fp.write(res.content)
         if res.status_code >= 300:
             logger.error(
-                "------------------------------------------------------ %s HTTP response %s\n%s",
-                call_str,
+                "------------------------------------------------------ HTTP response %s\n%s",
                 res.status_code,
                 format_xml_bytes(res.content).decode(),
             )
