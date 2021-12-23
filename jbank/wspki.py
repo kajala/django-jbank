@@ -307,7 +307,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         raise Exception("{} unsupported".format(command))
 
 
-def wspki_execute(
+def wspki_execute(  # pylint: disable=too-many-arguments
     ws: WsEdiConnection,
     payout_party: PayoutParty,
     command: str,
@@ -322,13 +322,14 @@ def wspki_execute(
     :param command:
     :param soap_action_header:
     :param xml_sig:
+    :param lowercase_environment:
     :param verbose:
     :return: str
     """
     if ws and not ws.enabled:
         raise Exception(_("ws.edi.connection.not.enabled").format(ws=ws))
 
-    soap_call = WsEdiSoapCall(connection=ws, command=command, **kwargs)
+    soap_call = WsEdiSoapCall(connection=ws, command=command)
     soap_call.full_clean()
     soap_call.save()
     logger.info("Executing %s", soap_call)
