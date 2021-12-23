@@ -308,7 +308,13 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
 
 
 def wspki_execute(
-    ws: WsEdiConnection, payout_party: PayoutParty, command: str, soap_action_header: bool = False, xml_sig: bool = False, verbose: bool = False, **kwargs
+    ws: WsEdiConnection,
+    payout_party: PayoutParty,
+    command: str,
+    soap_action_header: bool = False,
+    xml_sig: bool = False,
+    lowercase_environment: bool = False,
+    verbose: bool = False,
 ) -> bytes:
     """
     :param ws:
@@ -335,7 +341,7 @@ def wspki_execute(
             "User-Agent": "Kajala WS",
         }
 
-        body_bytes: bytes = generate_wspki_request(soap_call, payout_party, **kwargs)
+        body_bytes: bytes = generate_wspki_request(soap_call, payout_party, lowercase_environment=lowercase_environment)
         if xml_sig and not body_bytes.startswith(b'<?xml version="1.0"'):
             body_bytes = b'<?xml version="1.0" encoding="UTF-8"?>\n' + body_bytes
         pki_endpoint = ws.pki_endpoint

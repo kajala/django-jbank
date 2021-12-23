@@ -2,7 +2,7 @@
 <CertApplicationRequest xmlns="http://op.fi/mlp/xmldata/">
     <CustomerId>{{ ws.sender_identifier }}</CustomerId>
     <Timestamp>{{ soap_call.timestamp.isoformat }}</Timestamp>
-    <Environment>{{ ws.environment }}</Environment>
+    <Environment>{% if lowercase_environment %}{{ ws.environment|lower }}{% else %}{{ ws.environment }}{% endif %}</Environment>
     <SoftwareId>Kajala WS</SoftwareId>
     <Service>MATU</Service>
     <Command>{{ command }}</Command>

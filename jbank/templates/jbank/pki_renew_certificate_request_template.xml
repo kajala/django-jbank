@@ -6,7 +6,7 @@
     <tns:SigningCertPKCS10>{{ signing_cert_pkcs10 }}</tns:SigningCertPKCS10>
     <tns:Timestamp>{{ soap_call.timestamp.isoformat }}</tns:Timestamp>
     <tns:RequestId>{{ soap_call.request_identifier }}</tns:RequestId>
-    <tns:Environment>{{ ws.environment }}</tns:Environment>
+    <tns:Environment>{% if lowercase_environment %}{{ ws.environment|lower }}{% else %}{{ ws.environment }}{% endif %}</tns:Environment>
 
     <xd:Signature xmlns:xd="http://www.w3.org/2000/09/xmldsig#">
         <xd:SignedInfo>

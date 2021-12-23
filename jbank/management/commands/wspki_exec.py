@@ -18,6 +18,7 @@ class Command(SafeCommand):
         parser.add_argument("--process-response", type=int)
         parser.add_argument("--soap-action-header", action="store_true")
         parser.add_argument("--xml-sig", action="store_true")
+        parser.add_argument("--lowercase-env", action="store_true")
 
     def do(self, *args, **options):
         if options["process_response"]:
@@ -40,6 +41,12 @@ class Command(SafeCommand):
         payout_party = PayoutParty.objects.get(id=payout_party_id)
         assert isinstance(payout_party, PayoutParty)
         response = wspki_execute(
-            ws, payout_party=payout_party, command=cmd, soap_action_header=options["soap_action_header"], xml_sig=options["xml_sig"], verbose=True
+            ws,
+            payout_party=payout_party,
+            command=cmd,
+            soap_action_header=options["soap_action_header"],
+            xml_sig=options["xml_sig"],
+            lowercase_environment=options["lowercase_env"],
+            verbose=True,
         )
         print(format_xml_bytes(response).decode())
