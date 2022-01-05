@@ -7,7 +7,6 @@ from django.db.models import F
 def migr0015(apps, schema):
     PayoutStatus = apps.get_model("jbank", "PayoutStatus")
     res = PayoutStatus.objects.all().update(timestamp=F("created"))
-    print(res, "PayoutStatus objects updated to include timestamp")
 
 
 class Migration(migrations.Migration):
