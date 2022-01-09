@@ -61,7 +61,7 @@ def strip_xml_header_bytes(xml: bytes) -> bytes:
 
 
 def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
-    soap_call: WsEdiSoapCall, payout_party: PayoutParty, **kwargs
+    soap_call: WsEdiSoapCall, payout_party: PayoutParty, lowercase_environment: bool = False
 ) -> bytes:
     ws = soap_call.connection
     command = soap_call.command
@@ -71,7 +71,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
         soap_template_name = "jbank/pki_get_certificate_soap_template.xml"
     else:
         soap_template_name = "jbank/pki_soap_template.xml"
-    soap_body_bytes = ws.get_pki_template(soap_template_name, soap_call, **kwargs)
+    soap_body_bytes = ws.get_pki_template(soap_template_name, soap_call, lowercase_environment=lowercase_environment)
     envelope = etree.fromstring(soap_body_bytes)
     if "opc" in envelope.nsmap:
         pkif_ns = "{" + envelope.nsmap["opc"] + "}"
@@ -152,6 +152,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
                 "encryption_cert_pkcs10": strip_pem_header_and_footer(encryption_csr).decode().replace("\n", "") if is_encrypted else None,
                 "signing_cert_pkcs10": strip_pem_header_and_footer(signing_csr).decode().replace("\n", ""),
                 "old_signing_cert": old_signing_cert if is_renew else None,
+                "lowercase_environment": lowercase_environment,
             }
         )
         logger.info("%s request:\n%s", command, format_xml_bytes(req).decode())
