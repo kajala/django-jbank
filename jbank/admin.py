@@ -6,7 +6,7 @@ import traceback
 from datetime import datetime
 from decimal import Decimal
 from os.path import basename
-from typing import Optional, Sequence
+from typing import Optional, Sequence, List
 import pytz
 from django import forms
 from django.conf import settings
@@ -22,7 +22,7 @@ from django.db.models import F, Q, QuerySet
 from django.db.models.aggregates import Sum
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
-from django.urls import ResolverMatch, reverse, path, re_path
+from django.urls import ResolverMatch, reverse, path, re_path, URLPattern
 from django.utils.formats import date_format, localize
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -1391,7 +1391,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
             fields = fields[:-2]
         return fields
 
-    def soap_download_view(self, request, object_id, file_type, form_url="", extra_context=None):  # pylint: disable=unused-argument
+    def soap_download_view(self, request, object_id, file_type: str, form_url="", extra_context=None):  # pylint: disable=unused-argument
         user = request.user
         if not user.is_authenticated or not user.is_superuser:
             raise Http404("File not found")
@@ -1403,6 +1403,12 @@ class WsEdiSoapCallAdmin(BankAdminBase):
                 content = base64.b64decode(data.get("Content", ""))
                 return FormattedXmlResponse(content, filename=obj.debug_get_filename(file_type))
         return FormattedXmlFileResponse(WsEdiSoapCall.debug_get_file_path(obj.debug_get_filename(file_type)))
+
+    def get_urls(self) -> List[URLPattern]:
+        info = self.model._meta.app_label, self.model._meta.model_name  # noqa
+        return [
+            path("<path:object_id>/soap-download/<path:file_type>/", self.admin_site.admin_view(self.soap_download_view), name="%s_%s_soap_download" % info),
+        ] + super().get_urls()
 
     def admin_application_request(self, obj):
         assert isinstance(obj, WsEdiSoapCall)
