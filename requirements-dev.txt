@@ -17,3 +17,5 @@ black
 types-pytz
 types-requests
 types-python-dateutil
+psycopg2==2.9.3 --no-binary 2.9.3
+
