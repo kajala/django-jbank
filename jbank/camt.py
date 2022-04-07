@@ -163,7 +163,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=""))
     accounts = list(Account.objects.filter(name=account_number))
     if len(accounts) != 1:
-        raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number))
+        raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number) + " (" + str(len(accounts)) + ")")
     account = accounts[0]
     assert isinstance(account, Account)
 
