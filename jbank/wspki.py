@@ -1,3 +1,4 @@
+# pylint: disable=c-extension-no-member
 import base64
 import logging
 import traceback
@@ -129,7 +130,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             write_private_key_pem_file(get_media_full_path(encryption_pk_filename), encryption_pk_pem)
             write_private_key_pem_file(get_media_full_path(signing_pk_filename), signing_pk_pem)
         else:
-            encryption_pk = load_private_key_from_pem_file(ws.encryption_key_full_path) if is_encrypted else None
+            encryption_pk = load_private_key_from_pem_file(ws.encryption_key_full_path) if is_encrypted else None  # type: ignore
             signing_pk = load_private_key_from_pem_file(ws.signing_key_full_path)
 
         csr_params = {
@@ -149,7 +150,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             "jbank/" + template_name,
             soap_call,
             **{
-                "encryption_cert_pkcs10": strip_pem_header_and_footer(encryption_csr).decode().replace("\n", "") if is_encrypted else None,
+                "encryption_cert_pkcs10": strip_pem_header_and_footer(encryption_csr).decode().replace("\n", "") if is_encrypted else None,  # type: ignore
                 "signing_cert_pkcs10": strip_pem_header_and_footer(signing_csr).decode().replace("\n", ""),
                 "old_signing_cert": old_signing_cert if is_renew else None,
                 "lowercase_environment": lowercase_environment,

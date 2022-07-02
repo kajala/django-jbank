@@ -4,7 +4,6 @@ from datetime import date, datetime
 from decimal import Decimal
 from os.path import join
 import pytz
-from dateutil.tz import tzutc
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
@@ -160,8 +159,8 @@ class Tests(TestCase):
         ws.save()
         cert = get_x509_cert_from_file("data/x509/cert.pem")
         not_valid_before, not_valid_after = pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(cert.not_valid_after)
-        self.assertEqual(not_valid_before, datetime(2019, 12, 3, 17, 54, 41, tzinfo=tzutc()))
-        self.assertEqual(not_valid_after, datetime(2019, 12, 13, 17, 54, 41, tzinfo=tzutc()))
+        self.assertEqual(not_valid_before, pytz.utc.localize(datetime(2019, 12, 3, 17, 54, 41)))
+        self.assertEqual(not_valid_after, pytz.utc.localize(datetime(2019, 12, 13, 17, 54, 41)))
         self.assertEqual(WsEdiConnection.objects.get_by_receiver_identifier("123192031").id, ws.id)
         app = open("data/x509/appreq.xml", "rb").read()
         signed = ws.sign_application_request(app)

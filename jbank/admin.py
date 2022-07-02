@@ -1099,14 +1099,14 @@ class PayoutAdmin(BankAdminBase):
         "recipient",
     )
 
-    list_filter: Sequence[str] = (
+    list_filter = [
         "state",
         "payoutstatus_set__response_code",
         "payoutstatus_set__group_status",
         "recipient__bic",
-    )
+    ]
 
-    fields: Sequence[str] = (
+    fields = [
         "connection",
         "account",
         "parent",
@@ -1123,27 +1123,27 @@ class PayoutAdmin(BankAdminBase):
         "state",
         "group_status",
         "created",
-    )
+    ]
 
-    list_display: Sequence[str] = (
+    list_display = [
         "id",
         "timestamp",
         "recipient",
         "amount",
         "paid_date_brief",
         "state",
-    )
+    ]
 
-    readonly_fields: Sequence[str] = (
+    readonly_fields = [
         "created",
         "paid_date",
         "timestamp",
         "msg_id",
         "file_name",
         "group_status",
-    )
+    ]
 
-    search_fields: Sequence[str] = (
+    search_fields = [
         "=msg_id",
         "=file_name",
         "=file_reference",
@@ -1151,7 +1151,7 @@ class PayoutAdmin(BankAdminBase):
         "=recipient__account_number",
         "=msg_id",
         "=amount",
-    )
+    ]
 
     def paid_date_brief(self, obj):
         assert isinstance(obj, Payout)
@@ -1196,13 +1196,13 @@ class PayoutPartyAdmin(BankAdminBase):
 
 
 class RefundAdmin(PayoutAdmin):
-    raw_id_fields = (
+    raw_id_fields = [
         "account",
         "parent",
         "payer",
         "recipient",
-    )
-    fields = (
+    ]
+    fields = [
         "connection",
         "account",
         "payer",
@@ -1218,15 +1218,15 @@ class RefundAdmin(PayoutAdmin):
         "paid_date",
         "group_status",
         "created",
-    )
-    readonly_fields = (
+    ]
+    readonly_fields = [
         "msg_id",
         "file_name",
         "timestamp",
         "paid_date",
         "group_status",
         "created",
-    )
+    ]
     inlines = [AccountEntryNoteInline]
 
 

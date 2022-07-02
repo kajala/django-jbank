@@ -1,4 +1,4 @@
-# pylint: disable=logging-format-interpolation,logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements
+# pylint: disable=logging-format-interpolation,logging-not-lazy,too-many-arguments,too-many-locals,too-many-statements,c-extension-no-member
 import base64
 import logging
 import traceback
