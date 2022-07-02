@@ -34,6 +34,7 @@ from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
+from jutil.validators import iban_bic
 from jutil.xml import xml_to_dict
 from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import (
@@ -176,11 +177,12 @@ class StatementAdmin(BankAdminBase):
     list_per_page = 20
     save_on_top = False
     ordering = ("-record_date", "account_number")
-    date_hierarchy = "record_date"
+    date_hierarchy = "end_date"
     list_filter = ("account_number",)
     readonly_fields = (
         "file_link",
         "account_number",
+        "bic_code",
         "statement_number",
         "begin_date",
         "end_date",
@@ -206,14 +208,27 @@ class StatementAdmin(BankAdminBase):
     )
     list_display = (
         "id",
-        "record_date_short",
+        "statement_date_short",
         "account_number",
+        "bic_code",
         "statement_number",
         "begin_balance",
         "currency_code",
         "file_link",
         "account_entry_list",
     )
+
+    def bic_code(self, obj):
+        assert isinstance(obj, Statement)
+        return iban_bic(obj.account_number)
+
+    bic_code.short_description = "BIC"  # type: ignore
+
+    def statement_date_short(self, obj):
+        return date_format(obj.end_date, "SHORT_DATE_FORMAT")
+
+    statement_date_short.short_description = _("date")  # type: ignore
+    statement_date_short.admin_order_field = "end_date"  # type: ignore
 
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")
@@ -379,7 +394,7 @@ def summarize_records(modeladmin, request, qs):  # pylint: disable=unused-argume
 class StatementRecordAdmin(BankAdminBase):
     list_per_page = 25
     save_on_top = False
-    date_hierarchy = "record_date"
+    date_hierarchy = "value_date"
     fields = (
         "id",
         "entry_type",
@@ -448,7 +463,7 @@ class StatementRecordAdmin(BankAdminBase):
     )
     list_display = (
         "id",
-        "record_date_short",
+        "value_date_short",
         "type",
         "record_code",
         "amount",
@@ -472,6 +487,12 @@ class StatementRecordAdmin(BankAdminBase):
 
     is_settled_bool.short_description = _("settled")  # type: ignore
     is_settled_bool.boolean = True  # type: ignore
+
+    def value_date_short(self, obj):
+        return date_format(obj.value_date, "SHORT_DATE_FORMAT")
+
+    value_date_short.short_description = _("date.short")  # type: ignore
+    value_date_short.admin_order_field = "value_date"  # type: ignore
 
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")
@@ -653,7 +674,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")
 
-    record_date_short.short_description = _("record date")  # type: ignore
+    record_date_short.short_description = _("date.short")  # type: ignore
     record_date_short.admin_order_field = "record_date"  # type: ignore
 
     def child_links(self, obj) -> str:
@@ -741,8 +762,8 @@ class ReferencePaymentBatchAdmin(BankAdminBase):
     )
     list_display = (
         "id",
-        "name",
         "record_date_short",
+        "name",
         "service_identifier",
         "currency_identifier",
         "account_entry_list",

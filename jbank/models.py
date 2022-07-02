@@ -325,9 +325,9 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     objects = ReferencePaymentBatchManager()
     file = models.ForeignKey("ReferencePaymentBatchFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_("record date"), db_index=True)
-    institution_identifier = SafeCharField(_("institution identifier"), max_length=2, blank=True)
-    service_identifier = SafeCharField(_("service identifier"), max_length=9, blank=True)
-    currency_identifier = SafeCharField(_("currency identifier"), max_length=3, choices=CURRENCY_IDENTIFIERS)
+    institution_identifier = SafeCharField(_("institution"), max_length=2, blank=True)
+    service_identifier = SafeCharField(_("service"), max_length=9, blank=True)
+    currency_identifier = SafeCharField(_("currency"), max_length=3, choices=CURRENCY_IDENTIFIERS)
     cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
 
     class Meta:
