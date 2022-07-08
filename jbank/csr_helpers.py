@@ -19,8 +19,7 @@ def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RS
     :param key_size: int, bits
     :return: RSAPrivateKey
     """
-    backend = cryptography.hazmat.backends.default_backend()
-    return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(public_exponent=public_exponent, key_size=key_size, backend=backend)
+    return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(public_exponent=public_exponent, key_size=key_size)
 
 
 def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
@@ -37,8 +36,7 @@ def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
 
 
 def load_private_key_from_pem_data(pem_data: bytes, password: Optional[bytes] = None) -> RSAPrivateKey:
-    backend = cryptography.hazmat.backends.default_backend()
-    res = load_pem_private_key(pem_data, password=password, backend=backend)
+    res = load_pem_private_key(pem_data, password=password)
     assert isinstance(res, RSAPrivateKey)
     return res
 
@@ -136,7 +134,6 @@ def create_csr_pem(  # pylint: disable=too-many-arguments,too-many-locals
 
     builder = x509.CertificateSigningRequestBuilder()
     builder = builder.subject_name(x509.Name(name_parts))
-    backend = cryptography.hazmat.backends.default_backend()
-    request = builder.sign(private_key, hashes.SHA256(), backend)
+    request = builder.sign(private_key, hashes.SHA256())
     assert isinstance(request, x509.CertificateSigningRequest)
     return request.public_bytes(serialization.Encoding.PEM)
