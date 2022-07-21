@@ -1,0 +1,22 @@
+<X509Data xmlns="http://www.w3.org/2000/09/xmldsig#" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://model.bxd.fi" xmlns:ns2="http://bxd.fi/CorporateFileService">
+<X509IssuerSerial>
+<X509IssuerName>serialNumber=516406-0120,CN=Nordea Corporate CA 01,O=Nordea Bank AB (publ),C=SE</X509IssuerName>
+<X509SerialNumber>76310</X509SerialNumber>
+</X509IssuerSerial>
+<X509Certificate>MIIC9DCCAdygAwIBAgIDASoWMA0GCSqGSIb3DQEBBQUAMGQxCzAJBgNVBAYTAlNF
+MR4wHAYDVQQKExVOb3JkZWEgQmFuayBBQiAocHVibCkxHzAdBgNVBAMTFk5vcmRl
+YSBDb3Jwb3JhdGUgQ0EgMDExFDASBgNVBAUTCzUxNjQwNi0wMTIwMB4XDTIxMDQw
+NjE4MjkzOVoXDTIzMDQwNjE4MjkzOVowPTELMAkGA1UEBhMCRkkxGDAWBgNVBAMM
+D1BVUk8gRklOQU5DRSBPWTEUMBIGA1UEBRMLMTQ1NTI4OTE0MTgwgZ8wDQYJKoZI
+hvcNAQEBBQADgY0AMIGJAoGBAJV25vjgYXIJgIeeqOjR/g97n6IDVhLt6CsCYrbO
+b0vLPbQRwiAA7jOOS32hAbdmihXe0EZMXAHm6AzSkA1A+e3kIGd9Bqf5hrTLKiL/
+mTEXV0ttI6IAq5SoNGNRpY0N7kmLccBNqRTSLWzYzhNEbDsALWkE1jgOYAfSOW7p
+wNQZAgMBAAGjWjBYMAkGA1UdEwQCMAAwEQYDVR0OBAoECE5AtbtPOVgTMBMGA1Ud
+IAQMMAowCAYGKoVwRwEDMBMGA1UdIwQMMAqACEALddbbzwunMA4GA1UdDwEB/wQE
+AwIFoDANBgkqhkiG9w0BAQUFAAOCAQEAXO2nmu+exNP4XGVBCxhEx7Z5EGyeO2fA
+ql+D3axzgw46fkTsVbrtBrY6M/LEsn3H4K+QfKvDua4fWGXwS547NwsZwStlEqEJ
+Wsopwhcrgee29HqpCw+4M37c5mcMGCSPX6KZMUU+Zh5V1yhe42L6KvboUz60KCxk
+kk7UZTVOpB4MIi0k2jP8jmYESCtlmvf0VrC4Y9Mak3yBlMFCETYmWUfmwHoVYqC2
+bZEoyPgCnZW2lSN1vJOdLsr5PhWwVQfJi5LcaVnYkxxyGOib6519flu1/UDRTbEI
+c0VNdmR44ZVqcbexmHHvI+jER+pGgXIdWTdNmXKsUhILPhmaIVFvng==</X509Certificate>
+</X509Data>

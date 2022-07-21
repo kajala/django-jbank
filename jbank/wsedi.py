@@ -10,10 +10,9 @@ from django.conf import settings
 from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
+from lxml import etree  # type: ignore
 from zeep.wsse import BinarySignature  # type: ignore
 from jbank.models import WsEdiConnection, WsEdiSoapCall
-from lxml import etree  # type: ignore  # pytype: disable=import-error
-
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +181,10 @@ def wsedi_execute(  # noqa
         envelope = etree.fromstring(body_bytes)
         binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
         soap_headers: dict = {}
+        # print(f"BEFORE signing with {ws.signing_key_full_path} and {ws.signing_cert_full_path}")
+        # with open("/home/jani/Downloads/e.xml", "wb") as fp:
+        #     fp.write(etree.tostring(envelope))
+        # print(etree.tostring(envelope).decode())
         envelope, soap_headers = binary_signature.apply(envelope, soap_headers)
         signed_body_bytes = etree.tostring(envelope)
         if verbose:
