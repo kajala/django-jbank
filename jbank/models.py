@@ -13,6 +13,7 @@ import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -463,9 +464,27 @@ class PayoutParty(models.Model):
     def __str__(self):
         return "{} ({})".format(self.name, self.account_number)
 
+    @property
+    def is_payout_party_used(self) -> bool:
+        """
+        True if payout party has been used in any payment.
+        """
+        return hasattr(self, "id") and self.id is not None and Payout.objects.all().filter(Q(recipient=self) | Q(payer=self)).exists()
+
+    @property
+    def is_account_number_changed(self) -> bool:
+        """
+        True if account number has been changed compared to the one stored in DB.
+        """
+        if not hasattr(self, "id") or self.id is None:
+            return False
+        return PayoutParty.objects.all().filter(id=self.id).exclude(account_number=self.account_number).exists()
+
     def clean(self):
         if not self.bic:
             self.bic = iban_bic(self.account_number)
+        if self.is_account_number_changed and self.is_payout_party_used:
+            raise ValidationError({"account_number": _("Account number changes of used payout parties is not allowed. Create a new payout party instead.")})
 
     @property
     def address_lines(self):
