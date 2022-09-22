@@ -469,7 +469,9 @@ class PayoutParty(models.Model):
         """
         True if payout party has been used in any payment.
         """
-        return hasattr(self, "id") and self.id is not None and Payout.objects.all().filter(Q(recipient=self) | Q(payer=self)).exists()
+        if not hasattr(self, "id") or self.id is None:
+            return False
+        return Payout.objects.all().filter(Q(recipient=self) | Q(payer=self)).exists()
 
     @property
     def is_account_number_changed(self) -> bool:
