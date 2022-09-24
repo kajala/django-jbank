@@ -1172,14 +1172,22 @@ class PayoutAdmin(BankAdminBase):
 
 class PayoutPartyAdmin(BankAdminBase):
     save_on_top = False
-    exclude = ()
     search_fields = (
         "name",
         "=account_number",
         "=org_id",
     )
     ordering = ("name",)
-
+    fields = [
+        "name",
+        "account_number",
+        "bic",
+        "org_id",
+        "address",
+        "country_code",
+        "payouts_account",
+    ]
+    readonly_fields: List[str] = []
     actions = ()
 
     list_display = (
@@ -1193,6 +1201,13 @@ class PayoutPartyAdmin(BankAdminBase):
     )
 
     raw_id_fields = ("payouts_account",)
+
+    def get_readonly_fields(self, request: HttpRequest, obj=None) -> Sequence[str]:
+        if obj is not None:
+            assert isinstance(obj, PayoutParty)
+            if Payout.objects.filter(Q(recipient=obj) | Q(payer=obj)).exists():
+                return self.fields
+        return self.readonly_fields
 
 
 class RefundAdmin(PayoutAdmin):
