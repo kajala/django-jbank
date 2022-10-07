@@ -32,7 +32,6 @@ from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
-from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.validators import iban_bic
 from jutil.xml import xml_to_dict
