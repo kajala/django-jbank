@@ -59,18 +59,13 @@ from jbank.models import (
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
-from jutil.admin import ModelAdminBase, admin_log, admin_log_changed_fields
+from jutil.admin import ModelAdminBase, admin_log
 
 logger = logging.getLogger(__name__)
 
 
 class BankAdminBase(ModelAdminBase):
     save_on_top = False
-
-    def save_form(self, request, form, change):
-        if change:
-            admin_log_changed_fields(form.instance, form.changed_data, request.user, ip=get_ip(request))
-        return form.save(commit=False)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == AccountEntryNote:
