@@ -39,5 +39,8 @@ Tested Banks
 Changes
 =======
 
+4.0.1:
++ Upgraded component requirements to latest lxml (4.9.1), etc.
+
 3.2.0:
 + Django 3.0 support, prospector fixes
