@@ -32,6 +32,7 @@ from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
+from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.validators import iban_bic
 from jutil.xml import xml_to_dict
@@ -57,6 +58,7 @@ from jbank.models import (
     EuriborRate,
     PAYOUT_WAITING_PROCESSING,
     PAYOUT_ERROR,
+    PAYOUT_PAID,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
@@ -1082,7 +1084,8 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
     readonly_fields = fields
 
 
-def resend_payments_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
+def resend_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
+    user_ip = get_ip(request)
     for p in qs.order_by("id").distinct():
         assert isinstance(p, Payout)
         try:
@@ -1091,6 +1094,23 @@ def resend_payments_to_bank(modeladmin, request, qs):  # pylint: disable=unused-
                 continue
             p.state = PAYOUT_WAITING_PROCESSING
             p.save(update_fields=["state"])
+            admin_log([p], f"Changed state to {p.state_name}", who=request.user, ip=user_ip)
+            messages.success(request, f"{p}: {p.state_name}")
+        except Exception as err:
+            messages.error(request, f"{p}: {err}")
+
+
+def mark_payouts_as_paid(modeladmin, request, qs):  # pylint: disable=unused-argument
+    user_ip = get_ip(request)
+    for p in qs.order_by("id").distinct():
+        assert isinstance(p, Payout)
+        try:
+            if p.state == PAYOUT_PAID:
+                messages.warning(request, f"{p}: {p.state_name}")
+                continue
+            p.state = PAYOUT_PAID
+            p.save(update_fields=["state"])
+            admin_log([p], f"Changed state to {p.state_name}", who=request.user, ip=user_ip)
             messages.success(request, f"{p}: {p.state_name}")
         except Exception as err:
             messages.error(request, f"{p}: {err}")
@@ -1102,7 +1122,8 @@ class PayoutAdmin(BankAdminBase):
     date_hierarchy = "timestamp"
 
     actions = [
-        resend_payments_to_bank,
+        resend_payouts_to_bank,
+        mark_payouts_as_paid,
     ]
 
     raw_id_fields: Sequence[str] = (
@@ -1526,7 +1547,8 @@ class EuriborRateAdmin(BankAdminBase):
 
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
 unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
-resend_payments_to_bank.short_description = _("Resend payments to bank")  # type: ignore
+resend_payouts_to_bank.short_description = _("Resend payouts to bank")  # type: ignore
+mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
