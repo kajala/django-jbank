@@ -55,6 +55,8 @@ from jbank.models import (
     WsEdiConnection,
     WsEdiSoapCall,
     EuriborRate,
+    PAYOUT_WAITING_PROCESSING,
+    PAYOUT_ERROR,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
@@ -1080,11 +1082,28 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
     readonly_fields = fields
 
 
+def resend_payments_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
+    for p in qs.order_by("id").distinct():
+        assert isinstance(p, Payout)
+        try:
+            if p.state != PAYOUT_ERROR:
+                messages.warning(request, f"{p}: {p.state_name}")
+                continue
+            p.state = PAYOUT_WAITING_PROCESSING
+            p.save(update_fields=["state"])
+            messages.success(request, f"{p}: {p.state_name}")
+        except Exception as err:
+            messages.error(request, f"{p}: {err}")
+
+
 class PayoutAdmin(BankAdminBase):
     save_on_top = False
-    exclude = ()
     inlines = [PayoutStatusInlineAdmin, AccountEntryNoteInline]
     date_hierarchy = "timestamp"
+
+    actions = [
+        resend_payments_to_bank,
+    ]
 
     raw_id_fields: Sequence[str] = (
         "account",
@@ -1507,6 +1526,7 @@ class EuriborRateAdmin(BankAdminBase):
 
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
 unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
+resend_payments_to_bank.short_description = _("Resend payments to bank")  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
