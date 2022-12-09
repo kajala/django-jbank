@@ -55,7 +55,7 @@ class Command(SafeCommand):
                 return
             payouts = payouts.filter(connection=ws)
 
-        for p in list(payouts):
+        for p in list(payouts.order_by("id").distinct()):
             assert isinstance(p, Payout)
             try:
                 if options["verbose"]:

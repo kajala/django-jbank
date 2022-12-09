@@ -40,7 +40,7 @@ class Command(SafeCommand):
             if options["ws"]:
                 payouts = payouts.filter(connection_id=options["ws"])
 
-        for p in list(payouts):
+        for p in list(payouts.order_by("id").distinct()):
             assert isinstance(p, Payout)
             p.refresh_from_db()
             ws_connection = p.connection or default_ws

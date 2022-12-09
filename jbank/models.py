@@ -105,6 +105,7 @@ DELIVERY_METHOD = (
     (DELIVERY_FROM_BANK_SYSTEM, _("From Bank System")),
 )
 
+PAYOUT_ON_HOLD = "H"
 PAYOUT_WAITING_PROCESSING = "W"
 PAYOUT_WAITING_UPLOAD = "U"
 PAYOUT_UPLOADED = "D"
@@ -113,6 +114,7 @@ PAYOUT_CANCELED = "C"
 PAYOUT_ERROR = "E"
 
 PAYOUT_STATE = (
+    (PAYOUT_ON_HOLD, _("on hold")),
     (PAYOUT_WAITING_PROCESSING, _("waiting processing")),
     (PAYOUT_WAITING_UPLOAD, _("waiting upload")),
     (PAYOUT_UPLOADED, _("uploaded")),
