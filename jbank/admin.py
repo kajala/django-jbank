@@ -59,6 +59,7 @@ from jbank.models import (
     PAYOUT_WAITING_PROCESSING,
     PAYOUT_ERROR,
     PAYOUT_PAID,
+    PAYOUT_ON_HOLD,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
@@ -1084,17 +1085,18 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
     readonly_fields = fields
 
 
-def resend_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
+def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
     for p in qs.order_by("id").distinct():
         assert isinstance(p, Payout)
         try:
-            if p.state != PAYOUT_ERROR:
+            if p.state not in [PAYOUT_ERROR, PAYOUT_ON_HOLD]:
                 messages.warning(request, f"{p}: {p.state_name}")
                 continue
+            old_state = p.state_name
             p.state = PAYOUT_WAITING_PROCESSING
             p.save(update_fields=["state"])
-            admin_log([p], f"Changed state to {p.state_name}", who=request.user, ip=user_ip)
+            admin_log([p], f"Changed state from {old_state} to {p.state_name}", who=request.user, ip=user_ip)
             messages.success(request, f"{p}: {p.state_name}")
         except Exception as err:
             messages.error(request, f"{p}: {err}")
@@ -1122,7 +1124,7 @@ class PayoutAdmin(BankAdminBase):
     date_hierarchy = "timestamp"
 
     actions = [
-        resend_payouts_to_bank,
+        send_payouts_to_bank,
         mark_payouts_as_paid,
     ]
 
@@ -1547,7 +1549,7 @@ class EuriborRateAdmin(BankAdminBase):
 
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
 unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
-resend_payouts_to_bank.short_description = _("Resend payouts to bank")  # type: ignore
+send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: ignore
 mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
