@@ -1105,7 +1105,7 @@ def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-arg
 
 def mark_payouts_as_paid(modeladmin, request, qs):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
-    for p in qs.order_by("id").distinct():
+    for p in list(qs.order_by("id").distinct()):
         assert isinstance(p, Payout)
         try:
             if p.state == PAYOUT_PAID:
@@ -1119,6 +1119,26 @@ def mark_payouts_as_paid(modeladmin, request, qs):  # pylint: disable=unused-arg
             messages.error(request, f"{p}: {err}")
 
 
+def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: disable=unused-argument
+    user_ip = get_ip(request)
+    n_count = 0
+    for p in list(qs.order_by("id").distinct()):
+        assert isinstance(p, Payout)
+        try:
+            if p.state == PAYOUT_PAID:
+                messages.warning(request, f"{p}: {p.state_name}")
+                continue
+            old = p.msg_id
+            p.generate_msg_id(commit=False)
+            p.file_name = ""
+            p.save(update_fields=["msg_id", "file_name"])
+            admin_log([p], f"Regenerated msg_id from {old} to {p.msg_id}, file name reset", who=request.user, ip=user_ip)
+            n_count += 1
+        except Exception as err:
+            messages.error(request, f"{p}: {err}")
+    messages.success(request, f"{n_count} message IDs regenerated and pain001 file names reset")
+
+
 class PayoutAdmin(BankAdminBase):
     save_on_top = False
     inlines = [PayoutStatusInlineAdmin, AccountEntryNoteInline]
@@ -1127,6 +1147,7 @@ class PayoutAdmin(BankAdminBase):
     actions = [
         send_payouts_to_bank,
         mark_payouts_as_paid,
+        regenerate_payout_message_identifiers,
     ]
 
     raw_id_fields: Sequence[str] = (
@@ -1552,6 +1573,7 @@ mark_as_manually_settled.short_description = _("Mark as manually settled")  # ty
 unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
 send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: ignore
 mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
+regenerate_payout_message_identifiers.short_description = _("Regenerate payout message identifiers")  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
