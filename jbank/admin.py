@@ -1087,9 +1087,10 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
 
 def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
-    for p in qs.order_by("id").distinct():
+    for p in list(qs.order_by("id").distinct()):
         assert isinstance(p, Payout)
         try:
+            p.refresh_from_db()
             if p.state not in [PAYOUT_ERROR, PAYOUT_ON_HOLD]:
                 messages.warning(request, f"{p}: {p.state_name}")
                 continue
