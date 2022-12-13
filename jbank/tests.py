@@ -1,6 +1,6 @@
 import os
 import subprocess
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from os.path import join
 import pytz
@@ -10,10 +10,11 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.template.loader import get_template
 from django.test import TestCase
+from django.utils.timezone import now
 from jacc.models import Account
 from jbank.csr_helpers import create_private_key, create_csr_pem, get_private_key_pem, strip_pem_header_and_footer
 from jbank.ecb import parse_euro_exchange_rates_xml
-from jbank.helpers import validate_xml
+from jbank.helpers import validate_xml, parse_date_or_relative_date
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty
 from jbank.tito import parse_tiliote_statements_from_file
 from jbank.svm import parse_svm_batches_from_file
@@ -220,3 +221,11 @@ class Tests(TestCase):
         call_command("parse_xt", "data/xt", auto_create_accounts=True)
         call_command("parse_svm", "data/svm", auto_create_accounts=True)
         call_command("parse_to", "data/to", auto_create_accounts=True)
+
+    def test_parse_date_or_relative_date(self):
+        tz = pytz.timezone("Europe/Helsinki")
+        time_now = now().astimezone(tz)
+        date_now = time_now.date()
+        self.assertEqual(parse_date_or_relative_date("yesterday", tz=tz), date_now - timedelta(days=1))
+        self.assertEqual(parse_date_or_relative_date("prev_60d", tz=tz), date_now - timedelta(days=60))
+        self.assertEqual(parse_date_or_relative_date(date_now.isoformat(), tz=tz), date_now)
