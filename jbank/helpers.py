@@ -1,7 +1,7 @@
 # pylint: disable=c-extension-no-member
 import logging
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from os.path import basename
 from typing import Any, Tuple, Optional, List
 import pytz
@@ -27,6 +27,8 @@ from jbank.models import (
 from jbank.sepa import Pain002
 import re
 from lxml import etree, objectify  # type: ignore  # pytype: disable=import-error
+
+from jutil.command import get_date_range_by_name
 from jutil.parse import parse_datetime
 from jutil.format import strip_media_root, is_media_full_path
 
@@ -316,21 +318,22 @@ def validate_xml(content: bytes, xsd_file_name: str):
     objectify.fromstring(content, parser)
 
 
+def parse_date_or_relative_date(value: str, tz: Any = None) -> Optional[date]:
+    try:
+        return parse_datetime(value, tz=tz).date()
+    except Exception:
+        return get_date_range_by_name(value.replace("-", "_"), tz=tz)[0].date()
+
+
 def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Optional[date]]:
     start_date = None
     end_date = None
     time_now = now().astimezone(tz if tz else pytz.utc)
     if options["start_date"]:
-        if options["start_date"] == "today":
-            start_date = time_now.date()
-        else:
-            start_date = parse_datetime(options["start_date"]).date()  # type: ignore
-        end_date = start_date
+        start_date = parse_date_or_relative_date(options["start_date"], tz=tz)
+        end_date = time_now.astimezone(tz).date() + timedelta(days=1)
     if options["end_date"]:
-        if options["end_date"] == "today":
-            end_date = time_now.date()
-        else:
-            end_date = parse_datetime(options["end_date"]).date()  # type: ignore
+        end_date = parse_date_or_relative_date(options["end_date"], tz=tz)
     return start_date, end_date
 
 
