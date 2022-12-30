@@ -5,7 +5,7 @@ import traceback
 from typing import Optional
 import requests
 from django.utils.timezone import now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from jbank.csr_helpers import (
     create_private_key,
     get_private_key_pem,
