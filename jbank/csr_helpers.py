@@ -50,7 +50,7 @@ def write_private_key_pem_file(filename: str, key_base64: bytes):
     """
     Writes PEM data to file.
     :param filename: PEM filename
-    :param cert_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
+    :param key_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
     """
     if b"BEGIN" not in key_base64 or b"END" not in key_base64:
         raise ValidationError("write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer")
