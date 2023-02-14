@@ -21,6 +21,7 @@ from jbank.svm import parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.format import format_xml
+from jutil.parse import parse_datetime
 from jutil.validators import iban_bic
 from lxml import etree  # type: ignore  # pytype: disable=import-error
 from zeep.wsse import BinarySignature  # type: ignore
@@ -224,7 +225,7 @@ class Tests(TestCase):
 
     def test_parse_date_or_relative_date(self):
         tz = pytz.timezone("Europe/Helsinki")
-        time_now = now().astimezone(tz)
+        time_now = parse_datetime("2023-02-14T12:00").astimezone(tz)
         date_now = time_now.date()
         self.assertEqual(parse_date_or_relative_date("yesterday", tz=tz), date_now - timedelta(days=1))
         self.assertEqual(parse_date_or_relative_date("prev_60d", tz=tz), date_now - timedelta(days=60))
