@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-24 08:54+0000\n"
+"POT-Creation-Date: 2023-02-24 08:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,179 +18,179 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: jbank/admin.py:96
+#: jbank/admin.py:97
 msgid "account entry types"
 msgstr "tilitapahtumien tyypit"
 
-#: jbank/admin.py:118
+#: jbank/admin.py:119
 msgid "account.entry.matched.filter"
 msgstr "kohdistaminen"
 
-#: jbank/admin.py:123
+#: jbank/admin.py:124
 msgid "account.entry.not.matched"
 msgstr "kohdistamaton"
 
-#: jbank/admin.py:124
+#: jbank/admin.py:125
 msgid "account.entry.is.matched"
 msgstr "kohdistettu"
 
-#: jbank/admin.py:125
+#: jbank/admin.py:126
 msgid "not marked as settled"
 msgstr "ei merkitty kohdistetuksi"
 
-#: jbank/admin.py:126
+#: jbank/admin.py:127
 msgid "marked as settled"
 msgstr "merkitty kohdistetuksi"
 
-#: jbank/admin.py:157
+#: jbank/admin.py:158
 msgid "account.name.filter"
 msgstr "tilin nimi"
 
-#: jbank/admin.py:229
+#: jbank/admin.py:230
 #, fuzzy
 #| msgid "end date"
 msgid "date"
 msgstr "loppupäivämäärä"
 
-#: jbank/admin.py:235 jbank/admin.py:499 jbank/admin.py:774 jbank/models.py:135
+#: jbank/admin.py:236 jbank/admin.py:500 jbank/admin.py:775 jbank/models.py:135
 #: jbank/models.py:169 jbank/models.py:223 jbank/models.py:330
 #: jbank/models.py:363 jbank/models.py:942 jbank/models.py:954
 msgid "record date"
 msgstr "kirjauspäivä"
 
-#: jbank/admin.py:243 jbank/admin.py:782
+#: jbank/admin.py:244 jbank/admin.py:783
 msgid "account entries"
 msgstr "tilitapahtumat"
 
-#: jbank/admin.py:253 jbank/admin.py:693 jbank/admin.py:792 jbank/admin.py:1012
-#: jbank/admin.py:1533 jbank/models.py:404 jbank/models.py:423
+#: jbank/admin.py:254 jbank/admin.py:694 jbank/admin.py:793 jbank/admin.py:1013
+#: jbank/admin.py:1534 jbank/models.py:404 jbank/models.py:423
 msgid "file"
 msgstr "tiedosto"
 
-#: jbank/admin.py:308
+#: jbank/admin.py:309
 msgid "structured remittance info"
 msgstr "jäsennelty viitetieto"
 
-#: jbank/admin.py:348
+#: jbank/admin.py:349
 msgid "marked as manually settled"
 msgstr "merkitty manuaalisesti kohdistetuksi"
 
-#: jbank/admin.py:369
+#: jbank/admin.py:370
 msgid "manually settled flag cleared"
 msgstr "merkintä manuaalisesta kohdistuksesta poistettu"
 
-#: jbank/admin.py:376
+#: jbank/admin.py:377
 msgid "type"
 msgstr ""
 
-#: jbank/admin.py:376 jbank/models.py:248 jbank/models.py:286
+#: jbank/admin.py:377 jbank/models.py:248 jbank/models.py:286
 msgid "amount"
 msgstr "summa"
 
-#: jbank/admin.py:386
+#: jbank/admin.py:387
 msgid "total"
 msgstr ""
 
-#: jbank/admin.py:487 jbank/admin.py:670
+#: jbank/admin.py:488 jbank/admin.py:671
 msgid "settled"
 msgstr "kohdistettu"
 
-#: jbank/admin.py:493 jbank/admin.py:676
+#: jbank/admin.py:494 jbank/admin.py:677
 msgid "date.short"
 msgstr "pvm"
 
-#: jbank/admin.py:506 jbank/admin.py:683
+#: jbank/admin.py:507 jbank/admin.py:684
 msgid "derived entries"
 msgstr "johdetut kirjaukset"
 
-#: jbank/admin.py:542 jbank/admin.py:729
+#: jbank/admin.py:543 jbank/admin.py:730
 msgid "source file"
 msgstr "lähdetiedosto"
 
-#: jbank/admin.py:553 jbank/models.py:410
+#: jbank/admin.py:554 jbank/models.py:410
 msgid "account statement file"
 msgstr "tiliote-tiedosto"
 
-#: jbank/admin.py:831 jbank/admin.py:915 jbank/camt.py:163 jbank/camt.py:166
-#: jbank/helpers.py:130 jbank/helpers.py:133 jbank/helpers.py:214
-#: jbank/helpers.py:217
+#: jbank/admin.py:832 jbank/admin.py:916 jbank/camt.py:163 jbank/camt.py:166
+#: jbank/helpers.py:131 jbank/helpers.py:134 jbank/helpers.py:215
+#: jbank/helpers.py:218
 msgid "account.not.found"
 msgstr "Tiliä {account_number} ei löydy"
 
-#: jbank/admin.py:835 jbank/admin.py:919
+#: jbank/admin.py:836 jbank/admin.py:920
 msgid "Unhandled error"
 msgstr "Käsittelemätön virhe"
 
-#: jbank/admin.py:868 jbank/admin.py:870 jbank/models.py:192
+#: jbank/admin.py:869 jbank/admin.py:871 jbank/models.py:192
 msgid "statement records"
 msgstr "tiliotteen tietueet"
 
-#: jbank/admin.py:955 jbank/models.py:334 jbank/models.py:350
+#: jbank/admin.py:956 jbank/models.py:334 jbank/models.py:350
 #: jbank/models.py:427 jbank/models.py:443
 msgid "total amount"
 msgstr "summa yhteensä"
 
-#: jbank/admin.py:989 jbank/models.py:212 jbank/models.py:403
+#: jbank/admin.py:990 jbank/models.py:212 jbank/models.py:403
 #: jbank/models.py:422 jbank/models.py:611 jbank/models.py:653
 #: jbank/models.py:729 jbank/models.py:945 jbank/models.py:959
 msgid "created"
 msgstr "luotu"
 
-#: jbank/admin.py:996 jbank/models.py:612
+#: jbank/admin.py:997 jbank/models.py:612
 msgid "timestamp"
 msgstr ""
 
-#: jbank/admin.py:1049 jbank/admin.py:1054
+#: jbank/admin.py:1050 jbank/admin.py:1055
 msgid "File {} not found"
 msgstr "Tiedostoa {} ei löydy"
 
-#: jbank/admin.py:1218 jbank/models.py:171 jbank/models.py:276
+#: jbank/admin.py:1219 jbank/models.py:171 jbank/models.py:276
 #: jbank/models.py:364 jbank/models.py:521
 msgid "paid date"
 msgstr "maksupäivämäärä"
 
-#: jbank/admin.py:1423
+#: jbank/admin.py:1424
 msgid "(missing certificate files)"
 msgstr ""
 
-#: jbank/admin.py:1432
+#: jbank/admin.py:1433
 msgid "expires"
 msgstr "vanhenee"
 
-#: jbank/admin.py:1514
+#: jbank/admin.py:1515
 msgid "application request"
 msgstr "palvelupyyntö"
 
-#: jbank/admin.py:1523
+#: jbank/admin.py:1524
 msgid "application response"
 msgstr "palveluvastaus"
 
-#: jbank/admin.py:1539
+#: jbank/admin.py:1540
 msgid "execution time"
 msgstr "suoritetusaika"
 
-#: jbank/admin.py:1545 jbank/models.py:123 jbank/models.py:655
+#: jbank/admin.py:1546 jbank/models.py:123 jbank/models.py:655
 msgid "error"
 msgstr "virhe"
 
-#: jbank/admin.py:1593
+#: jbank/admin.py:1603
 #: jbank/templates/admin/jbank/mark_as_manually_settled.html:21
 msgid "Mark as manually settled"
 msgstr "Merkitse tapahtuma manuaalisesti kohdistetuksi"
 
-#: jbank/admin.py:1594
+#: jbank/admin.py:1604
 msgid "Unmark manually settled flag"
 msgstr "Merkitse tapahtuma avoimeksi/kohdistamattomaksi"
 
-#: jbank/admin.py:1595
+#: jbank/admin.py:1605
 msgid "Send payouts to bank"
 msgstr "Lähetä ulosmaksut pankkiin"
 
-#: jbank/admin.py:1596
+#: jbank/admin.py:1606
 msgid "Mark payouts as paid"
 msgstr "Merkitse ulosmaksut maksetuiksi"
 
-#: jbank/admin.py:1597
+#: jbank/admin.py:1607
 msgid "Regenerate payout message identifiers"
 msgstr "Luo ulosmaksujen viestitunnisteet uudelleen"
 
@@ -233,8 +233,8 @@ msgstr ""
 "Tilin valuutta {account_currency} ei täsmää tiliotteen valuttaa "
 "{statement_currency}"
 
-#: jbank/camt.py:211 jbank/camt.py:215 jbank/helpers.py:150
-#: jbank/helpers.py:152
+#: jbank/camt.py:211 jbank/camt.py:215 jbank/helpers.py:151
+#: jbank/helpers.py:153
 msgid "entry.type.missing"
 msgstr "tapahtuman tyyppi puuttuu"
 
@@ -246,7 +246,7 @@ msgstr "Tiliotteen tyyppiä {} ei tunnisteta"
 msgid "Inconsistent Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls"
 msgstr "Epäyhtenäinen Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls"
 
-#: jbank/helpers.py:256
+#: jbank/helpers.py:257
 msgid "bank account"
 msgstr "pankkitili"
 
@@ -1020,17 +1020,17 @@ msgstr "Euribor-korko"
 msgid "euribor rates"
 msgstr "Euribor-korot"
 
-#: jbank/models.py:955 jbank/models.py:956
-#, fuzzy
-#| msgid "begin balance"
+#: jbank/models.py:955
+msgid "balance"
+msgstr "saldo"
+
+#: jbank/models.py:956
 msgid "available balance"
-msgstr "alkusaldo"
+msgstr "saldoa käytettävissä"
 
 #: jbank/models.py:957
-#, fuzzy
-#| msgid "account limit"
 msgid "credit limit"
-msgstr "tilin limiitti"
+msgstr "luottolimiitti"
 
 #: jbank/models.py:962
 msgid "account balance"

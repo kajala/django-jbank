@@ -1573,6 +1573,7 @@ class EuriborRateAdmin(BankAdminBase):
 class AccountBalanceAdmin(BankAdminBase):
     save_on_top = False
     fields = [
+        "id",
         "record_datetime",
         "account_number",
         "balance",
@@ -1586,7 +1587,16 @@ class AccountBalanceAdmin(BankAdminBase):
         "account_number",
         "currency",
     ]
-    list_display = []
+    list_display = [
+        "id",
+        "record_datetime",
+        "account_number",
+        "balance",
+        "available_balance",
+        "credit_limit",
+        "currency",
+        "created",
+    ]
     readonly_fields = fields
 
 

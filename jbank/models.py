@@ -952,7 +952,7 @@ class EuriborRate(models.Model):
 class AccountBalance(models.Model):
     account_number = models.CharField(_("account number"), max_length=32, db_index=True)
     record_datetime = models.DateTimeField(_("record date"), db_index=True)
-    balance = models.DecimalField(_("available balance"), max_digits=10, decimal_places=2)
+    balance = models.DecimalField(_("balance"), max_digits=10, decimal_places=2)
     available_balance = models.DecimalField(_("available balance"), max_digits=10, decimal_places=2)
     credit_limit = models.DecimalField(_("credit limit"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
     currency = models.CharField(_("currency"), max_length=3, default="EUR", db_index=True)
