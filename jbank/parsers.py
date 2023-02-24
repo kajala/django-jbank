@@ -174,8 +174,8 @@ def parse_nordea_balance_query(content: str) -> Dict[str, Any]:
         ("available_balance", "9(14)", "P"),
         ("record_datetime", "9(6)", "P"),
         ("record_time", "9(4)", "P"),
-        ("limit_sign", "X(1)", "P"),
-        ("limit_amount", "9(14)", "P"),
+        ("credit_limit_sign", "X(1)", "P"),
+        ("credit_limit", "9(14)", "P"),
         ("currency", "X(3)", "P"),
         ("pad_2", "X(2)", "P"),
     )
@@ -183,7 +183,7 @@ def parse_nordea_balance_query(content: str) -> Dict[str, Any]:
     SALDO_DECIMAL_FIELDS = (
         ("balance", "balance_sign"),
         ("available_balance", "available_balance_sign"),
-        ("limit_amount", "limit_sign"),
+        ("credit_limit", "credit_limit_sign"),
     )
     tz = timezone("Europe/Helsinki")
     lines = content.split("\n")

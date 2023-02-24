@@ -60,6 +60,7 @@ from jbank.models import (
     PAYOUT_ERROR,
     PAYOUT_PAID,
     PAYOUT_ON_HOLD,
+    AccountBalance,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
@@ -1569,6 +1570,26 @@ class EuriborRateAdmin(BankAdminBase):
     ]
 
 
+class AccountBalanceAdmin(BankAdminBase):
+    save_on_top = False
+    fields = [
+        "record_datetime",
+        "account_number",
+        "balance",
+        "available_balance",
+        "credit_limit",
+        "currency",
+        "created",
+    ]
+    date_hierarchy = "record_datetime"
+    list_filter = [
+        "account_number",
+        "currency",
+    ]
+    list_display = []
+    readonly_fields = fields
+
+
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
 unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
 send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: ignore
@@ -1590,3 +1611,4 @@ admin.site.register(ReferencePaymentBatchFile, ReferencePaymentBatchFileAdmin)
 admin.site.register(WsEdiConnection, WsEdiConnectionAdmin)
 admin.site.register(WsEdiSoapCall, WsEdiSoapCallAdmin)
 admin.site.register(EuriborRate, EuriborRateAdmin)
+admin.site.register(AccountBalance, AccountBalanceAdmin)

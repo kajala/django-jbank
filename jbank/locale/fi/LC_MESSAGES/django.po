@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-12 21:32+0000\n"
+"POT-Creation-Date: 2023-02-24 08:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,7 +54,7 @@ msgstr "loppupäivämäärä"
 
 #: jbank/admin.py:235 jbank/admin.py:499 jbank/admin.py:774 jbank/models.py:135
 #: jbank/models.py:169 jbank/models.py:223 jbank/models.py:330
-#: jbank/models.py:363 jbank/models.py:942
+#: jbank/models.py:363 jbank/models.py:942 jbank/models.py:954
 msgid "record date"
 msgstr "kirjauspäivä"
 
@@ -112,8 +112,8 @@ msgid "account statement file"
 msgstr "tiliote-tiedosto"
 
 #: jbank/admin.py:831 jbank/admin.py:915 jbank/camt.py:163 jbank/camt.py:166
-#: jbank/helpers.py:127 jbank/helpers.py:130 jbank/helpers.py:211
-#: jbank/helpers.py:214
+#: jbank/helpers.py:130 jbank/helpers.py:133 jbank/helpers.py:214
+#: jbank/helpers.py:217
 msgid "account.not.found"
 msgstr "Tiliä {account_number} ei löydy"
 
@@ -132,7 +132,7 @@ msgstr "summa yhteensä"
 
 #: jbank/admin.py:989 jbank/models.py:212 jbank/models.py:403
 #: jbank/models.py:422 jbank/models.py:611 jbank/models.py:653
-#: jbank/models.py:729 jbank/models.py:945
+#: jbank/models.py:729 jbank/models.py:945 jbank/models.py:959
 msgid "created"
 msgstr "luotu"
 
@@ -173,24 +173,24 @@ msgstr "suoritetusaika"
 msgid "error"
 msgstr "virhe"
 
-#: jbank/admin.py:1572
+#: jbank/admin.py:1593
 #: jbank/templates/admin/jbank/mark_as_manually_settled.html:21
 msgid "Mark as manually settled"
 msgstr "Merkitse tapahtuma manuaalisesti kohdistetuksi"
 
-#: jbank/admin.py:1573
+#: jbank/admin.py:1594
 msgid "Unmark manually settled flag"
 msgstr "Merkitse tapahtuma avoimeksi/kohdistamattomaksi"
 
-#: jbank/admin.py:1574
+#: jbank/admin.py:1595
 msgid "Send payouts to bank"
 msgstr "Lähetä ulosmaksut pankkiin"
 
-#: jbank/admin.py:1575
+#: jbank/admin.py:1596
 msgid "Mark payouts as paid"
 msgstr "Merkitse ulosmaksut maksetuiksi"
 
-#: jbank/admin.py:1576
+#: jbank/admin.py:1597
 msgid "Regenerate payout message identifiers"
 msgstr "Luo ulosmaksujen viestitunnisteet uudelleen"
 
@@ -233,8 +233,8 @@ msgstr ""
 "Tilin valuutta {account_currency} ei täsmää tiliotteen valuttaa "
 "{statement_currency}"
 
-#: jbank/camt.py:211 jbank/camt.py:215 jbank/helpers.py:147
-#: jbank/helpers.py:149
+#: jbank/camt.py:211 jbank/camt.py:215 jbank/helpers.py:150
+#: jbank/helpers.py:152
 msgid "entry.type.missing"
 msgstr "tapahtuman tyyppi puuttuu"
 
@@ -246,7 +246,7 @@ msgstr "Tiliotteen tyyppiä {} ei tunnisteta"
 msgid "Inconsistent Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls"
 msgstr "Epäyhtenäinen Stmt.Ntry[{}].NtryDtls.TxDtls[{}].AmtDtls"
 
-#: jbank/helpers.py:253
+#: jbank/helpers.py:256
 msgid "bank account"
 msgstr "pankkitili"
 
@@ -427,6 +427,7 @@ msgid "canceled"
 msgstr "peruutettu"
 
 #: jbank/models.py:130 jbank/models.py:362 jbank/models.py:455
+#: jbank/models.py:953
 msgid "account number"
 msgstr "tilinumero"
 
@@ -708,7 +709,7 @@ msgstr "instituutio"
 msgid "service"
 msgstr "palvelu"
 
-#: jbank/models.py:333
+#: jbank/models.py:333 jbank/models.py:958
 msgid "currency"
 msgstr "valuutta"
 
@@ -1019,12 +1020,32 @@ msgstr "Euribor-korko"
 msgid "euribor rates"
 msgstr "Euribor-korot"
 
-#: jbank/parsers.py:39 jbank/parsers.py:46 jbank/parsers.py:49
+#: jbank/models.py:955 jbank/models.py:956
+#, fuzzy
+#| msgid "begin balance"
+msgid "available balance"
+msgstr "alkusaldo"
+
+#: jbank/models.py:957
+#, fuzzy
+#| msgid "account limit"
+msgid "credit limit"
+msgstr "tilin limiitti"
+
+#: jbank/models.py:962
+msgid "account balance"
+msgstr "tilin saldo"
+
+#: jbank/models.py:963
+msgid "account balances"
+msgstr "tilien saldot"
+
+#: jbank/parsers.py:40 jbank/parsers.py:47 jbank/parsers.py:50
 #, python-brace-format
 msgid "Line {line}: Invalid field \"{field}\" value \"{value}\""
 msgstr "Rivi {line}: Epäkelpo kenttä \"{field}\" jolla arvo \"{value}\""
 
-#: jbank/parsers.py:75
+#: jbank/parsers.py:76
 #, python-brace-format
 msgid ""
 "Line {line}: Record length ({record_length}) does not match length of parsed "
@@ -1033,31 +1054,31 @@ msgstr ""
 "Rivi {line}: Tietueen pituus ({record_length}) ei täsmää luettuun dataan "
 "({data_length}). Ylimääräinen data: \"{extra_data}\""
 
-#: jbank/parsers.py:87
+#: jbank/parsers.py:88
 msgid "Date field missing: {}"
 msgstr "Päivämääräkenttä puuttuu: {}"
 
-#: jbank/parsers.py:89
+#: jbank/parsers.py:90
 msgid "Date format error in field {}: {}"
 msgstr "Päivämääräkenttä epäkelpo {}: {}"
 
-#: jbank/parsers.py:95
+#: jbank/parsers.py:96
 msgid "Unsupported date format"
 msgstr ""
 
-#: jbank/parsers.py:107
+#: jbank/parsers.py:108
 msgid "Time field missing: {}"
 msgstr "Aikakenttä puuttuu: {}"
 
-#: jbank/parsers.py:109
+#: jbank/parsers.py:110
 msgid "Time format error in field {}: {}"
 msgstr "Epäkelpo aikakenttä {}: {}"
 
-#: jbank/parsers.py:120
+#: jbank/parsers.py:121
 msgid "Date format error in field {}"
 msgstr "Päivämäärävirhe kentässä {}"
 
-#: jbank/parsers.py:153
+#: jbank/parsers.py:154
 msgid "Invalid decimal field format: {}"
 msgstr "Epäkelpo desimaaliformaatti: {}"
 

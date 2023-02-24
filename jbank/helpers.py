@@ -2,6 +2,7 @@
 import logging
 import os
 from datetime import datetime, date, timedelta
+from decimal import Decimal
 from os.path import basename
 from typing import Any, Tuple, Optional, List
 import pytz
@@ -23,6 +24,7 @@ from jbank.models import (
     Payout,
     PayoutStatus,
     PAYOUT_PAID,
+    AccountBalance,
 )
 from jbank.sepa import Pain002
 import re
@@ -348,3 +350,14 @@ def save_or_store_media(file: models.FileField, filename: str):
         with open(filename, "rb") as fp:
             plain_filename = os.path.basename(filename)
             file.save(plain_filename, File(fp))  # type: ignore  # noqa
+
+
+def create_account_balance(record_datetime: datetime, account_number: str, balance: Decimal, available_balance: Decimal, credit_limit: Optional[Decimal] = None, currency: str = "EUR", **kwargs):  # type: ignore  #noqa
+    return AccountBalance.objects.get_or_create(
+        record_datetime=record_datetime,
+        account_number=account_number,
+        balance=balance,
+        available_balance=available_balance,
+        credit_limit=credit_limit,
+        currency=currency,
+    )[0]
