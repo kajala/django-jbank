@@ -2,9 +2,10 @@ import logging
 import re
 from datetime import time, datetime, date
 from decimal import Decimal
-from typing import Any, Tuple, Optional, Dict, Sequence, Union
+from typing import Any, Tuple, Optional, Dict, Sequence, Union, List
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from pytz import timezone
 
 REGEX_SIMPLE_FIELD = re.compile(r"^(X|9)+$")
 
@@ -136,14 +137,14 @@ def convert_decimal_fields(data: dict, decimal_fields: Sequence[Union[Tuple[str,
         if isinstance(field, str):
             v_number = data.get(field)
             if v_number is not None:
-                v = Decimal(v_number) * Decimal("0.01")
+                v = Decimal(v_number.replace(",", "")) * Decimal("0.01")
                 # logger.info('jbank.parsers.convert_decimal_fields: {} = {}'.format(field, v))
                 data[field] = v
         elif isinstance(field, tuple) and len(field) == 2:
             k_number, k_sign = field
             v_number, v_sign = data.get(k_number), data.get(k_sign)
             if v_number is not None:
-                v = Decimal(v_number) * Decimal("0.01")
+                v = Decimal(v_number.replace(",", "")) * Decimal("0.01")
                 if v_sign == neg_sign_val:
                     v = -v
                 data[k_number] = v
@@ -156,3 +157,92 @@ def convert_decimal_fields(data: dict, decimal_fields: Sequence[Union[Tuple[str,
 def parse_filename_suffix(filename: str) -> str:
     a = filename.rsplit(".", 1)
     return a[len(a) - 1]
+
+
+def parse_nordea_balance_query(content: str) -> Dict[str, Any]:
+    if not content:
+        raise Exception("No Nordea balance query content to parse")
+    if content[0] != "1":
+        raise Exception("Invalid file format (not matching expected Nordea SALDO)")
+    SALDO_FIELDS = (
+        ("file_format_identifier", "9(1)", "P"),
+        ("account_number", "9(14)", "P"),
+        ("pad_1", "X(15)", "P"),
+        ("balance_sign", "X(1)", "P"),
+        ("balance", "9(14)", "P"),
+        ("available_balance_sign", "X(1)", "P"),
+        ("available_balance", "9(14)", "P"),
+        ("record_datetime", "9(6)", "P"),
+        ("record_time", "9(4)", "P"),
+        ("limit_sign", "X(1)", "P"),
+        ("limit_amount", "9(14)", "P"),
+        ("currency", "X(3)", "P"),
+        ("pad_2", "X(2)", "P"),
+    )
+    SALDO_DATE_FIELDS = (("record_datetime", "record_time"),)
+    SALDO_DECIMAL_FIELDS = (
+        ("balance", "balance_sign"),
+        ("available_balance", "available_balance_sign"),
+        ("limit_amount", "limit_sign"),
+    )
+    tz = timezone("Europe/Helsinki")
+    lines = content.split("\n")
+    for line in lines:
+        if line.strip():
+            res = parse_records(content, SALDO_FIELDS, line_number=1)
+            convert_date_fields(res, SALDO_DATE_FIELDS, tz)
+            convert_decimal_fields(res, SALDO_DECIMAL_FIELDS)
+            return res
+    return {}
+
+
+def parse_samlink_real_time_statement(content: str) -> Dict[str, Any]:
+    if not content:
+        raise Exception("No Samlink real time statement (.RA) content to parse")
+    RA_HEADER_FIELDS = (
+        ("heading", "X(24)", "P"),
+        ("currency_unit", "X(1)", "P"),  # "1" == euro
+        ("account_number", "9(14)", "P"),
+        ("record_date", "9(6)", "P"),
+    )
+    RA_BALANCE_FIELDS = (
+        ("pad_1", "9(1)", "P"),
+        ("record_time", "9(4)", "P"),
+        ("balance", "X(17)", "P"),
+        ("available_balance", "X(17)", "P"),
+    )
+    RA_TRANSACTION_FIELDS = (
+        ("const_1", "X(1)", "P"),
+        ("record_date", "9(6)", "P"),
+        ("record_number", "X(3)", "P"),
+        ("currency_unit", "X(1)", "P"),  # "1" == euro
+        ("record_code", "X(3)", "P"),
+        ("amount", "X(16)", "P"),
+        ("amount_sign", "X(1)", "P"),
+        ("remittance_info", "X(20)", "P"),
+        ("payer_name", "X(20)", "P"),
+        ("record_description", "X(12)", "P"),
+    )
+    lines = content.split("\n")
+    if len(lines) < 3:
+        raise Exception("Invalid Samlink real time statement (.RA) content, less than 3 lines")
+    tz = timezone("Europe/Helsinki")
+    header = parse_records(lines[0], RA_HEADER_FIELDS, line_number=1)
+    convert_date_fields(header, ["record_date"], tz)
+    balance = parse_records(lines[1], RA_BALANCE_FIELDS, line_number=2)
+    balance["record_time"] = convert_time(balance.get("record_time"), "record_time")  # type: ignore
+    convert_decimal_fields(balance, ["available_balance", "balance"])
+    records: List[Dict[str, Any]] = []
+    for ix, line in enumerate(lines[2:]):
+        if line.strip():
+            line_number = ix + 3
+            record = parse_records(line, RA_TRANSACTION_FIELDS, line_number)
+            convert_decimal_fields(record, [("amount", "amount_sign")])
+            convert_date_fields(record, ["record_date"], tz)
+            records.append(record)
+    return {
+        **header,
+        **balance,
+        "record_datetime": datetime.combine(header["record_date"], balance["record_time"], tzinfo=tz),  # type: ignore
+        "records": records,
+    }

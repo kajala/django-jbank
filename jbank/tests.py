@@ -224,8 +224,8 @@ class Tests(TestCase):
         call_command("parse_to", "data/to", auto_create_accounts=True)
 
     def test_parse_date_or_relative_date(self):
-        tz = pytz.timezone("Europe/Helsinki")
-        time_now = parse_datetime("2023-02-14T12:00").astimezone(tz)
+        tz = pytz.utc
+        time_now = now().astimezone(tz)
         date_now = time_now.date()
         self.assertEqual(parse_date_or_relative_date("yesterday", tz=tz), date_now - timedelta(days=1))
         self.assertEqual(parse_date_or_relative_date("prev_60d", tz=tz), date_now - timedelta(days=60))
