@@ -32,6 +32,7 @@ from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
+from jutil.format import dec2
 from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.validators import iban_bic
@@ -86,6 +87,19 @@ class BankAdminBase(ModelAdminBase):
                 out += " | "
             url_path = reverse(route, args=[e_id])
             out += f'<a href="{url_path}">id={e_id}</a>'
+        return mark_safe(out)
+
+    @staticmethod
+    def format_currency(value: Optional[Decimal]) -> str:
+        if value is None:
+            return ""
+        value_str = localize(dec2(value))
+        out = value_str[-3] + value_str[-2:]
+        value_str = value_str[:-3]
+        while len(value_str) > 3:
+            out = "&nbsp;" + value_str[-3:] + out
+            value_str = value_str[:-3]
+        out = value_str + out
         return mark_safe(out)
 
 
@@ -1574,13 +1588,14 @@ class AccountBalanceAdmin(BankAdminBase):
     save_on_top = False
     fields = [
         "id",
-        "record_datetime",
+        "record_datetime_fmt",
         "account_number",
-        "balance",
-        "available_balance",
-        "credit_limit",
+        "bic_info",
+        "balance_fmt",
+        "available_balance_fmt",
+        "credit_limit_fmt",
         "currency",
-        "created",
+        "created_fmt",
     ]
     date_hierarchy = "record_datetime"
     list_filter = [
@@ -1589,15 +1604,51 @@ class AccountBalanceAdmin(BankAdminBase):
     ]
     list_display = [
         "id",
-        "record_datetime",
+        "record_datetime_fmt",
         "account_number",
-        "balance",
-        "available_balance",
-        "credit_limit",
+        "bic_info",
+        "balance_fmt",
+        "available_balance_fmt",
+        "credit_limit_fmt",
         "currency",
-        "created",
+        "created_fmt",
     ]
     readonly_fields = fields
+
+    def has_add_permission(self, request) -> bool:  # type: ignore  # noqa
+        return False
+
+    @admin.display(description=_("balance"), ordering="balance")
+    def balance_fmt(self, obj):
+        assert isinstance(obj, AccountBalance)
+        return self.format_currency(obj.balance)
+
+    @admin.display(description=_("available balance"), ordering="available_balance")
+    def available_balance_fmt(self, obj):
+        assert isinstance(obj, AccountBalance)
+        return self.format_currency(obj.available_balance)
+
+    @admin.display(description=_("credit limit"), ordering="available_balance")
+    def credit_limit_fmt(self, obj):
+        assert isinstance(obj, AccountBalance)
+        return self.format_currency(obj.credit_limit)
+
+    @admin.display(description="BIC")
+    def bic_info(self, obj):
+        assert isinstance(obj, AccountBalance)
+        if obj.connection is not None:
+            return obj.connection.receiver_identifier
+        return ""
+
+    @admin.display(description=_("created"), ordering="created")
+    def created_fmt(self, obj):
+        assert isinstance(obj, AccountBalance)
+        return date_format(obj.created, "SHORT_DATETIME_FORMAT")
+
+    @admin.display(description=_("record date"), ordering="record_datetime")
+    def record_datetime_fmt(self, obj):
+        assert isinstance(obj, AccountBalance)
+        return date_format(obj.record_datetime, "SHORT_DATETIME_FORMAT")
 
 
 mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
