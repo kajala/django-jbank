@@ -27,12 +27,13 @@ from django.utils.formats import date_format, localize
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
-from jutil.format import dec2
+from jutil.format import dec2, format_timedelta
 from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.validators import iban_bic
@@ -1637,7 +1638,7 @@ class AccountBalanceAdmin(BankAdminBase):
     @admin.display(description=_("created"), ordering="created")
     def created_fmt(self, obj):
         assert isinstance(obj, AccountBalance)
-        return date_format(obj.created, "SHORT_DATETIME_FORMAT")
+        return format_timedelta(now() - obj.created)
 
     @admin.display(description=_("record date"), ordering="record_datetime")
     def record_datetime_fmt(self, obj):
