@@ -13,6 +13,7 @@ class Command(SafeCommand):
 
     def add_arguments(self, parser: CommandParser):
         parser.add_argument("filename", type=str)
+        parser.add_argument("--bic", type=str, default="")
         parser.add_argument("--pprint", action="store_true")
         parser.add_argument("--store", action="store_true")
 
@@ -22,5 +23,5 @@ class Command(SafeCommand):
             content = fp.read()
             res = parse_samlink_real_time_statement(content)
             if kwargs["store"]:
-                logger.info("%s created", create_account_balance(**res))
+                logger.info("%s created", create_account_balance(bic=kwargs["bic"], **res))
             pprint(res)

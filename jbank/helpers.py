@@ -25,6 +25,7 @@ from jbank.models import (
     PayoutStatus,
     PAYOUT_PAID,
     AccountBalance,
+    WsEdiConnection,
 )
 from jbank.sepa import Pain002
 import re
@@ -352,13 +353,13 @@ def save_or_store_media(file: models.FileField, filename: str):
             file.save(plain_filename, File(fp))  # type: ignore  # noqa
 
 
-def create_account_balance(record_datetime: datetime, account_number: str, balance: Decimal, available_balance: Decimal, credit_limit: Optional[Decimal] = None, currency: str = "EUR", connection: Optional[WsEdiConnection] = None, **kwargs):  # type: ignore  #noqa
+def create_account_balance(record_datetime: datetime, account_number: str, bic: str, balance: Decimal, available_balance: Decimal, credit_limit: Optional[Decimal] = None, currency: str = "EUR", **kwargs):  # type: ignore  #noqa
     return AccountBalance.objects.get_or_create(
         record_datetime=record_datetime,
         account_number=account_number,
+        bic=bic,
         balance=balance,
         available_balance=available_balance,
         credit_limit=credit_limit,
         currency=currency,
-        connection=connection,
     )[0]

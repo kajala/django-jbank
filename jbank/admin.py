@@ -1590,7 +1590,7 @@ class AccountBalanceAdmin(BankAdminBase):
         "id",
         "record_datetime_fmt",
         "account_number",
-        "bic_info",
+        "bic",
         "balance_fmt",
         "available_balance_fmt",
         "credit_limit_fmt",
@@ -1600,13 +1600,14 @@ class AccountBalanceAdmin(BankAdminBase):
     date_hierarchy = "record_datetime"
     list_filter = [
         "account_number",
+        "bic",
         "currency",
     ]
     list_display = [
         "id",
         "record_datetime_fmt",
         "account_number",
-        "bic_info",
+        "bic",
         "balance_fmt",
         "available_balance_fmt",
         "credit_limit_fmt",
@@ -1632,13 +1633,6 @@ class AccountBalanceAdmin(BankAdminBase):
     def credit_limit_fmt(self, obj):
         assert isinstance(obj, AccountBalance)
         return self.format_currency(obj.credit_limit)
-
-    @admin.display(description="BIC")
-    def bic_info(self, obj):
-        assert isinstance(obj, AccountBalance)
-        if obj.connection is not None:
-            return obj.connection.receiver_identifier
-        return ""
 
     @admin.display(description=_("created"), ordering="created")
     def created_fmt(self, obj):

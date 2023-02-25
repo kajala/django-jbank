@@ -950,10 +950,8 @@ class EuriborRate(models.Model):
 
 
 class AccountBalance(models.Model):
-    connection = models.ForeignKey(
-        WsEdiConnection, verbose_name=_("WS-EDI connection"), blank=True, default=None, null=True, related_name="+", on_delete=models.CASCADE
-    )
     account_number = models.CharField(_("account number"), max_length=32, db_index=True)
+    bic = models.CharField("BIC", max_length=16, db_index=True)
     record_datetime = models.DateTimeField(_("record date"), db_index=True)
     balance = models.DecimalField(_("balance"), max_digits=10, decimal_places=2)
     available_balance = models.DecimalField(_("available balance"), max_digits=10, decimal_places=2)
