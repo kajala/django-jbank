@@ -208,8 +208,10 @@ def parse_samlink_real_time_statement(content: str) -> Dict[str, Any]:
     RA_BALANCE_FIELDS = (
         ("pad_1", "9(1)", "P"),
         ("record_time", "9(4)", "P"),
-        ("balance", "X(17)", "P"),
-        ("available_balance", "X(17)", "P"),
+        ("balance", "X(16)", "P"),
+        ("balance_sign", "X(1)", "P"),
+        ("available_balance", "X(16)", "P"),
+        ("available_balance_sign", "X(1)", "P"),
     )
     RA_TRANSACTION_FIELDS = (
         ("const_1", "X(1)", "P"),
@@ -231,7 +233,7 @@ def parse_samlink_real_time_statement(content: str) -> Dict[str, Any]:
     convert_date_fields(header, ["record_date"], tz)
     balance = parse_records(lines[1], RA_BALANCE_FIELDS, line_number=2)
     balance["record_time"] = convert_time(balance.get("record_time"), "record_time")  # type: ignore
-    convert_decimal_fields(balance, ["available_balance", "balance"])
+    convert_decimal_fields(balance, [("available_balance", "available_balance_sign"), ("balance", "balance_sign")])
     records: List[Dict[str, Any]] = []
     for ix, line in enumerate(lines[2:]):
         if line.strip():
