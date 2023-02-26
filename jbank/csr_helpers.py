@@ -1,10 +1,9 @@
 import logging
 from typing import Optional
-
 import cryptography
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from django.core.exceptions import ValidationError
 
@@ -20,6 +19,11 @@ def create_private_key(public_exponent: int = 65537, key_size: int = 2048) -> RS
     :return: RSAPrivateKey
     """
     return cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(public_exponent=public_exponent, key_size=key_size)
+
+
+def get_public_key_pem(public_key: RSAPublicKey) -> bytes:
+    pem = public_key.public_bytes(encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo)
+    return pem
 
 
 def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
