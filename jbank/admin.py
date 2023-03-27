@@ -1289,7 +1289,7 @@ class PayoutPartyAdmin(BankAdminBase):
         if obj is not None:
             assert isinstance(obj, PayoutParty)
             if Payout.objects.filter(Q(recipient=obj) | Q(payer=obj)).exists():
-                return self.fields
+                return self.fields  # type: ignore
         return self.readonly_fields
 
 
@@ -1432,7 +1432,7 @@ class WsEdiConnectionAdmin(BankAdminBase):
         "expires",
     )
 
-    def expires(self, obj):
+    def expires(self, obj: WsEdiConnection) -> str:
         assert isinstance(obj, WsEdiConnection)
         min_not_valid_after: Optional[datetime] = None
         try:
@@ -1445,7 +1445,7 @@ class WsEdiConnectionAdmin(BankAdminBase):
             ]
         except Exception as e:
             logger.error(e)
-            return _("(missing certificate files)")
+            return str(_("(missing certificate files)"))
         for filename in certs:
             if filename and os.path.isfile(filename):
                 cert = get_x509_cert_from_file(filename)
@@ -1624,7 +1624,7 @@ class AccountBalanceAdmin(BankAdminBase):
         "currency",
         "created_fmt",
     ]
-    readonly_fields = fields
+    readonly_fields = fields  # type: ignore
 
     def has_add_permission(self, request) -> bool:  # type: ignore  # noqa
         return False

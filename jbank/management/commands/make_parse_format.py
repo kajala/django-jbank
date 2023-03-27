@@ -36,7 +36,7 @@ class Command(SafeCommand):
     def do(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
         verbose = kwargs["verbose"]
 
-        lines: List[List[str]] = []
+        lines: List[List[str]] = []  # type: ignore
         with open(kwargs["csv_file"], "rt", encoding="utf-8") as fp:
             reader = csv.reader(fp, dialect="excel")
             for line in reader:

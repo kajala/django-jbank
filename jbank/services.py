@@ -4,7 +4,7 @@ from typing import Optional
 from jbank.models import AccountBalance
 
 
-def create_account_balance(
+def create_account_balance(  # pylint: disable=too-many-arguments
     record_datetime: datetime,
     account_number: str,
     bic: str,
@@ -12,6 +12,7 @@ def create_account_balance(
     available_balance: Decimal,
     credit_limit: Optional[Decimal] = None,
     currency: str = "EUR",
+    **kwargs  # noqa  # type: ignore
 ):
     return AccountBalance.objects.get_or_create(
         record_datetime=record_datetime,

@@ -414,7 +414,7 @@ def camt054_parse_date(data: dict, key: str) -> date:
     val = data.get(key)
     if not val or "Dt" not in val:
         raise Exception(_("Failed to parse date '{}'").format(key))
-    return parse_date(val["Dt"])
+    return parse_date(val["Dt"])  # type: ignore
 
 
 def camt054_parse_amt(data: dict, key: str) -> Tuple[Decimal, str]:
@@ -465,7 +465,9 @@ def camt054_parse_refs_endtoendid(data: dict, key: str) -> str:
 
 
 @transaction.atomic
-def camt054_create_reference_payment_batch(ntfctn: dict, name: str, file: ReferencePaymentBatchFile) -> ReferencePaymentBatch:
+def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
+    ntfctn: dict, name: str, file: ReferencePaymentBatchFile
+) -> ReferencePaymentBatch:
     account_number, account_currency = camt054_parse_ntfctn_acct(ntfctn)
     account = Account.objects.get(name=account_number, currency=account_currency)
     assert isinstance(account, Account)
