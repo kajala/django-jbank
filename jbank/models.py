@@ -321,7 +321,7 @@ class ReferencePaymentBatchManager(models.Manager):
         obj = self.order_by("-record_date").first()
         if not obj:
             return None
-        return obj.record_date
+        return obj.record_date  # type: ignore
 
 
 class ReferencePaymentBatch(AccountEntrySourceFile):
