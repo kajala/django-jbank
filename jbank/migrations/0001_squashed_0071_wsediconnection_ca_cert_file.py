@@ -8,7 +8,6 @@ import jutil.validators
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("jbank", "0001_initial"),
         ("jbank", "0002_auto_20171031_0356"),

@@ -5,7 +5,6 @@ import jutil.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0065_wsediconnection_bank_root_cert_file"),
     ]

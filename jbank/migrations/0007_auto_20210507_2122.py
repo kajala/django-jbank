@@ -5,7 +5,6 @@ import jutil.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0006_auto_20210318_2130"),
     ]

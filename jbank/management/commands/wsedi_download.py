@@ -6,7 +6,8 @@ import pytz
 from django.core.management.base import CommandParser
 from django.utils.timezone import now
 from jutil.xml import xml_to_dict
-from jbank.helpers import process_pain002_file_content, parse_start_and_end_date
+from jbank.helpers import parse_start_and_end_date
+from jbank.pain002 import process_pain002_file_content
 from jbank.models import WsEdiConnection
 from jbank.wsedi import wsedi_get, wsedi_execute
 from jutil.command import SafeCommand

@@ -7,7 +7,6 @@ import jutil.validators
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jacc", "0010_auto_20180201_0734"),
         ("jbank", "0013_auto_20180126_0909"),

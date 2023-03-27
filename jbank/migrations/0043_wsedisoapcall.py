@@ -6,7 +6,6 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0042_wsediconnection_bank_encryption_cert_file"),
     ]

@@ -10,6 +10,7 @@ Features
   * Parsing TO/TITO files
   * Parsing SVM/KTL files
   * Parsing camt.053.001.02 files
+  * Parsing camt.054.001.02 files
   * Parsing pain.002.001.03 files
   * Generating pain.001.001.03 files
 * Spanish banks:
@@ -34,6 +35,8 @@ Tested Banks
 * POP-Pankki
 * Danskebank Finland
 * Säästöpankki
+* Aktia
+* Nordea
 
 
 Changes

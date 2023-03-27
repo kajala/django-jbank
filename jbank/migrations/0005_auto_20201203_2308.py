@@ -5,7 +5,6 @@ import jutil.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0004_refund_attachment"),
     ]

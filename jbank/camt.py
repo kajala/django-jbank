@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Tuple, Any, Optional, Dict
@@ -9,6 +10,7 @@ from django.utils.dateparse import parse_date
 from django.utils.translation import gettext as _
 from jacc.models import Account, EntryType
 from jutil.format import dec2, dec4
+from jutil.model import clone_model
 from jutil.parse import parse_datetime
 from jbank.models import (
     StatementFile,
@@ -19,16 +21,27 @@ from jbank.models import (
     CurrencyExchange,
     StatementRecordRemittanceInfo,
     CurrencyExchangeSource,
+    ReferencePaymentBatchFile,
+    ReferencePaymentBatch,
+    ReferencePaymentRecord,
 )
 from jbank.parsers import parse_filename_suffix
 from jutil.xml import xml_to_dict
 
 
-CAMT053_STATEMENT_SUFFIXES = ("XML", "XT", "CAMT", "NDCAMT53L")
+CAMT053_STATEMENT_SUFFIXES = ("XML", "XT", "CAMT", "NDCAMT53L", "XML")
 
-CAMT053_ARRAY_TAGS = ["Bal", "Ntry", "NtryDtls", "TxDtls", "Strd"]
+CAMT053_ARRAY_TAGS = ["Bal", "Ntry", "NtryDtls", "TxDtls", "Strd", "Ustrd"]
 
 CAMT053_INT_TAGS = ["NbOfNtries", "NbOfTxs"]
+
+CAMT054_STATEMENT_SUFFIXES = ("XE", "XE", "CAMT", "NDCAMT54L", "XML")
+
+CAMT054_ARRAY_TAGS = ["Ntfctn", "Othr", "Ntry", "NtryDtls", "PrtryAmt", "Chrgs", "AdrLine", "Strd", "Ustrd", "RfrdDocInf", "AddtlRmtInf"]
+
+CAMT054_INT_TAGS = ["NbOfNtries", "NbOfTxs"]
+
+logger = logging.getLogger(__name__)
 
 
 def camt053_get_iban(data: dict) -> str:
@@ -314,7 +327,10 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                     d.creditor_account = d_cdtr_acct_id_othr.get("Id") or ""
 
                 d_rmt = dtl.get("RmtInf", {})
-                d.unstructured_remittance_info = d_rmt.get("Ustrd", "")
+                for ustrd in d_rmt.get("Ustrd") or []:
+                    if d.unstructured_remittance_info:
+                        d.unstructured_remittance_info += "\n"
+                    d.unstructured_remittance_info = str(ustrd).rstrip()
 
                 d_rltd_dts = dtl.get("RltdDts", {})
                 d.paid_date = camt053_get_dt(d_rltd_dts, "AccptncDtTm") if "AccptncDtTm" in d_rltd_dts else None
@@ -357,7 +373,9 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         if not rec.recipient_account_number:
             rec.recipient_account_number = camt053_get_unified_str(rec.detail_set.all(), "creditor_account")
         if not rec.remittance_info:
-            rec.remittance_info = camt053_get_unified_str(StatementRecordRemittanceInfo.objects.all().filter(detail__record=rec), "reference")
+            rec.remittance_info = camt053_get_unified_str(
+                StatementRecordRemittanceInfo.objects.all().filter(detail__record=rec).order_by("id").distinct(), "reference"
+            )
         if not rec.paid_date:
             paid_date = camt053_get_unified_val(rec.detail_set.all(), "paid_date", default=None)
             if paid_date:
@@ -368,3 +386,121 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         rec.save()
 
     return stm
+
+
+def camt054_parse_file(filename: str) -> dict:
+    if parse_filename_suffix(filename).upper() not in CAMT054_STATEMENT_SUFFIXES:
+        raise ValidationError(
+            _('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
+                filename=filename, suffixes=", ".join(CAMT054_STATEMENT_SUFFIXES), file_type="camt.054"
+            )
+        )
+    with open(filename, "rb") as fp:
+        data = xml_to_dict(fp.read(), array_tags=CAMT054_ARRAY_TAGS, int_tags=CAMT054_INT_TAGS)
+        return data
+
+
+def camt054_parse_ntfctn_acct(ntfctn: dict, default_currency: str = "EUR") -> Tuple[str, str]:
+    """
+    Returns account_number, currency from Ntfctn
+    """
+    acc_data = ntfctn["Acct"]
+    currency = acc_data.get("Ccy") or default_currency
+    account_number = acc_data["Id"].get("IBAN") or acc_data["Id"].get("BBAN")
+    return account_number, currency
+
+
+def camt054_parse_date(data: dict, key: str) -> date:
+    val = data.get(key)
+    if not val or "Dt" not in val:
+        raise Exception(_("Failed to parse date '{}'").format(key))
+    return parse_date(val["Dt"])
+
+
+def camt054_parse_amt(data: dict, key: str) -> Tuple[Decimal, str]:
+    val = data.get(key) or {}
+    amt = val.get("Amt")
+    if not amt or "@" not in amt or "@Ccy" not in amt:
+        raise Exception(_("Failed to parse amount '{}'").format(key))
+    return Decimal(amt["@"]), amt["@Ccy"]
+
+
+def camt054_parse_rmtinf(data: dict, key: str) -> str:
+    out = ""
+    val = data.get(key) or {}
+    ustrd_list = val.get("Ustrd")
+    if ustrd_list:
+        out = "\n".join(str(ustrd).rstrip() for ustrd in ustrd_list)
+    strd_list = val.get("Strd") or []
+    for strd in strd_list:
+        cdtrrefinf = strd.get("CdtrRefInf") or {}
+        ref_val = cdtrrefinf.get("Ref") or ""
+        if ref_val:
+            if out:
+                out += "\n"
+            out += ref_val
+    return out
+
+
+def camt054_parse_dbtr(data: dict, key: str) -> str:
+    val = data.get(key) or {}
+    if not val:
+        return ""
+    dbtr = val.get("Dbtr")
+    if not dbtr or "Nm" not in dbtr:
+        raise Exception(_("Failed to parse debtor '{}'").format(key))
+    return dbtr["Nm"]
+
+
+def camt054_parse_rltdagts_cdtragt_fininstnid_bic(data: dict, key: str) -> str:
+    rltdagts = data.get(key) or {}
+    cdtragt = rltdagts.get("CdtrAgt") or {}
+    fininstnid = cdtragt.get("FinInstnId") or {}
+    return fininstnid.get("BIC") or ""
+
+
+def camt054_parse_refs_endtoendid(data: dict, key: str) -> str:
+    refs = data.get(key) or {}
+    return refs.get("EndToEndId") or ""
+
+
+@transaction.atomic
+def camt054_create_reference_payment_batch(ntfctn: dict, name: str, file: ReferencePaymentBatchFile) -> ReferencePaymentBatch:
+    account_number, account_currency = camt054_parse_ntfctn_acct(ntfctn)
+    account = Account.objects.get(name=account_number, currency=account_currency)
+    assert isinstance(account, Account)
+    created_datetime = parse_datetime(ntfctn["CreDtTm"])
+    identifier = ntfctn["Id"]
+    batch = ReferencePaymentBatch(record_date=created_datetime, file=file, identifier=identifier, name=name)
+    batch.clean()
+    batch.save()
+    e_deposit = EntryType.objects.get(code=settings.E_BANK_DEPOSIT)
+    e_withdraw = EntryType.objects.get(code=settings.E_BANK_WITHDRAW)
+    for ntry in ntfctn["Ntry"]:
+        rec = ReferencePaymentRecord(batch=batch, account_number=account_number, account=account)
+        rec.record_date = camt054_parse_date(ntry, "BookgDt")
+        rec.record_type = cdtdbtind = ntry.get("CdtDbtInd") or ""
+        if cdtdbtind == "CRDT":
+            rec.type = e_deposit
+        elif cdtdbtind == "DBIT":
+            rec.type = e_withdraw
+        else:
+            raise Exception(_("Unknown credit/debit indicator '{}'").format(cdtdbtind))
+        rec.value_date = camt054_parse_date(ntry, "ValDt")
+        ntrydtls_list = ntry.get("NtryDtls") or []
+        for ntrydtls0 in ntrydtls_list:
+            rec_tx = clone_model(rec)
+            assert isinstance(rec_tx, ReferencePaymentRecord)
+            txdtls = ntrydtls0["TxDtls"]
+            amtdtls = txdtls["AmtDtls"]
+            rec_tx.instructed_amount, rec_tx.instructed_currency = camt054_parse_amt(amtdtls, "InstdAmt")
+            rec_tx.amount, rec_currency = camt054_parse_amt(amtdtls, "TxAmt")
+            if rec_currency != account_currency:
+                raise Exception(_("Account currency {} does not match record currency {}").format(account_currency, rec_currency))
+            rec_tx.remittance_info = camt054_parse_rmtinf(txdtls, "RmtInf")
+            rec_tx.payer_name = camt054_parse_dbtr(txdtls, "RltdPties")
+            rec_tx.creditor_bank_bic = camt054_parse_rltdagts_cdtragt_fininstnid_bic(txdtls, "RltdAgts")
+            rec_tx.end_to_end_identifier = camt054_parse_refs_endtoendid(txdtls, "Refs")
+            rec_tx.clean()
+            rec_tx.save()
+    return batch

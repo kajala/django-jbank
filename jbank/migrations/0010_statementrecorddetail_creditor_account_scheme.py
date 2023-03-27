@@ -5,7 +5,6 @@ import jutil.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0009_referencepaymentbatchfile_cached_total_amount"),
     ]

@@ -5,7 +5,6 @@ import jutil.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0018_alter_referencepaymentbatch_currency_identifier_and_more"),
     ]

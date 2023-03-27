@@ -10,7 +10,6 @@ def migr0015(apps, schema):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0014_payoutstatus_timestamp"),
     ]

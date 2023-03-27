@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jacc", "0006_account_name"),
         ("jbank", "0002_auto_20171031_0356"),

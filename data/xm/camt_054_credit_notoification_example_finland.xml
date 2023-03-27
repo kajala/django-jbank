@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>CAMT08224820170203001</MsgId>
+			<CreDtTm>2017-02-03T08:23:10</CreDtTm>
+			<AddtlInf>/CRED/</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>55667788992027122200001</Id>
+			<CreDtTm>2017-02-03T08:23:10</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>FI1431313001234567</IBAN>
+				</Id>
+				<Ccy>EUR</Ccy>
+				<Ownr>
+					<Id>
+						<OrgId>
+							<Othr>
+								<Id>5566778899</Id>
+								<SchmeNm>
+									<Cd>BANK</Cd>
+								</SchmeNm>
+							</Othr>
+						</OrgId>
+					</Id>
+				</Ownr>
+				<Svcr>
+					<FinInstnId>
+						<BIC>HANDFIHH</BIC>
+					</FinInstnId>
+				</Svcr>
+			</Acct>
+			<TxsSummry>
+				<TtlNtries>
+					<NbOfNtries>4</NbOfNtries>
+					<Sum>7048</Sum>
+					<CdtDbtInd>CRDT</CdtDbtInd>
+				</TtlNtries>
+			</TxsSummry>
+			<Ntry>
+				<NtryRef>5566778899202712220000100001</NtryRef>
+				<Amt Ccy="EUR">88.16</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2017-01-22</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2017-01-22</Dt>
+				</ValDt>
+				<AcctSvcrRef>201701312588CECZ0804</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>ESCT</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<EndToEndId>End To End ID 11</EndToEndId>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">88.16</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">88.16</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>SUOMI OY</Nm>
+							</Dbtr>
+						</RltdPties>
+						<RltdAgts>
+							<CdtrAgt>
+								<FinInstnId>
+									<BIC>HANDFIHH</BIC>
+								</FinInstnId>
+							</CdtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Ustrd>9597349</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+			<Ntry>
+				<NtryRef>5566778899202712220000100002</NtryRef>
+				<Amt Ccy="EUR">742.45</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2017-01-22</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2017-01-22</Dt>
+				</ValDt>
+				<AcctSvcrRef>20170123456</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>ESCT</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<EndToEndId>End to End ID 12</EndToEndId>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">742.45</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">742.45</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>TEST OY</Nm>
+							</Dbtr>
+						</RltdPties>
+						<RltdAgts>
+							<CdtrAgt>
+								<FinInstnId>
+									<BIC>HANDFIHH</BIC>
+								</FinInstnId>
+							</CdtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Strd>
+								<RfrdDocAmt>
+									<RmtdAmt Ccy="EUR">1371.13</RmtdAmt>
+								</RfrdDocAmt>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Cd>SCOR</Cd>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>9544208</Ref>
+								</CdtrRefInf>
+							</Strd>
+							<Strd>
+								<RfrdDocInf>
+									<Tp>
+										<CdOrPrtry>
+											<Cd>CREN</Cd>
+										</CdOrPrtry>
+									</Tp>
+									<Nb>9582095</Nb>
+								</RfrdDocInf>
+								<RfrdDocAmt>
+									<CdtNoteAmt Ccy="EUR">628.68</CdtNoteAmt>
+								</RfrdDocAmt>
+							</Strd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+			<Ntry>
+				<NtryRef>5566778899202712220000100003</NtryRef>
+				<Amt Ccy="EUR">6000.54</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2017-01-22</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2017-01-22</Dt>
+				</ValDt>
+				<AcctSvcrRef>201702013131LG123456</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>ESCT</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<EndToEndId>EndToEndId 13</EndToEndId>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="EUR">6000.54</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">6000.54</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>DEBTOR FINLAND OY</Nm>
+								<PstlAdr>
+									<StrtNm>Street ABC</StrtNm>
+								</PstlAdr>
+							</Dbtr>
+						</RltdPties>
+						<RltdAgts>
+							<CdtrAgt>
+								<FinInstnId>
+									<BIC>HANDFIHH</BIC>
+								</FinInstnId>
+							</CdtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Strd>
+								<RfrdDocInf>
+									<Tp>
+										<CdOrPrtry>
+											<Cd>CINV</Cd>
+										</CdOrPrtry>
+									</Tp>
+									<Nb> 9580572</Nb>
+								</RfrdDocInf>
+								<RfrdDocAmt>
+									<RmtdAmt Ccy="EUR">6256.7</RmtdAmt>
+								</RfrdDocAmt>
+							</Strd>
+							<Strd>
+								<RfrdDocInf>
+									<Tp>
+										<CdOrPrtry>
+											<Cd>CREN</Cd>
+										</CdOrPrtry>
+									</Tp>
+									<Nb>00000000000009580521</Nb>
+								</RfrdDocInf>
+								<RfrdDocAmt>
+									<CdtNoteAmt Ccy="EUR">166.46</CdtNoteAmt>
+								</RfrdDocAmt>
+							</Strd>
+							<Strd>
+								<RfrdDocInf>
+									<Tp>
+										<CdOrPrtry>
+											<Cd>CREN</Cd>
+										</CdOrPrtry>
+									</Tp>
+									<Nb>00000000000009579095</Nb>
+								</RfrdDocInf>
+								<RfrdDocAmt>
+									<CdtNoteAmt Ccy="EUR">89.7</CdtNoteAmt>
+								</RfrdDocAmt>
+							</Strd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+			<Ntry>
+				<NtryRef>5566778899202712220000100004</NtryRef>
+				<Amt Ccy="EUR">216.85</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2017-01-22</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2017-01-22</Dt>
+				</ValDt>
+				<AcctSvcrRef>170130313190U60111</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>XBCT</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<TxDtls>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="SEK">2082.58</Amt>
+							</InstdAmt>
+							<TxAmt>
+								<Amt Ccy="EUR">216.85</Amt>
+							</TxAmt>
+						</AmtDtls>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Debtor Name</Nm>
+							</Dbtr>
+						</RltdPties>
+						<RltdAgts>
+							<CdtrAgt>
+								<FinInstnId>
+									<BIC>HANDFIHH</BIC>
+								</FinInstnId>
+							</CdtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Ustrd>3131090U20130000                   PANO/INSATTN  EUR            216,85</Ustrd>
+							<Ustrd>KURSSI/KURS        9,60400MAKSU/UPPDR.  SEK           2082,58</Ustrd>
+							<Ustrd>ULK.ARVOPV/UTL.VALUT.DAG 01.02.2017MAKSUMR./BET. ORDER</Ustrd>
+							<Ustrd>PARTIAL PYMT 170124         INV 43459</Ustrd>
+							<Ustrd>INV EUR 357</Ustrd>
+						</RmtInf>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>

@@ -3,7 +3,8 @@ import os
 from pprint import pprint
 from django.core.management.base import CommandParser
 from django.db import transaction
-from jbank.helpers import create_statement, get_or_create_bank_account, save_or_store_media
+from jbank.helpers import get_or_create_bank_account, save_or_store_media
+from jbank.svm import create_statement
 from jbank.files import list_dir_files
 from jbank.models import Statement, StatementFile
 from jbank.parsers import parse_filename_suffix

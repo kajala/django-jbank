@@ -38,7 +38,6 @@ from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.validators import iban_bic
 from jutil.xml import xml_to_dict
-from jbank.helpers import create_statement, create_reference_payment_batch
 from jbank.models import (
     Statement,
     StatementRecord,
@@ -65,7 +64,7 @@ from jbank.models import (
     AccountBalance,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
-from jbank.svm import parse_svm_batches_from_file, parse_svm_batches
+from jbank.svm import parse_svm_batches_from_file, parse_svm_batches, create_statement, create_reference_payment_batch
 from jutil.admin import ModelAdminBase, admin_log
 
 logger = logging.getLogger(__name__)
@@ -593,6 +592,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "account_number",
         "record_date",
         "paid_date",
+        "value_date",
         "archive_identifier",
         "remittance_info",
         "payer_name",
@@ -612,6 +612,10 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "manually_settled",
         "is_settled_bool",
         "child_links",
+        "instructed_amount",
+        "instructed_currency",
+        "creditor_bank_bic",
+        "end_to_end_identifier",
     ]
     readonly_fields = (
         "id",
@@ -622,6 +626,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "account_number",
         "record_date",
         "paid_date",
+        "value_date",
         "archive_identifier",
         "remittance_info",
         "payer_name",
@@ -647,6 +652,10 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "parent",
         "is_settled_bool",
         "child_links",
+        "instructed_amount",
+        "instructed_currency",
+        "creditor_bank_bic",
+        "end_to_end_identifier",
     )
     list_filter = (
         "batch__file__tag",

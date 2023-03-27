@@ -328,9 +328,10 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     objects = ReferencePaymentBatchManager()
     file = models.ForeignKey("ReferencePaymentBatchFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_("record date"), db_index=True)
-    institution_identifier = SafeCharField(_("institution"), max_length=2, blank=True)
-    service_identifier = SafeCharField(_("service"), max_length=9, blank=True)
-    currency_identifier = SafeCharField(_("currency"), max_length=3, choices=CURRENCY_IDENTIFIERS)
+    identifier = SafeCharField(_("institution"), max_length=32, blank=True)
+    institution_identifier = SafeCharField(_("institution"), max_length=2, blank=True, default="")
+    service_identifier = SafeCharField(_("service"), max_length=9, blank=True, default="")
+    currency_identifier = SafeCharField(_("currency"), max_length=3, blank=True, default="EUR")
     cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
 
     class Meta:
@@ -358,19 +359,24 @@ class ReferencePaymentRecord(AccountEntry):
     objects = PaymentRecordManager()  # type: ignore
     batch = models.ForeignKey(ReferencePaymentBatch, verbose_name=_("batch"), related_name="record_set", on_delete=models.CASCADE)
     line_number = models.SmallIntegerField(_("line number"), default=0, blank=True)
-    record_type = SafeCharField(_("record type"), max_length=1)
+    record_type = SafeCharField(_("record type"), max_length=4, blank=True, default="")
     account_number = SafeCharField(_("account number"), max_length=32, db_index=True)
     record_date = models.DateField(_("record date"), db_index=True)
     paid_date = models.DateField(_("paid date"), db_index=True, blank=True, null=True, default=None)
+    value_date = models.DateField(_("value date"), db_index=True, blank=True, null=True, default=None)
     archive_identifier = SafeCharField(_("archive identifier"), max_length=32, blank=True, default="", db_index=True)
-    remittance_info = SafeCharField(_("remittance info"), max_length=32, db_index=True)
-    payer_name = SafeCharField(_("payer name"), max_length=12, blank=True, default="", db_index=True)
-    currency_identifier = SafeCharField(_("currency identifier"), max_length=1, choices=CURRENCY_IDENTIFIERS)
-    name_source = SafeCharField(_("name source"), max_length=1, choices=NAME_SOURCES, blank=True)
-    correction_identifier = SafeCharField(_("correction identifier"), max_length=1, choices=CORRECTION_IDENTIFIER)
-    delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True)
-    receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True)
+    remittance_info = SafeCharField(_("remittance info"), max_length=256, db_index=True)
+    payer_name = SafeCharField(_("payer name"), max_length=64, blank=True, default="", db_index=True)
+    currency_identifier = SafeCharField(_("currency identifier"), max_length=1, choices=CURRENCY_IDENTIFIERS, blank=True, default="")
+    name_source = SafeCharField(_("name source"), max_length=1, choices=NAME_SOURCES, blank=True, default="")
+    correction_identifier = SafeCharField(_("correction identifier"), max_length=1, choices=CORRECTION_IDENTIFIER, default="")
+    delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True, default="")
+    receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True, default="")
     manually_settled = models.BooleanField(_("manually settled"), db_index=True, default=False, blank=True)
+    instructed_amount = models.DecimalField(_("instructed amount"), blank=True, default=None, null=True, max_digits=10, decimal_places=2)
+    instructed_currency = SafeCharField(_("instructed currency"), blank=True, default="", max_length=3)
+    creditor_bank_bic = SafeCharField(_("creditor bank BIC"), max_length=16, blank=True, default="")
+    end_to_end_identifier = SafeCharField(_("end to end identifier"), max_length=128, blank=True, default="")
 
     class Meta:
         verbose_name = _("reference payment records")
@@ -393,7 +399,7 @@ class ReferencePaymentRecord(AccountEntry):
 
     def clean(self):
         self.source_file = self.batch
-        self.timestamp = pytz.utc.localize(datetime.combine(self.paid_date, time(0, 0)))
+        self.timestamp = pytz.utc.localize(datetime.combine(self.paid_date or self.record_date, time(0, 0)))
         self.description = "{amount} {remittance_info} {payer_name}".format(
             amount=self.amount, remittance_info=self.remittance_info, payer_name=self.payer_name
         )
@@ -423,12 +429,19 @@ class ReferencePaymentBatchFile(models.Model):
     file = models.FileField(verbose_name=_("file"), upload_to="uploads")
     original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256)
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
+    timestamp = models.DateTimeField(_("timestamp"), default=None, null=True, db_index=True, blank=True, editable=False)
+    msg_id = models.CharField(_("message identifier"), max_length=32, default="", blank=True, db_index=True)
+    additional_info = models.CharField(_("additional information"), max_length=128, default="", blank=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
     cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
 
     class Meta:
         verbose_name = _("reference payment batch file")
         verbose_name_plural = _("reference payment batch files")
+
+    def clean(self):
+        if self.timestamp is None:
+            self.timestamp = self.created
 
     def get_total_amount(self, force: bool = False) -> Decimal:
         if self.cached_total_amount is None or force:

@@ -6,7 +6,6 @@ import jutil.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0012_alter_referencepaymentrecord_delivery_method"),
     ]

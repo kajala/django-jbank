@@ -1,7 +1,7 @@
 import logging
 from pprint import pprint
 from django.core.management.base import CommandParser
-from jbank.helpers import create_account_balance
+from jbank.services import create_account_balance
 from jbank.parsers import parse_nordea_balance_query
 from jutil.command import SafeCommand
 

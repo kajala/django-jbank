@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jacc", "0022_auto_20200629_0346"),
         ("jbank", "0001_squashed_0071_wsediconnection_ca_cert_file"),

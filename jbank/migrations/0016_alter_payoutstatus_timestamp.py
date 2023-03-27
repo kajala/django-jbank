@@ -11,7 +11,6 @@ def migr_0016(apps, schema):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("jbank", "0015_ps_timestamp_fill"),
     ]
