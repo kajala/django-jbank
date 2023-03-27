@@ -495,7 +495,8 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
             assert isinstance(rec_tx, ReferencePaymentRecord)
             txdtls = ntrydtls0["TxDtls"]
             amtdtls = txdtls["AmtDtls"]
-            rec_tx.instructed_amount, rec_tx.instructed_currency = camt054_parse_amt(amtdtls, "InstdAmt")
+            if "InstdAmt" in amtdtls:
+                rec_tx.instructed_amount, rec_tx.instructed_currency = camt054_parse_amt(amtdtls, "InstdAmt")
             rec_tx.amount, rec_currency = camt054_parse_amt(amtdtls, "TxAmt")
             if rec_currency != account_currency:
                 raise Exception(_("Account currency {} does not match record currency {}").format(account_currency, rec_currency))
