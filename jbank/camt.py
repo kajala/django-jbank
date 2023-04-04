@@ -491,7 +491,7 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
         rec.value_date = camt054_parse_date(ntry, "ValDt")
         ntrydtls_list = ntry.get("NtryDtls") or []
         for ntrydtls0 in ntrydtls_list:
-            rec_tx = clone_model(rec)
+            rec_tx = clone_model(rec, commit=False)
             assert isinstance(rec_tx, ReferencePaymentRecord)
             txdtls = ntrydtls0["TxDtls"]
             amtdtls = txdtls["AmtDtls"]
