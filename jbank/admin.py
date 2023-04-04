@@ -33,7 +33,7 @@ from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
 from jbank.x509_helpers import get_x509_cert_from_file
-from jutil.format import dec2, format_timedelta
+from jutil.format import dec2, format_timedelta, choices_label
 from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
 from jutil.validators import iban_bic
@@ -62,6 +62,7 @@ from jbank.models import (
     PAYOUT_PAID,
     PAYOUT_ON_HOLD,
     AccountBalance,
+    PAYOUT_STATE,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches, create_statement, create_reference_payment_batch
@@ -1112,36 +1113,24 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
 
 def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
-    for p in list(qs.order_by("id").distinct()):
-        assert isinstance(p, Payout)
-        try:
-            p.refresh_from_db()
-            if p.state not in [PAYOUT_ERROR, PAYOUT_ON_HOLD]:
-                messages.warning(request, f"{p}: {p.state_name}")
-                continue
-            old_state = p.state_name
-            p.state = PAYOUT_WAITING_PROCESSING
-            p.save(update_fields=["state"])
-            admin_log([p], f"Changed state from {old_state} to {p.state_name}", who=request.user, ip=user_ip)
-            messages.success(request, f"{p}: {p.state_name}")
-        except Exception as err:
-            messages.error(request, f"{p}: {err}")
+    qs = qs.filter(state__in=[PAYOUT_ERROR, PAYOUT_ON_HOLD])
+    n_count = qs.count()
+    qs_list = list(qs.order_by("id").distinct())
+    qs.update(state=PAYOUT_WAITING_PROCESSING)
+    state_name = choices_label(PAYOUT_STATE, PAYOUT_WAITING_PROCESSING)
+    messages.success(request, f"{n_count}x {state_name}")
+    admin_log(qs_list, f"Changed state to {state_name}", who=request.user, ip=user_ip)
 
 
 def mark_payouts_as_paid(modeladmin, request, qs):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
-    for p in list(qs.order_by("id").distinct()):
-        assert isinstance(p, Payout)
-        try:
-            if p.state == PAYOUT_PAID:
-                messages.warning(request, f"{p}: {p.state_name}")
-                continue
-            p.state = PAYOUT_PAID
-            p.save(update_fields=["state"])
-            admin_log([p], f"Changed state to {p.state_name}", who=request.user, ip=user_ip)
-            messages.success(request, f"{p}: {p.state_name}")
-        except Exception as err:
-            messages.error(request, f"{p}: {err}")
+    qs = qs.exclude(state__in=[PAYOUT_PAID])
+    n_count = qs.count()
+    qs_list = list(qs.order_by("id").distinct())
+    qs.update(state=PAYOUT_PAID)
+    state_name = choices_label(PAYOUT_STATE, PAYOUT_WAITING_PROCESSING)
+    messages.success(request, f"{n_count}x {state_name}")
+    admin_log(qs_list, f"Changed state to {state_name}", who=request.user, ip=user_ip)
 
 
 def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: disable=unused-argument
