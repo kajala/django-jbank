@@ -19,6 +19,7 @@ class Command(SafeCommand):
         parser.add_argument("--soap-action-header", action="store_true")
         parser.add_argument("--xml-sig", action="store_true")
         parser.add_argument("--lowercase-env", action="store_true")
+        parser.add_argument("--restore-old", action="store_true")
 
     def do(self, *args, **options):
         if options["process_response"]:
@@ -35,6 +36,11 @@ class Command(SafeCommand):
         if ws and not ws.enabled:
             logger.info("WS connection %s not enabled, exiting", ws)
             return
+        if options["restore_old"]:
+            ws.signing_key_file = ws.old_signing_key_file
+            ws.encryption_key_file = ws.old_encryption_key_file
+            ws.save()
+            logger.info("Restored old ws id=%s signing_key_file and encryption_key_file", ws.id)
 
         cmd = options["cmd"]
         payout_party_id = options["payout_party_id"]

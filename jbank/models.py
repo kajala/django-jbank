@@ -868,8 +868,7 @@ class WsEdiConnection(models.Model):
     def sign_application_request(self, content: bytes) -> bytes:
         return self._sign_request(content, self.signing_key_full_path, self.signing_cert_full_path)
 
-    @classmethod
-    def _sign_request(cls, content: bytes, signing_key_full_path: str, signing_cert_full_path: str) -> bytes:
+    def _sign_request(self, content: bytes, signing_key_full_path: str, signing_cert_full_path: str) -> bytes:
         """
         Sign a request.
         See https://users.dcc.uchile.cl/~pcamacho/tutorial/web/xmlsec/xmlsec.html
@@ -881,16 +880,19 @@ class WsEdiConnection(models.Model):
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)
             fp.flush()
-            cmd = [
-                settings.XMLSEC1_PATH,
-                "--sign",
-                "--privkey-pem",
-                "{},{}".format(signing_key_full_path, signing_cert_full_path),
-                fp.name,
-            ]
+            if self.use_sha256:
+                cmd = [self._xmlsec1_example_bin("sign3-sha256"), fp.name, signing_key_full_path, signing_cert_full_path]
+            else:
+                cmd = [
+                    settings.XMLSEC1_PATH,
+                    "--sign",
+                    "--privkey-pem",
+                    "{},{}".format(signing_key_full_path, signing_cert_full_path),
+                    fp.name,
+                ]
             # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
-        cls.verify_signature(out, signing_key_full_path)
+        self.verify_signature(out, signing_key_full_path)
         return out
 
     def encrypt_pki_request(self, content: bytes) -> bytes:
