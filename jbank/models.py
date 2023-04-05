@@ -735,6 +735,8 @@ class WsEdiConnection(models.Model):
     signing_key_file = models.FileField(verbose_name=_("signing key file"), blank=True, upload_to="certs")
     encryption_cert_file = models.FileField(verbose_name=_("encryption certificate file"), blank=True, upload_to="certs")
     encryption_key_file = models.FileField(verbose_name=_("encryption key file"), blank=True, upload_to="certs")
+    old_signing_key_file = models.FileField(verbose_name=_("old signing key file"), blank=True, upload_to="certs", editable=False)
+    old_encryption_key_file = models.FileField(verbose_name=_("old encryption key file"), blank=True, upload_to="certs", editable=False)
     bank_encryption_cert_file = models.FileField(verbose_name=_("bank encryption cert file"), blank=True, upload_to="certs")
     bank_signing_cert_file = models.FileField(verbose_name=_("bank signing cert file"), blank=True, upload_to="certs")
     ca_cert_file = models.FileField(verbose_name=_("CA certificate file"), blank=True, upload_to="certs")

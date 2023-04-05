@@ -62,11 +62,12 @@ def strip_xml_header_bytes(xml: bytes) -> bytes:
 
 
 def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
-    soap_call: WsEdiSoapCall, payout_party: PayoutParty, lowercase_environment: bool = False
+    soap_call: WsEdiSoapCall, payout_party: PayoutParty, lowercase_environment: bool = False, use_sha256: bool = False
 ) -> bytes:
     ws = soap_call.connection
     command = soap_call.command
     command_lower = command.lower()
+    opt_sha256_suffix = "-sha256" if use_sha256 else ""
 
     if command_lower == "getcertificate":
         soap_template_name = "jbank/pki_get_certificate_soap_template.xml"
@@ -109,7 +110,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
         is_create = command_lower in ["createcertificate", "getcertificate"] and not is_renew
         is_encrypted = command_lower in ["createcertificate", "renewcertificate"] and bool(ws.bank_encryption_cert_file)
         if is_renew and command_lower == "getcertificate":
-            template_name = "pki_get_certificate_renew_request_template.xml"
+            template_name = f"pki_get_certificate_renew_request_template{opt_sha256_suffix}.xml"
         else:
             template_name = "pki_" + camel_case_to_underscore(command) + "_request_template.xml"
 
@@ -128,6 +129,8 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             signing_pk_pem = get_private_key_pem(signing_pk)
             encryption_pk_filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, "EncryptionKey")
             signing_pk_filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, "SigningKey")
+            ws.old_encryption_key_file = ws.encryption_key_file
+            ws.old_signing_key_file = ws.signing_key_file
             ws.encryption_key_file.name = encryption_pk_filename
             ws.signing_key_file.name = signing_pk_filename
             ws.save()
@@ -162,7 +165,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
                 "signing_cert_pkcs10": strip_pem_header_and_footer(signing_csr).decode().replace("\n", ""),
                 "old_signing_cert": old_signing_cert if is_renew else None,
                 "lowercase_environment": lowercase_environment,
-            }
+            },
         )
         logger.info("%s request:\n%s", command, format_xml_bytes(req).decode())
 
@@ -189,7 +192,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             soap_call,
             **{
                 "certs": [cert],
-            }
+            },
         )
         logger.info("%s request:\n%s", command, format_xml_bytes(req).decode())
 
@@ -324,6 +327,7 @@ def wspki_execute(  # pylint: disable=too-many-arguments
     soap_action_header: bool = False,
     xml_sig: bool = False,
     lowercase_environment: bool = False,
+    use_sha256: bool = False,
     verbose: bool = False,
 ) -> bytes:
     """
@@ -333,6 +337,7 @@ def wspki_execute(  # pylint: disable=too-many-arguments
     :param soap_action_header:
     :param xml_sig:
     :param lowercase_environment:
+    :param use_sha256:
     :param verbose:
     :return: str
     """
@@ -352,7 +357,7 @@ def wspki_execute(  # pylint: disable=too-many-arguments
             "User-Agent": "Kajala WS",
         }
 
-        body_bytes: bytes = generate_wspki_request(soap_call, payout_party, lowercase_environment=lowercase_environment)
+        body_bytes: bytes = generate_wspki_request(soap_call, payout_party, lowercase_environment=lowercase_environment, use_sha256=use_sha256)
         if xml_sig and not body_bytes.startswith(b'<?xml version="1.0"'):
             body_bytes = b'<?xml version="1.0" encoding="UTF-8"?>\n' + body_bytes
         pki_endpoint = ws.pki_endpoint
