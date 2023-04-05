@@ -739,6 +739,7 @@ class WsEdiConnection(models.Model):
     old_encryption_key_file = models.FileField(verbose_name=_("old encryption key file"), blank=True, upload_to="certs", editable=False)
     bank_encryption_cert_file = models.FileField(verbose_name=_("bank encryption cert file"), blank=True, upload_to="certs")
     bank_signing_cert_file = models.FileField(verbose_name=_("bank signing cert file"), blank=True, upload_to="certs")
+    use_sha256 = models.BooleanField(_("SHA-256"), blank=True, default=False)
     ca_cert_file = models.FileField(verbose_name=_("CA certificate file"), blank=True, upload_to="certs")
     debug_commands = SafeTextField(_("debug commands"), blank=True, help_text=_("wsedi.connection.debug.commands.help.text"))
     created = models.DateTimeField(_("created"), default=now, db_index=True, editable=False, blank=True)
@@ -840,8 +841,9 @@ class WsEdiConnection(models.Model):
         ).encode()
 
     def get_application_request(self, command: str, **kwargs) -> bytes:
+        opt_sha256 = "-sha256" if self.use_sha256 else ""
         return format_xml(
-            get_template("jbank/application_request_template.xml").render(
+            get_template(f"jbank/application_request_template{opt_sha256}.xml").render(
                 {
                     "ws": self,
                     "command": command,
