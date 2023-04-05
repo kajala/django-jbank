@@ -39,6 +39,14 @@ Tested Banks
 * Nordea
 
 
+Converting p12 to PEM formats
+=============================
+
+1. openssl pkcs12 -in WSNDEA1234.p12 -out WSNDEA1234.pem
+2. openssl rsa -in WSNDEA1234.pem -outform PEM -out prod_private_key.pem
+3. openssl x509 -in WSNDEA1234.pem -outform PEM -out prod_public_key_cert.pem
+
+
 Changes
 =======
 
