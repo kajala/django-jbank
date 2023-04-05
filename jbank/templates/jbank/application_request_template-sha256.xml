@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<ApplicationRequest xmlns="http://bxd.fi/xmldata/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <CustomerId>{{ ws.sender_identifier }}</CustomerId>
+    <Command>{{ command }}</Command>
+    <Timestamp>{{ timestamp }}</Timestamp>
+    {% if start_date %}
+        <StartDate>{{ start_date.isoformat }}</StartDate>
+    {% endif %}
+    {% if end_date %}
+        <EndDate>{{ end_date.isoformat }}</EndDate>
+    {% endif %}
+    {% if status %}
+        <Status>{{ status }}</Status>
+    {% endif %}
+    <Environment>{{ ws.environment }}</Environment>
+    {% if file_reference or file_references %}
+        <FileReferences>
+            {% if file_reference %}
+                <FileReference>{{ file_reference }}</FileReference>
+            {% endif %}
+            {% if file_references %}
+                {% for f in file_references %}
+                    <FileReference>{{ f }}</FileReference>
+                {% endfor %}
+            {% endif %}
+        </FileReferences>
+    {% endif %}
+    <TargetId>{{ ws.target_identifier|default:'1' }}</TargetId>
+    <SoftwareId>Kajala WS</SoftwareId>
+    {% if file_type %}
+        <FileType>{{ file_type }}</FileType>
+    {% endif %}
+    {% if content %}
+        <Content>{{ content }}</Content>
+    {% endif %}
+    <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <Reference URI="">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <DigestValue/>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue/>
+    <KeyInfo>
+      <X509Data>
+        <X509IssuerSerial>
+          <X509IssuerName>Issuer: {{ ws.signing_cert.issuer.rfc4514_string }}</X509IssuerName>
+          <X509SerialNumber>{{ ws.signing_cert.serial_number }}</X509SerialNumber>
+        </X509IssuerSerial>
+        <X509Certificate></X509Certificate>
+      </X509Data>
+    </KeyInfo>
+    </Signature>
+</ApplicationRequest>
