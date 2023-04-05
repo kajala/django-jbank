@@ -114,6 +114,14 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             template_name = "pki_" + camel_case_to_underscore(command) + "_request_template.xml"
 
         if is_create or is_renew:
+            logger.info(
+                "To restore old connection:\nws=WsEdiConnection.objects.get(id=%s); ws.signing_cert_file='%s'; ws.signing_key_file='%s'; ws.encryption_cert_file='%s'; ws.encryption_key_file='%s'; ws.save()",  # noqa
+                ws.id,
+                ws.signing_cert_file,
+                ws.signing_key_file,
+                ws.encryption_cert_file,
+                ws.encryption_key_file,
+            )
             encryption_pk = create_private_key()
             signing_pk = create_private_key()
             encryption_pk_pem = get_private_key_pem(encryption_pk)
