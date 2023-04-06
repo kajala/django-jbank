@@ -690,6 +690,9 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         AccountEntryNoteInline,
     ]
 
+    def has_add_permission(self, request: HttpRequest) -> bool:
+        return False
+
     def is_settled_bool(self, obj):
         return obj.is_settled
 
