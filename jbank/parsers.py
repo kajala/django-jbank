@@ -73,7 +73,7 @@ def parse_records(
         data["extra_data"] = str(data["extra_data"]).strip()
         if i != rec_len and data["extra_data"] != "":
             raise ValidationError(
-                _("Line {line}: Record length ({record_length}) does not match length of " 'parsed data ({data_length}). Extra data: "{extra_data}"').format(
+                _("Line {line}: Record length ({record_length}) does not match length of parsed data ({data_length}). Extra data: {extra_data}").format(
                     line=line_number,
                     data_length=i + len(str(data["extra_data"])),
                     record_length=rec_len,

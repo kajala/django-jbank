@@ -13,7 +13,7 @@ def fetch_latest_euribor_rates(commit: bool = False, verbose: bool = False) -> L
     feed_url = (
         "https://www.suomenpankki.fi/WebForms/ReportViewerPage.aspx?report=/tilastot/markkina-_ja_hallinnolliset_korot/euribor_korot_today_xml_en&output=xml"
     )
-    res = requests.get(feed_url)
+    res = requests.get(feed_url, timeout=60)
     if verbose:
         logger.info("GET %s HTTP %s\n%s", feed_url, res.status_code, res.content)
     if res.status_code >= 300:

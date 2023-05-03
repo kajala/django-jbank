@@ -40,7 +40,7 @@ def wsedi_get(command: str, file_type: str, status: str, file_reference: str = "
         "Content-Type": "application/json",
         "Authorization": "Token " + settings.WSEDI_TOKEN,
     }
-    res = requests.get(url, headers=headers)
+    res = requests.get(url, headers=headers, timeout=120)
     if res.status_code >= 300:
         logger.error(
             "wsedi_get(command={}, file_type={}, status={}, file_reference={}) response HTTP {}:\n".format(
@@ -83,7 +83,7 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": "Token " + settings.WSEDI_TOKEN,
     }
-    res = requests.post(url, data=data, headers=headers)
+    res = requests.post(url, data=data, headers=headers, timeout=600)
     if res.status_code >= 300:
         logger.error(
             "wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(command, file_type, file_name, res.status_code) + res.text
@@ -215,7 +215,7 @@ def wsedi_execute(  # noqa
             "SOAPAction": "",
             "User-Agent": "Kajala WS",
         }
-        res = requests.post(ws.soap_endpoint, data=signed_body_bytes, headers=http_headers)
+        res = requests.post(ws.soap_endpoint, data=signed_body_bytes, headers=http_headers, timeout=600)
         if verbose:
             logger.info("------------------------------------------------------ {} HTTP response {}\n{}".format(call_str, res.status_code, res.text))
         if res.status_code >= 300:
