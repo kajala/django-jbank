@@ -375,7 +375,7 @@ def wspki_execute(  # pylint: disable=too-many-arguments
             with open(soap_call.debug_request_full_path, "wb") as fp:
                 fp.write(body_bytes)
 
-        res = requests.post(pki_endpoint, data=body_bytes, headers=http_headers)
+        res = requests.post(pki_endpoint, data=body_bytes, headers=http_headers, timeout=120)
         if verbose and res.status_code < 300:
             logger.info(
                 "------------------------------------------------------ HTTP response %s\n%s",

@@ -11,5 +11,6 @@ pylint:
     - imported-auth-user
     - useless-suppression
     - django-not-configured
+    - broad-exception-raised
   load-plugins:
     - pylint-django
