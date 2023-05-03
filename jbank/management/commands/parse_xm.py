@@ -3,7 +3,7 @@ import os
 from pprint import pprint
 from django.core.management.base import CommandParser
 from django.db import transaction
-from jbank.camt import CAMT054_STATEMENT_SUFFIXES, camt054_parse_file, camt054_create_reference_payment_batch, camt054_parse_ntfctn_acct
+from jbank.camt import CAMT054_FILE_SUFFIXES, camt054_parse_file, camt054_create_reference_payment_batch, camt054_parse_ntfctn_acct
 from jbank.files import list_dir_files
 from jbank.helpers import save_or_store_media, get_or_create_bank_account
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
@@ -29,7 +29,7 @@ class Command(SafeCommand):
         for filename in files:
             plain_filename = os.path.basename(filename)
 
-            if parse_filename_suffix(plain_filename).upper() not in CAMT054_STATEMENT_SUFFIXES:
+            if parse_filename_suffix(plain_filename).upper() not in CAMT054_FILE_SUFFIXES:
                 print("Ignoring non-camt.054 file {}".format(filename))
                 continue
 

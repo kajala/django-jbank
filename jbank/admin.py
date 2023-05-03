@@ -240,12 +240,14 @@ class StatementAdmin(BankAdminBase):
     bic_code.short_description = "BIC"  # type: ignore
 
     def statement_date_short(self, obj):
+        assert isinstance(obj, Statement)
         return date_format(obj.end_date, "SHORT_DATE_FORMAT")
 
     statement_date_short.short_description = _("date")  # type: ignore
     statement_date_short.admin_order_field = "end_date"  # type: ignore
 
     def record_date_short(self, obj):
+        assert isinstance(obj, Statement)
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")
 
     record_date_short.short_description = _("record date")  # type: ignore
@@ -1414,6 +1416,7 @@ class WsEdiConnectionAdmin(BankAdminBase):
                     "bank_signing_cert_file",
                     "ca_cert_file",
                     "use_sha256",
+                    "use_wsse_timestamp",
                 ]
             },
         ),

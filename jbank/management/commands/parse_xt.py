@@ -6,11 +6,12 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandParser
 from django.db import transaction
 from jbank.camt import (
-    camt053_get_iban,
+    camt053_get_account_iban,
     camt053_create_statement,
     camt053_parse_statement_from_file,
-    CAMT053_STATEMENT_SUFFIXES,
+    CAMT053_FILE_SUFFIXES,
     camt053_get_unified_str,
+    camt053_get_account_currency,
 )
 from jbank.helpers import get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
@@ -39,7 +40,7 @@ class Command(SafeCommand):
         for sf in StatementFile.objects.all():  # pylint: disable=too-many-nested-blocks
             assert isinstance(sf, StatementFile)
             full_path = sf.full_path
-            if os.path.isfile(full_path) and parse_filename_suffix(full_path).upper() in CAMT053_STATEMENT_SUFFIXES:
+            if os.path.isfile(full_path) and parse_filename_suffix(full_path).upper() in CAMT053_FILE_SUFFIXES:
                 logger.info("Parsing creditor account data of %s", full_path)
                 statement_data = camt053_parse_statement_from_file(full_path)
                 d_stmt = statement_data.get("BkToCstmrStmt", {}).get("Stmt", {})
@@ -91,7 +92,7 @@ class Command(SafeCommand):
         for filename in files:
             plain_filename = os.path.basename(filename)
 
-            if parse_filename_suffix(plain_filename).upper() not in CAMT053_STATEMENT_SUFFIXES:
+            if parse_filename_suffix(plain_filename).upper() not in CAMT053_FILE_SUFFIXES:
                 print("Ignoring non-CAMT53 file {}".format(filename))
                 continue
 
@@ -126,9 +127,10 @@ class Command(SafeCommand):
 
                     for data in [statement]:
                         if options["auto_create_accounts"]:
-                            account_number = camt053_get_iban(data)
+                            account_number = camt053_get_account_iban(data)
+                            currency = camt053_get_account_currency(data)
                             if account_number:
-                                get_or_create_bank_account(account_number)
+                                get_or_create_bank_account(account_number, currency)
 
                         camt053_create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:

@@ -2,7 +2,7 @@
 import base64
 import logging
 import traceback
-from datetime import date
+from datetime import date, timedelta, datetime
 from os.path import basename
 from typing import Callable, Optional
 import requests
@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from lxml import etree  # type: ignore
 from zeep.wsse import BinarySignature  # type: ignore
+from zeep import ns
 from jbank.models import WsEdiConnection, WsEdiSoapCall
 
 logger = logging.getLogger(__name__)
@@ -93,6 +94,22 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
             "wsedi_upload_file(command={}, file_type={}, file_name={}) response HTTP {}:\n".format(command, file_type, file_name, res.status_code) + res.text
         )
     return res
+
+
+def wsse_insert_timestamp(envelope: etree.Element, timestamp: datetime, expires_seconds: int = 3600):
+    """
+    Inserts <wsu:Timestamp> element to the beginning of <wsse:Security>.
+    """
+    soap_header = envelope.find("{http://schemas.xmlsoap.org/soap/envelope/}Header")
+    if soap_header is not None:
+        soap_security = soap_header.find("{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security")
+        if soap_security is not None:
+            soap_timestamp = etree.Element(etree.QName(ns.WSU, "Timestamp"), {etree.QName(ns.WSU, "Id"): "timestamp"})
+            soap_timestamp_created = etree.SubElement(soap_timestamp, etree.QName(ns.WSU, "Created"))
+            soap_timestamp_created.text = timestamp.isoformat()
+            soap_timestamp_expires = etree.SubElement(soap_timestamp, etree.QName(ns.WSU, "Expires"))
+            soap_timestamp_expires.text = (timestamp + timedelta(seconds=expires_seconds)).isoformat()
+            soap_security.insert(0, soap_timestamp)
 
 
 def wsedi_execute(  # noqa
@@ -181,14 +198,15 @@ def wsedi_execute(  # noqa
         envelope = etree.fromstring(body_bytes)
         binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
         soap_headers: dict = {}
-        # print(f"BEFORE signing with {ws.signing_key_full_path} and {ws.signing_cert_full_path}")
-        # with open("/home/jani/Downloads/e.xml", "wb") as fp:
-        #     fp.write(etree.tostring(envelope))
-        # print(etree.tostring(envelope).decode())
         envelope, soap_headers = binary_signature.apply(envelope, soap_headers)
+        if ws.use_wsse_timestamp:
+            wsse_insert_timestamp(envelope, soap_call.created)
         signed_body_bytes = etree.tostring(envelope)
         if verbose:
-            logger.info("------------------------------------------------------ {} signed_body_bytes\n{}".format(call_str, signed_body_bytes))
+            logger.info("------------------------------------------------------ {} HTTP POST\n{}".format(call_str, ws.soap_endpoint))
+            logger.info(
+                "------------------------------------------------------ {} signed_body_bytes.decode()\n{}".format(call_str, signed_body_bytes.decode())
+            )
 
         http_headers = {
             "Connection": "Close",
@@ -197,8 +215,6 @@ def wsedi_execute(  # noqa
             "SOAPAction": "",
             "User-Agent": "Kajala WS",
         }
-        if verbose:
-            logger.info("HTTP POST {}".format(ws.soap_endpoint))
         res = requests.post(ws.soap_endpoint, data=signed_body_bytes, headers=http_headers)
         if verbose:
             logger.info("------------------------------------------------------ {} HTTP response {}\n{}".format(call_str, res.status_code, res.text))

@@ -29,13 +29,13 @@ from jbank.parsers import parse_filename_suffix
 from jutil.xml import xml_to_dict
 
 
-CAMT053_STATEMENT_SUFFIXES = ("XML", "XT", "CAMT", "NDCAMT53L", "XML")
+CAMT053_FILE_SUFFIXES = ("XML", "XT", "CAMT", "NDCAMT53L", "XML", "NDARSTXMLO", "NDAREXXMLO", "053")
 
 CAMT053_ARRAY_TAGS = ["Bal", "Ntry", "NtryDtls", "TxDtls", "Strd", "Ustrd"]
 
 CAMT053_INT_TAGS = ["NbOfNtries", "NbOfTxs"]
 
-CAMT054_STATEMENT_SUFFIXES = ("XE", "XE", "CAMT", "NDCAMT54L", "XML")
+CAMT054_FILE_SUFFIXES = ("XE", "XE", "CAMT", "NDCAMT54L", "XML", "NDCAPXMLD54O", "NDARCRAXMLO", "054")
 
 CAMT054_ARRAY_TAGS = ["Ntfctn", "Othr", "Ntry", "NtryDtls", "PrtryAmt", "Chrgs", "AdrLine", "Strd", "Ustrd", "RfrdDocInf", "AddtlRmtInf"]
 
@@ -46,6 +46,14 @@ logger = logging.getLogger(__name__)
 
 def camt053_get_iban(data: dict) -> str:
     return data.get("BkToCstmrStmt", {}).get("Stmt", {}).get("Acct", {}).get("Id", {}).get("IBAN", "")
+
+
+def camt053_get_account_iban(data: dict) -> str:
+    return data.get("BkToCstmrStmt", {}).get("Stmt", {}).get("Acct", {}).get("Id", {}).get("IBAN", "")
+
+
+def camt053_get_account_currency(data: dict) -> str:
+    return data.get("BkToCstmrStmt", {}).get("Stmt", {}).get("Acct", {}).get("Ccy") or ""
 
 
 def camt053_get_val(data: dict, key: str, default: Any = None, required: bool = True, name: str = "") -> Any:
@@ -82,6 +90,14 @@ def camt053_get_dt(data: Dict[str, Any], key: str, name: str = "") -> datetime:
     return val
 
 
+def camt053_get_date_or_none(data: Dict[str, Any], key: str, name: str = "") -> Optional[date]:
+    s = camt053_get_val(data, key, None, False, name)
+    if not s:
+        return None
+    val = parse_datetime(s)
+    return val.date()
+
+
 def camt053_get_int(data: Dict[str, Any], key: str, name: str = "") -> int:
     s = camt053_get_val(data, key, None, True, name)
     try:
@@ -116,10 +132,10 @@ def camt053_get_date(data: dict, key: str, default: Optional[date] = None, requi
 
 
 def camt053_parse_statement_from_file(filename: str) -> dict:
-    if parse_filename_suffix(filename).upper() not in CAMT053_STATEMENT_SUFFIXES:
+    if parse_filename_suffix(filename).upper() not in CAMT053_FILE_SUFFIXES:
         raise ValidationError(
             _('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
-                filename=filename, suffixes=", ".join(CAMT053_STATEMENT_SUFFIXES), file_type="camt.053"
+                filename=filename, suffixes=", ".join(CAMT053_FILE_SUFFIXES), file_type="camt.053"
             )
         )
     with open(filename, "rb") as fp:
@@ -171,10 +187,11 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     :param file: Source statement file
     :return: Statement
     """
-    account_number = camt053_get_iban(statement_data)
+    account_number = camt053_get_account_iban(statement_data)
+    account_currency = camt053_get_account_currency(statement_data)
     if not account_number:
         raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=""))
-    accounts = list(Account.objects.filter(name=account_number))
+    accounts = list(Account.objects.filter(name=account_number, currency=account_currency))
     if len(accounts) != 1:
         raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number) + " (" + str(len(accounts)) + ")")
     account = accounts[0]
@@ -197,8 +214,8 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     stm.statement_identifier = camt053_get_str(d_stmt, "Id", name="Stmt.Id")
     stm.statement_number = camt053_get_str(d_stmt, "LglSeqNb", name="Stmt.LglSeqNb")
     stm.record_date = camt053_get_dt(d_stmt, "CreDtTm", name="Stmt.CreDtTm")
-    stm.begin_date = camt053_get_dt(d_frto, "FrDtTm", name="Stmt.FrDtTm").date()
-    stm.end_date = camt053_get_dt(d_frto, "ToDtTm", name="Stmt.ToDtTm").date()
+    stm.begin_date = camt053_get_date_or_none(d_frto, "FrDtTm", name="Stmt.FrDtTm")
+    stm.end_date = camt053_get_date_or_none(d_frto, "ToDtTm", name="Stmt.ToDtTm") or stm.record_date
     stm.currency_code = camt053_get_str(d_acct, "Ccy", name="Stmt.Acct.Ccy")
     if stm.currency_code != account.currency:
         raise ValidationError(
@@ -389,10 +406,10 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
 
 
 def camt054_parse_file(filename: str) -> dict:
-    if parse_filename_suffix(filename).upper() not in CAMT054_STATEMENT_SUFFIXES:
+    if parse_filename_suffix(filename).upper() not in CAMT054_FILE_SUFFIXES:
         raise ValidationError(
             _('File {filename} has unrecognized ({suffixes}) suffix for file type "{file_type}"').format(
-                filename=filename, suffixes=", ".join(CAMT054_STATEMENT_SUFFIXES), file_type="camt.054"
+                filename=filename, suffixes=", ".join(CAMT054_FILE_SUFFIXES), file_type="camt.054"
             )
         )
     with open(filename, "rb") as fp:
