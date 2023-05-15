@@ -42,10 +42,13 @@ def etree_find_element(el: etree.Element, ns: str, tag: str) -> Optional[etree.E
 
 def etree_get_element(el: etree.Element, ns: str, tag: str) -> etree.Element:
     """
-    :param el: Root Element
-    :param ns: Target namespace
-    :param tag: Target tag
-    :return: Found Element
+    Args:
+        el: Root Element
+        ns: Target namespace
+        tag: Target tag
+
+    Returns:
+        Found Element
     """
     if not ns.startswith("{"):
         ns = "{" + ns + "}"
@@ -330,15 +333,18 @@ def wspki_execute(  # pylint: disable=too-many-arguments
     verbose: bool = False,
 ) -> bytes:
     """
-    :param ws:
-    :param payout_party:
-    :param command:
-    :param soap_action_header:
-    :param xml_sig:
-    :param lowercase_environment:
-    :param use_sha256:
-    :param verbose:
-    :return: str
+    Args:
+        ws
+        payout_party
+        command
+        soap_action_header
+        xml_sig
+        lowercase_environment
+        use_sha256
+        verbose
+
+    Returns:
+        str
     """
     if ws and not ws.enabled:
         raise Exception(_("ws.edi.connection.not.enabled").format(ws=ws))

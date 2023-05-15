@@ -4,11 +4,14 @@ from typing import List
 
 
 def list_dir_files(path: str, suffix: str = "") -> List[str]:
-    """
-    Lists all files (and only files) in a directory, or return [path] if path is a file itself.
-    :param path: Directory or a file
-    :param suffix: Optional suffix to match (case insensitive). Default is none.
-    :return: list of absolute paths to files
+    """Lists all files (and only files) in a directory, or return [path] if path is a file itself.
+
+    Args:
+        path: Directory or a file
+        suffix: Optional suffix to match (case insensitive). Default is none.
+
+    Returns:
+        list of absolute paths to files
     """
     if suffix:
         suffix = suffix.lower()

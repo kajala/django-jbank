@@ -16,10 +16,11 @@ def get_x509_cert_from_file(filename: str) -> x509.Certificate:
 
 
 def write_cert_pem_file(filename: str, cert_base64: bytes):
-    """
-    Writes PEM data to file.
-    :param filename: PEM filename
-    :param cert_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
+    """Writes PEM data to file.
+
+    Args:
+        filename: PEM filename
+        cert_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
     """
     if b"BEGIN" in cert_base64 or b"END" in cert_base64:
         raise ValidationError("write_cert_pem_file() assumes PEM data does not contain header/footer")

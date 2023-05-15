@@ -139,12 +139,15 @@ def combine_svm_batch(header: Optional[Dict[str, Any]], records: List[Dict[str, 
 
 @transaction.atomic  # noqa
 def create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:  # noqa
-    """
-    Creates Statement from statement data parsed by parse_tiliote_statements()
-    :param statement_data: See parse_tiliote_statements
-    :param name: File name of the account statement
-    :param file: Source statement file
-    :return: Statement
+    """Creates Statement from statement data parsed by parse_tiliote_statements()
+
+    Args:
+        statement_data: See parse_tiliote_statements
+        name: File name of the account statement
+        file: Source statement file
+
+    Returns:
+        Statement
     """
     if "header" not in statement_data or not statement_data["header"]:
         raise ValidationError("Invalid header field in statement data {}: {}".format(name, statement_data.get("header")))
@@ -208,11 +211,14 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
 
 @transaction.atomic
 def create_reference_payment_batch(batch_data: dict, name: str, file: ReferencePaymentBatchFile, **kw) -> ReferencePaymentBatch:
-    """
-    Creates ReferencePaymentBatch from data parsed by parse_svm_batches()
-    :param batch_data: See parse_svm_batches
-    :param name: File name of the batch file
-    :return: ReferencePaymentBatch
+    """Creates ReferencePaymentBatch from data parsed by parse_svm_batches()
+
+    Args:
+        batch_data: See parse_svm_batches
+        name: File name of the batch file
+
+    Returns:
+        ReferencePaymentBatch
     """
     if ReferencePaymentBatch.objects.exclude(file=file).filter(name=name).first():
         raise ValidationError("Reference payment batch file {} already exists".format(name))

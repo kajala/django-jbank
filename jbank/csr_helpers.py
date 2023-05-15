@@ -27,10 +27,13 @@ def get_public_key_pem(public_key: RSAPublicKey) -> bytes:
 
 
 def get_private_key_pem(private_key: RSAPrivateKey) -> bytes:
-    """
-    Returns private key PEM file bytes.
-    :param private_key: RSPrivateKey
-    :return: bytes
+    """Returns private key PEM file bytes.
+
+    Args:
+        private_key: RSPrivateKey
+
+    Returns:
+        bytes
     """
     return private_key.private_bytes(  # type: ignore
         encoding=serialization.Encoding.PEM,
@@ -51,10 +54,11 @@ def load_private_key_from_pem_file(filename: str, password: Optional[bytes] = No
 
 
 def write_private_key_pem_file(filename: str, key_base64: bytes):
-    """
-    Writes PEM data to file.
-    :param filename: PEM filename
-    :param key_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
+    """Writes PEM data to file.
+
+    Args:
+        filename: PEM filename
+        key_base64: Base64 encoded certificate data without BEGIN CERTIFICATE / END CERTIFICATE
     """
     if b"BEGIN" not in key_base64 or b"END" not in key_base64:
         raise ValidationError("write_private_key_pem_file() assumes PEM data does contains BEGIN / END header and footer")
@@ -64,10 +68,13 @@ def write_private_key_pem_file(filename: str, key_base64: bytes):
 
 
 def strip_pem_header_and_footer(pem: bytes) -> bytes:
-    """
-    Strips -----BEGIN and -----END parts of the CSR PEM.
-    :param pem: bytes
-    :return: bytes
+    """Strips -----BEGIN and -----END parts of the CSR PEM.
+
+    Args:
+        pem: bytes
+
+    Returns:
+        bytes
     """
     if not pem.startswith(b"-----BEGIN "):
         raise Exception("PEM does not appear to have header: {}...".format(pem[:32].decode() + "..."))
@@ -101,9 +108,10 @@ def create_csr_pem(  # pylint: disable=too-many-arguments,too-many-locals
     user_id: str = "",
     x500_unique_identifier: str = "",
 ) -> bytes:
-    """
-    See http://fileformats.archiveteam.org/wiki/PKCS10
-    :return: CSR PEM as bytes
+    """See http://fileformats.archiveteam.org/wiki/PKCS10
+
+    Returns:
+        CSR PEM as bytes
     """
     pairs = [
         (common_name, "COMMON_NAME"),

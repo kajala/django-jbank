@@ -105,9 +105,7 @@ class BankAdminBase(ModelAdminBase):
 
 
 class SettlementEntryTypesFilter(SimpleListFilter):
-    """
-    Filters incoming settlement type entries.
-    """
+    """Filters incoming settlement type entries."""
 
     title = _("account entry types")
     parameter_name = "type"
@@ -127,9 +125,7 @@ class SettlementEntryTypesFilter(SimpleListFilter):
 
 
 class AccountEntryMatchedFilter(SimpleListFilter):
-    """
-    Filters incoming payments which do not have any child/derived account entries.
-    """
+    """Filters incoming payments which do not have any child/derived account entries."""
 
     title = _("account.entry.matched.filter")
     parameter_name = "matched"
@@ -166,9 +162,7 @@ class AccountEntryMatchedFilter(SimpleListFilter):
 
 
 class AccountNameFilter(SimpleListFilter):
-    """
-    Filters account entries based on account name.
-    """
+    """Filters account entries based on account name."""
 
     title = _("account.name.filter")
     parameter_name = "account-name"

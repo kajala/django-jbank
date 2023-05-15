@@ -193,9 +193,7 @@ class StatementRecord(AccountEntry):
 
     @property
     def is_settled(self) -> bool:
-        """
-        True if entry is either manually settled or has SUM(children)==amount.
-        """
+        """True if entry is either manually settled or has SUM(children)==amount."""
         return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     def clean(self):
@@ -316,7 +314,8 @@ class StatementRecordSepaInfo(models.Model):
 class ReferencePaymentBatchManager(models.Manager):
     def latest_record_date(self) -> Optional[datetime]:
         """
-        :return: datetime of latest record available or None
+        Returns:
+            datetime of latest record available or None
         """
         obj = self.order_by("-record_date").first()
         if not obj:
@@ -352,9 +351,7 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
 
 
 class ReferencePaymentRecord(AccountEntry):
-    """
-    Reference payment record. See jacc.Invoice for date/time variable naming conventions.
-    """
+    """Reference payment record. See jacc.Invoice for date/time variable naming conventions."""
 
     objects = PaymentRecordManager()  # type: ignore
     batch = models.ForeignKey(ReferencePaymentBatch, verbose_name=_("batch"), related_name="record_set", on_delete=models.CASCADE)
@@ -384,16 +381,15 @@ class ReferencePaymentRecord(AccountEntry):
 
     @property
     def is_settled(self) -> bool:
-        """
-        True if entry is either manually settled or has SUM(children)==amount.
-        """
+        """True if entry is either manually settled or has SUM(children)==amount."""
         return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     @property
     def remittance_info_short(self) -> str:
-        """
-        Remittance info without preceding zeroes.
-        :return: str
+        """Remittance info without preceding zeroes.
+
+        Returns:
+            str
         """
         return re.sub(r"^0+", "", self.remittance_info)
 
@@ -481,18 +477,14 @@ class PayoutParty(models.Model):
 
     @property
     def is_payout_party_used(self) -> bool:
-        """
-        True if payout party has been used in any payment.
-        """
+        """True if payout party has been used in any payment."""
         if not hasattr(self, "id") or self.id is None:
             return False
         return Payout.objects.all().filter(Q(recipient=self) | Q(payer=self)).exists()
 
     @property
     def is_account_number_changed(self) -> bool:
-        """
-        True if account number has been changed compared to the one stored in DB.
-        """
+        """True if account number has been changed compared to the one stored in DB."""
         if not hasattr(self, "id") or self.id is None:
             return False
         return PayoutParty.objects.all().filter(id=self.id).exclude(account_number=self.account_number).exists()
@@ -870,13 +862,16 @@ class WsEdiConnection(models.Model):
         return self._sign_request(content, self.signing_key_full_path, self.signing_cert_full_path)
 
     def _sign_request(self, content: bytes, signing_key_full_path: str, signing_cert_full_path: str) -> bytes:
-        """
-        Sign a request.
+        """Sign a request.
         See https://users.dcc.uchile.cl/~pcamacho/tutorial/web/xmlsec/xmlsec.html
-        :param content: XML application request
-        :param signing_key_full_path: Override signing key full path (if not use self.signing_key_full_path)
-        :param signing_cert_full_path: Override signing key full path (if not use self.signing_cert_full_path)
-        :return: str
+
+        Args:
+            content: XML application request
+            signing_key_full_path: Override signing key full path (if not use self.signing_key_full_path)
+            signing_cert_full_path: Override signing key full path (if not use self.signing_cert_full_path)
+
+        Returns:
+            str
         """
         with tempfile.NamedTemporaryFile() as fp:
             fp.write(content)

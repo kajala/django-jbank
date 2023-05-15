@@ -91,9 +91,7 @@ class Pain001Payment:
 
 
 class Pain001:
-    """
-    Class for generating pain.001.001.03 SEPA payment XML files.
-    """
+    """Class for generating pain.001.001.03 SEPA payment XML files."""
 
     pain_element_name = "CstmrCdtTrfInitn"
     tz_str = "Europe/Helsinki"
@@ -484,9 +482,7 @@ class Pain001:
 
 
 class Pain002:
-    """
-    Class for parsing pain.002.001.03 SEPA payment status XML files.
-    """
+    """Class for parsing pain.002.001.03 SEPA payment status XML files."""
 
     credit_datetime: datetime
     msg_id: str = ""

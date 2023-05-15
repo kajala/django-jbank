@@ -5,8 +5,7 @@ from urllib import request
 
 
 def parse_euro_exchange_rates_xml(content: str):
-    """
-    Parses Euro currency exchange rates from string.
+    """Parses Euro currency exchange rates from string.
     Format is XML from European Central Bank (http://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml).
     Returns list of (record_date: date, currency: str, rate: str) tuples of Euro exchange rates.
     """
@@ -23,8 +22,7 @@ def parse_euro_exchange_rates_xml(content: str):
 
 
 def download_euro_exchange_rates_xml() -> str:
-    """
-    Downloads Euro currency exchange rates XML file from European Central Bank.
+    """Downloads Euro currency exchange rates XML file from European Central Bank.
     Returns XML as str
     """
     with request.urlopen("http://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml") as conn:

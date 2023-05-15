@@ -62,14 +62,17 @@ def wsedi_get(command: str, file_type: str, status: str, file_reference: str = "
 
 
 def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose: bool = False) -> requests.Response:
-    """
-    Upload Finnish bank file. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
+    """Upload Finnish bank file. Assumes WS-EDI API parameter compatible HTTP REST API end-point.
     Uses project settings WSEDI_URL and WSEDI_TOKEN.
-    :param file_content: File content
-    :param file_type: File type, e.g. pain.001.001.03
-    :param file_name: File (base) name
-    :param verbose: Debug output
-    :return: requests.Response
+
+    Args:
+        file_content: File content
+        file_type: File type, e.g. pain.001.001.03
+        file_name: File (base) name
+        verbose: Debug output
+
+    Returns:
+        requests.Response
     """
     command = "UploadFile"
     url = settings.WSEDI_URL
@@ -97,9 +100,7 @@ def wsedi_upload_file(file_content: str, file_type: str, file_name: str, verbose
 
 
 def wsse_insert_timestamp(envelope: etree.Element, timestamp: datetime, expires_seconds: int = 3600):
-    """
-    Inserts <wsu:Timestamp> element to the beginning of <wsse:Security>.
-    """
+    """Inserts <wsu:Timestamp> element to the beginning of <wsse:Security>."""
     soap_header = envelope.find("{http://schemas.xmlsoap.org/soap/envelope/}Header")
     if soap_header is not None:
         soap_security = soap_header.find("{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security")
@@ -126,17 +127,20 @@ def wsedi_execute(  # noqa
     **kwargs
 ) -> bytes:
     """
-    :param ws:
-    :param command:
-    :param file_type:
-    :param status:
-    :param file_reference:
-    :param file_content:
-    :param start_date:
-    :param end_date:
-    :param verbose:
-    :param cls:
-    :return: bytes
+    Args:
+        ws
+        command
+        file_type
+        status
+        file_reference
+        file_content
+        start_date
+        end_date
+        verbose
+        cls
+
+    Returns:
+        bytes
     """
     if ws and not ws.enabled:
         raise Exception(_("ws.edi.connection.not.enabled").format(ws=ws))

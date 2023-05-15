@@ -180,12 +180,15 @@ def camt053_get_unified_str(qs, k: str) -> str:
 
 @transaction.atomic  # noqa
 def camt053_create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:  # noqa
-    """
-    Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()
-    :param statement_data: XML data in form of dict
-    :param name: File name of the account statement
-    :param file: Source statement file
-    :return: Statement
+    """Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()
+
+    Args:
+        statement_data: XML data in form of dict
+        name: File name of the account statement
+        file: Source statement file
+
+    Returns:
+        Statement
     """
     account_number = camt053_get_account_iban(statement_data)
     account_currency = camt053_get_account_currency(statement_data)
@@ -418,9 +421,7 @@ def camt054_parse_file(filename: str) -> dict:
 
 
 def camt054_parse_ntfctn_acct(ntfctn: dict, default_currency: str = "EUR") -> Tuple[str, str]:
-    """
-    Returns account_number, currency from Ntfctn
-    """
+    """Returns account_number, currency from Ntfctn"""
     acc_data = ntfctn["Acct"]
     currency = acc_data.get("Ccy") or default_currency
     account_number = acc_data["Id"].get("IBAN") or acc_data["Id"].get("BBAN")

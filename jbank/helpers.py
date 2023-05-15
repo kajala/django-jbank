@@ -57,9 +57,7 @@ def make_msg_id() -> str:
 
 
 def validate_xml(content: bytes, xsd_file_name: str):
-    """
-    Validates XML using XSD
-    """
+    """Validates XML using XSD"""
     schema = etree.XMLSchema(file=xsd_file_name)
     parser = objectify.makeparser(schema=schema)
     objectify.fromstring(content, parser)
@@ -85,8 +83,7 @@ def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Option
 
 
 def save_or_store_media(file: models.FileField, filename: str):
-    """
-    Saves FileField filename as relative path if it's under MEDIA_ROOT.
+    """Saves FileField filename as relative path if it's under MEDIA_ROOT.
     Otherwise writes file under media root.
     """
     if is_media_full_path(filename):
