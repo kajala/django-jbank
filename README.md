@@ -1,7 +1,7 @@
 django-jbank
 ============
 
-Basic Finnish bank file format support for Django projects. Django 3.0 support and unit test coverage 51%.
+Basic (Finnish) bank file format support for Django projects. Django 4 support and unit test coverage 51%.
 
 Features
 ========

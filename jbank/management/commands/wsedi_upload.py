@@ -4,7 +4,7 @@ import traceback
 from django.core.management.base import CommandParser
 from jutil.xml import xml_to_dict
 from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, WsEdiConnection
-from jbank.wsedi import wsedi_upload_file, wsedi_execute
+from jbank.wsedi import wsedi_execute
 from jutil.command import SafeCommand
 
 
@@ -43,43 +43,36 @@ class Command(SafeCommand):
         for p in list(payouts.order_by("id").distinct()):
             assert isinstance(p, Payout)
             p.refresh_from_db()
-            ws_connection = p.connection or default_ws
 
-            if p.state != PAYOUT_WAITING_UPLOAD:
-                logger.info("Skipping {} since not in state PAYOUT_WAITING_UPLOAD".format(p))
-                continue
-            if ws_connection and not ws_connection.enabled:
-                logger.info("WS connection %s not enabled, skipping payment %s", ws_connection, p)
-                continue
+            ws_connection = p.connection or default_ws
+            if ws_connection is None:
+                raise Exception(f"WS-connection not set for {p} and --default-ws is missing")
 
             response_code = ""
             response_text = ""
             try:
+                if p.state != PAYOUT_WAITING_UPLOAD:
+                    logger.info("Skipping %s since not in state PAYOUT_WAITING_UPLOAD", p)
+                    continue
+                if not ws_connection.enabled:
+                    logger.info("WS connection %s not enabled, skipping payment %s", ws_connection, p)
+                    continue
+
                 # upload file
                 logger.info("Uploading payment id={} {} file {}".format(p.id, file_type, p.full_path))
                 with open(p.full_path, "rt", encoding="utf-8") as fp:
                     file_content = fp.read()
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=["state"])
-                if ws_connection:
-                    content = wsedi_execute(
-                        ws_connection,
-                        "UploadFile",
-                        file_content=file_content,
-                        file_type=file_type,
-                        verbose=options["verbose"],
-                    )
-                    data = xml_to_dict(content, array_tags=["FileDescriptor"])
-                else:
-                    res = wsedi_upload_file(
-                        file_content=file_content,
-                        file_type=file_type,
-                        file_name=p.file_name,
-                        verbose=options["verbose"],
-                    )
-                    logger.info("HTTP response {}".format(res.status_code))
-                    logger.info(res.text)
-                    data = res.json()
+
+                content = wsedi_execute(
+                    ws_connection,
+                    "UploadFile",
+                    file_content=file_content,
+                    file_type=file_type,
+                    verbose=options["verbose"],
+                )
+                data = xml_to_dict(content, array_tags=["FileDescriptor"])
 
                 # parse response
                 response_code = data.get("ResponseCode", "")[:4]
