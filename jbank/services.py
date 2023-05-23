@@ -28,38 +28,39 @@ def create_account_balance(  # pylint: disable=too-many-arguments
     )[0]
 
 
-def get_currency_exchange(
-    target_currency: str, record_date: date, source_currency: str = "EUR", unit_currency: str = "EUR", max_age_days: int = 7
-) -> CurrencyExchange:
+def get_currency_exchange_rate(target_currency: str, record_date: date, source_currency: str = "EUR", max_age_days: int = 7) -> Decimal:
     """
-    Returns max week old CurrencyExchange object matching specified search criteria.
-    Raises exception if suitable CurrencyExchange not found.
+    Returns max week old currency exchange rate matching specified search criteria.
+    Raises exception if suitable currency exchange rate not found.
 
     Args:
         target_currency: Target currency
         record_date: Record date
         source_currency: Source currency. Default "EUR".
-        unit_currency: Unit currency. Default "EUR".
         max_age_days: Maximum age (days) from record_date for CurrencyExchange object to be considered valid.
 
     Returns:
-        CurrencyExchange best matching search terms.
+        Decimal currency exchange rate from source currency to target currency.
     """
     qs = CurrencyExchange.objects.filter(
         target_currency=target_currency,
         source_currency=source_currency,
-        unit_currency=unit_currency,
+        unit_currency=source_currency,
         record_date__gte=record_date - timedelta(days=max_age_days),
         record_date__lte=record_date,
-    )
+    ).exclude(exchange_rate=None)
     xchg = qs.order_by("-record_date").first()
     if xchg is None:
         raise ValidationError(_("No exchange rate for {} found for record date {}").format(target_currency, record_date))
     assert isinstance(xchg, CurrencyExchange)
-    return xchg
+    rate = xchg.exchange_rate
+    assert isinstance(rate, Decimal)
+    return rate
 
 
-def convert_currency(source_amount: Decimal, source_currency: str, target_currency: str, record_date: Optional[date], unit_currency: str = "EUR") -> Decimal:
+def convert_currency(  # pylint: disable=too-many-arguments
+    source_amount: Decimal, source_currency: str, target_currency: str, record_date: Optional[date], unit_currency: str = "EUR", max_age_days: int = 7
+) -> Decimal:
     """
     Converts currency from one to another.
 
@@ -69,6 +70,7 @@ def convert_currency(source_amount: Decimal, source_currency: str, target_curren
         target_currency: Target currency
         record_date: Optional record date. Default today.
         unit_currency: Unit currency which is used for fetching related rates. Default "EUR".
+        max_age_days: Max age (days) for currency conversion data to be considered valid.
 
     Returns:
         Amount in target_currency, 6 decimals.
@@ -82,12 +84,10 @@ def convert_currency(source_amount: Decimal, source_currency: str, target_curren
 
     # calculate source amount in unit currency (default: EUR)
     if source_currency != unit_currency:
-        xchg = get_currency_exchange(source_currency, record_date, unit_currency, unit_currency)
-        amt /= xchg.exchange_rate
+        amt /= get_currency_exchange_rate(source_currency, record_date, unit_currency)
 
     # calculate target amount in target currency
     if target_currency != unit_currency:
-        xchg = get_currency_exchange(target_currency, record_date, unit_currency, unit_currency)
-        amt *= xchg.exchange_rate
+        amt *= get_currency_exchange_rate(target_currency, record_date, unit_currency, max_age_days)
 
     return amt.quantize(Decimal("1.000000"))

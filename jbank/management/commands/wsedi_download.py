@@ -33,7 +33,7 @@ class Command(SafeCommand):
         parser.add_argument("--end-date", type=str)
         parser.add_argument("--ws", type=int)
 
-    def do(self, *args, **options):  # pylint: disable=too-many-statements
+    def do(self, *args, **options):  # noqa
         ws_qs = WsEdiConnection.objects.all()
         if options["ws"]:
             ws_qs = ws_qs.filter(id=options["ws"])
