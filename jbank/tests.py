@@ -16,6 +16,7 @@ from jbank.csr_helpers import create_private_key, create_csr_pem, get_private_ke
 from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.helpers import validate_xml, parse_date_or_relative_date
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty, ReferencePaymentBatchFile, ReferencePaymentRecord
+from jbank.services import convert_currency
 from jbank.tito import parse_tiliote_statements_from_file
 from jbank.svm import parse_svm_batches_from_file
 from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
@@ -27,6 +28,11 @@ from zeep.wsse import BinarySignature  # type: ignore
 
 
 class Tests(TestCase):
+    fixtures = [
+        "data/rate-sources-2023-05-22.json",
+        "data/rates-2023-05-22.json",
+    ]
+
     def setUp(self):
         pass
 
@@ -237,3 +243,11 @@ class Tests(TestCase):
         assert isinstance(file, ReferencePaymentBatchFile)
         self.assertEqual(file.get_total_amount(), Decimal("7048.00"))
         self.assertEqual(ReferencePaymentRecord.objects.filter(batch__file=file).count(), 4)
+
+    def test_currency_conversion(self):
+        amt = convert_currency(Decimal(100), "USD", "SEK", date(2023, 5, 17))
+        self.assertEqual(amt, Decimal("1045.802937"))
+        amt = convert_currency(Decimal("300"), "EUR", "USD", date(2023, 5, 17))
+        self.assertEqual(amt, Decimal("324.870000"))
+        amt = convert_currency(Decimal("300"), "USD", "EUR", date(2023, 5, 17))
+        self.assertEqual(amt, Decimal("277.033890"))
