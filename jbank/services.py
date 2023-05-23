@@ -28,20 +28,7 @@ def create_account_balance(  # pylint: disable=too-many-arguments
     )[0]
 
 
-def get_currency_exchange_rate(target_currency: str, record_date: date, source_currency: str = "EUR", max_age_days: int = 7) -> Decimal:
-    """
-    Returns max week old currency exchange rate matching specified search criteria.
-    Raises exception if suitable currency exchange rate not found.
-
-    Args:
-        target_currency: Target currency
-        record_date: Record date
-        source_currency: Source currency. Default "EUR".
-        max_age_days: Maximum age (days) from record_date for CurrencyExchange object to be considered valid.
-
-    Returns:
-        Decimal currency exchange rate from source currency to target currency.
-    """
+def find_currency_exchange(target_currency: str, record_date: date, source_currency: str = "EUR", max_age_days: int = 7) -> Optional[CurrencyExchange]:
     qs = CurrencyExchange.objects.filter(
         target_currency=target_currency,
         source_currency=source_currency,
@@ -49,7 +36,24 @@ def get_currency_exchange_rate(target_currency: str, record_date: date, source_c
         record_date__gte=record_date - timedelta(days=max_age_days),
         record_date__lte=record_date,
     ).exclude(exchange_rate=None)
-    xchg = qs.order_by("-record_date").first()
+    return qs.order_by("-record_date").first()
+
+
+def get_currency_exchange_rate(target_currency: str, record_date: date, source_currency: str = "EUR", max_age_days: int = 7) -> Decimal:
+    """
+    Returns max week old currency exchange rate matching specified search criteria.
+    Raises exception if suitable currency exchange rate not found.
+
+    Args:
+        target_currency: Target currency
+        record_date: Preferred record date
+        source_currency: Source currency. Default "EUR".
+        max_age_days: Maximum age (days) from record_date for CurrencyExchange object to be considered valid.
+
+    Returns:
+        Decimal currency exchange rate from source currency to target currency.
+    """
+    xchg = find_currency_exchange(target_currency, record_date, source_currency, max_age_days)
     if xchg is None:
         raise ValidationError(_("No exchange rate for {} found for record date {}").format(target_currency, record_date))
     assert isinstance(xchg, CurrencyExchange)
@@ -68,12 +72,12 @@ def convert_currency(  # pylint: disable=too-many-arguments
         source_amount: Amount in source currency
         source_currency: Source currency
         target_currency: Target currency
-        record_date: Optional record date. Default today.
+        record_date: Optional preferred record date. Default today.
         unit_currency: Unit currency which is used for fetching related rates. Default "EUR".
         max_age_days: Max age (days) for currency conversion data to be considered valid.
 
     Returns:
-        Amount in target_currency, 6 decimals.
+        Amount in target currency
     """
     source_currency = source_currency.upper()
     target_currency = target_currency.upper()
