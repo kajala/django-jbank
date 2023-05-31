@@ -535,7 +535,7 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
                 rec_tx.amount, rec_currency = camt054_parse_amt(amtdtls, "TxAmt")
                 if rec_currency != account_currency:
                     raise Exception(_("Account currency {} does not match record currency {}").format(account_currency, rec_currency))
-                rec_tx.remittance_info = camt054_parse_rmtinf(txdtls, "RmtInf")
+                rec_tx.remittance_info = camt054_parse_rmtinf(txdtls, "RmtInf")[:256]
                 rec_tx.payer_name = camt054_parse_debtor_name(txdtls, "RltdPties")
                 rec_tx.creditor_bank_bic = camt054_parse_rltdagts_cdtragt_fininstnid_bic(txdtls, "RltdAgts")
                 rec_tx.end_to_end_identifier = camt054_parse_refs_endtoendid(txdtls, "Refs")
