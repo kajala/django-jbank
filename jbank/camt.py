@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, date
 from decimal import Decimal
-from typing import Tuple, Any, Optional, Dict
+from typing import Tuple, Any, Optional, Dict, List
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -444,20 +444,22 @@ def camt054_parse_amt(data: dict, key: str) -> Tuple[Decimal, str]:
 
 
 def camt054_parse_rmtinf(data: dict, key: str) -> str:
-    out = ""
+    out: List[str] = []
     val = data.get(key) or {}
     ustrd_list = val.get("Ustrd")
     if ustrd_list:
-        out = "\n".join(str(ustrd).rstrip() for ustrd in ustrd_list)
+        out.extend(str(ustrd).rstrip() for ustrd in ustrd_list)
     strd_list = val.get("Strd") or []
     for strd in strd_list:
         cdtrrefinf = strd.get("CdtrRefInf") or {}
-        ref_val = cdtrrefinf.get("Ref") or ""
+        ref_val = cdtrrefinf.get("Ref")
         if ref_val:
-            if out:
-                out += "\n"
-            out += ref_val
-    return out
+            out.append(str(ref_val).rstrip())
+        addtlrmtinf_list = strd.get("AddtlRmtInf") or []
+        for addtlrmtinf in addtlrmtinf_list:
+            if addtlrmtinf:
+                out.append(str(addtlrmtinf).rstrip())
+    return "\n".join(out)
 
 
 def camt054_parse_debtor_name(data: dict, key: str) -> str:
