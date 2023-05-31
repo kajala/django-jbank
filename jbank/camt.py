@@ -460,14 +460,29 @@ def camt054_parse_rmtinf(data: dict, key: str) -> str:
     return out
 
 
-def camt054_parse_dbtr(data: dict, key: str) -> str:
+def camt054_parse_debtor_name(data: dict, key: str) -> str:
+    """
+    Parses first UltmtDbtr and then Dbtr, returns first valid Nm field.
+    Args:
+        data: Container element
+        key: Parent element name
+    Returns:
+        str
+    """
     val = data.get(key) or {}
     if not val:
         return ""
-    dbtr = val.get("Dbtr")
-    if not dbtr or "Nm" not in dbtr:
+    debtor_name = ""
+    ultmtdbtr = val.get("UltmtDbtr")
+    if ultmtdbtr:
+        debtor_name = ultmtdbtr.get("Nm")
+    if not debtor_name:
+        dbtr = val.get("Dbtr")
+        if dbtr:
+            debtor_name = dbtr.get("Nm")
+    if not debtor_name:
         raise Exception(_("Failed to parse debtor '{}'").format(key))
-    return dbtr["Nm"]
+    return debtor_name
 
 
 def camt054_parse_rltdagts_cdtragt_fininstnid_bic(data: dict, key: str) -> str:
@@ -519,7 +534,7 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
                 if rec_currency != account_currency:
                     raise Exception(_("Account currency {} does not match record currency {}").format(account_currency, rec_currency))
                 rec_tx.remittance_info = camt054_parse_rmtinf(txdtls, "RmtInf")
-                rec_tx.payer_name = camt054_parse_dbtr(txdtls, "RltdPties")
+                rec_tx.payer_name = camt054_parse_debtor_name(txdtls, "RltdPties")
                 rec_tx.creditor_bank_bic = camt054_parse_rltdagts_cdtragt_fininstnid_bic(txdtls, "RltdAgts")
                 rec_tx.end_to_end_identifier = camt054_parse_refs_endtoendid(txdtls, "Refs")
                 rec_tx.clean()
