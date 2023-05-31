@@ -37,7 +37,7 @@ CAMT053_INT_TAGS = ["NbOfNtries", "NbOfTxs"]
 
 CAMT054_FILE_SUFFIXES = ("XE", "XE", "CAMT", "NDCAMT54L", "XML", "NDCAPXMLD54O", "NDARCRAXMLO", "054")
 
-CAMT054_ARRAY_TAGS = ["Ntfctn", "Othr", "Ntry", "NtryDtls", "PrtryAmt", "Chrgs", "AdrLine", "Strd", "Ustrd", "RfrdDocInf", "AddtlRmtInf"]
+CAMT054_ARRAY_TAGS = ["Ntfctn", "Othr", "Ntry", "NtryDtls", "TxDtls", "PrtryAmt", "Chrgs", "AdrLine", "Strd", "Ustrd", "RfrdDocInf", "AddtlRmtInf"]
 
 CAMT054_INT_TAGS = ["NbOfNtries", "NbOfTxs"]
 
@@ -509,19 +509,19 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
         rec.value_date = camt054_parse_date(ntry, "ValDt")
         ntrydtls_list = ntry.get("NtryDtls") or []
         for ntrydtls0 in ntrydtls_list:
-            rec_tx = clone_model(rec, commit=False)
-            assert isinstance(rec_tx, ReferencePaymentRecord)
-            txdtls = ntrydtls0["TxDtls"]
-            amtdtls = txdtls["AmtDtls"]
-            if "InstdAmt" in amtdtls:
-                rec_tx.instructed_amount, rec_tx.instructed_currency = camt054_parse_amt(amtdtls, "InstdAmt")
-            rec_tx.amount, rec_currency = camt054_parse_amt(amtdtls, "TxAmt")
-            if rec_currency != account_currency:
-                raise Exception(_("Account currency {} does not match record currency {}").format(account_currency, rec_currency))
-            rec_tx.remittance_info = camt054_parse_rmtinf(txdtls, "RmtInf")
-            rec_tx.payer_name = camt054_parse_dbtr(txdtls, "RltdPties")
-            rec_tx.creditor_bank_bic = camt054_parse_rltdagts_cdtragt_fininstnid_bic(txdtls, "RltdAgts")
-            rec_tx.end_to_end_identifier = camt054_parse_refs_endtoendid(txdtls, "Refs")
-            rec_tx.clean()
-            rec_tx.save()
+            for txdtls in ntrydtls0["TxDtls"]:
+                rec_tx = clone_model(rec, commit=False)
+                assert isinstance(rec_tx, ReferencePaymentRecord)
+                amtdtls = txdtls["AmtDtls"]
+                if "InstdAmt" in amtdtls:
+                    rec_tx.instructed_amount, rec_tx.instructed_currency = camt054_parse_amt(amtdtls, "InstdAmt")
+                rec_tx.amount, rec_currency = camt054_parse_amt(amtdtls, "TxAmt")
+                if rec_currency != account_currency:
+                    raise Exception(_("Account currency {} does not match record currency {}").format(account_currency, rec_currency))
+                rec_tx.remittance_info = camt054_parse_rmtinf(txdtls, "RmtInf")
+                rec_tx.payer_name = camt054_parse_dbtr(txdtls, "RltdPties")
+                rec_tx.creditor_bank_bic = camt054_parse_rltdagts_cdtragt_fininstnid_bic(txdtls, "RltdAgts")
+                rec_tx.end_to_end_identifier = camt054_parse_refs_endtoendid(txdtls, "Refs")
+                rec_tx.clean()
+                rec_tx.save()
     return batch
