@@ -4,6 +4,8 @@ import traceback
 from typing import Optional
 from django.core.management.base import CommandParser
 from django.template import Template, Context
+from django.utils import translation
+
 from jbank.models import (
     Payout,
     PAYOUT_ERROR,
@@ -38,6 +40,7 @@ class Command(SafeCommand):
         parser.add_argument("--xml-declaration", action="store_true")
         parser.add_argument("--template-file", type=str)
         parser.add_argument("--force", action="store_true")
+        parser.add_argument("--generate-msg-id", action="store_true")
 
     def do(self, *args, **options):  # noqa
         target_dir = options["dir"]
@@ -71,7 +74,7 @@ class Command(SafeCommand):
                     logger.warning("Skipping %s since payment state %s", p, p.state_name)
                     continue
 
-                if not p.msg_id:
+                if not p.msg_id or options["generate_msg_id"]:
                     p.generate_msg_id()
                 if not p.file_name:
                     p.file_name = p.msg_id + "." + options["suffix"]
@@ -108,11 +111,12 @@ class Command(SafeCommand):
                     )
                     pain001.render_to_file(p.full_path)
                 else:
-                    content = pain001_template.render(Context({"p": p}))
-                    with open(p.full_path, "wt", encoding="UTF-8") as fp:
-                        fp.write(content)
+                    with translation.override("en_US"):
+                        content = pain001_template.render(Context({"p": p}))
+                        with open(p.full_path, "wt", encoding="UTF-8") as fp:
+                            fp.write(content)
 
-                logger.info("%s generated", p.full_path)
+                logger.info("%s written", p.full_path)
                 p.state = PAYOUT_WAITING_UPLOAD
                 p.save(update_fields=["full_path", "state"])
                 PayoutStatus.objects.create(payout=p, file_name=p.file_name, msg_id=p.msg_id, status_reason="File generation OK")
