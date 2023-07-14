@@ -29,7 +29,6 @@ class Command(SafeCommand):
         parser.add_argument("--file-reference", type=str, help="Download single file based on file reference")
         parser.add_argument("--list-only", action="store_true")
         parser.add_argument("--process-pain002", action="store_true")
-        parser.add_argument("--b64decode", action="store_true")
         parser.add_argument("--start-date", type=str)
         parser.add_argument("--end-date", type=str)
         parser.add_argument("--ws", type=int)
@@ -106,11 +105,6 @@ class Command(SafeCommand):
                             logger.error("WS-EDI {} Content block missing: {}".format(command, file_data))
                             raise Exception("WS-EDI {} Content block missing".format(command))
                         bcontent = base64.b64decode(file_data["Content"])
-                        if options["b64decode"]:
-                            try:
-                                bcontent = base64.b64decode(bcontent)
-                            except Exception as exc:
-                                logger.warning("Double base64-decoding failed: %s", exc)
                         with open(file_path, "wb") as fp:
                             fp.write(bcontent)
                         logger.info("Wrote file {}".format(file_path))
