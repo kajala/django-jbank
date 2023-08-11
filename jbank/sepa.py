@@ -134,7 +134,7 @@ class Pain001:
         due_date: Optional[date] = None,
     ):
         if not due_date:
-            due_date = self._local_time().date()
+            due_date = self.local_time().date()
         creditor = Pain001Party(creditor_name, creditor_account, creditor_bic)
         p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, remittance_info_type, due_date)
         p.clean()
@@ -153,7 +153,7 @@ class Pain001:
         parent.append(e)
         return e
 
-    def _local_time(self, t: Optional[datetime] = None) -> datetime:
+    def local_time(self, t: Optional[datetime] = None) -> datetime:
         if not t:
             t = now()
         if not self.tz:
@@ -161,7 +161,7 @@ class Pain001:
         return t.astimezone(self.tz)
 
     def _timestamp(self, t: datetime) -> str:
-        return self._local_time(t).isoformat()
+        return self.local_time(t).isoformat()
 
     @staticmethod
     def _dict_to_element(doc: Dict[str, Any], value_key: str = "@", attribute_prefix: str = "@") -> Element:

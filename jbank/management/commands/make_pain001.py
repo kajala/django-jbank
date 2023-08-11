@@ -2,9 +2,12 @@ import logging
 import os
 import traceback
 from typing import Optional
+
+import pytz
 from django.core.management.base import CommandParser
 from django.template import Template, Context
 from django.utils import translation
+from django.utils.timezone import now
 
 from jbank.models import (
     Payout,
@@ -41,6 +44,7 @@ class Command(SafeCommand):
         parser.add_argument("--template-file", type=str)
         parser.add_argument("--force", action="store_true")
         parser.add_argument("--generate-msg-id", action="store_true")
+        parser.add_argument("--tz", type=str, default="Europe/Helsinki")
 
     def do(self, *args, **options):  # noqa
         target_dir = options["dir"]
@@ -68,6 +72,9 @@ class Command(SafeCommand):
         for p in list(payouts.order_by("id").distinct()):
             assert isinstance(p, Payout)
             try:
+                if p.due_date is None:
+                    p.due_date = now().astimezone(pytz.timezone(options["tz"])).date()
+                    p.save(update_fields=["due_date"])
                 if options["verbose"]:
                     logger.info("%s", p)
                 if p.state != PAYOUT_WAITING_PROCESSING and not options["force"]:
@@ -91,6 +98,8 @@ class Command(SafeCommand):
                         p.payer.address_lines,
                         p.payer.country_code,
                     )
+                    if options["tz"]:
+                        pain001.tz_str = options["tz"]
                     if options["xml_declaration"]:
                         pain001.xml_declaration = options["xml_declaration"]
                     if p.messages:
