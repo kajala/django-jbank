@@ -1381,6 +1381,8 @@ class WsEdiConnectionAdmin(BankAdminBase):
                     "sender_identifier",
                     "receiver_identifier",
                     "target_identifier",
+                    "signer_identifier",
+                    "agreement_identifier",
                     "environment",
                     "debug_commands",
                     "created",

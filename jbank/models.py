@@ -718,6 +718,8 @@ class WsEdiConnection(models.Model):
     sender_identifier = SafeCharField(_("sender identifier"), max_length=32)
     receiver_identifier = SafeCharField(_("receiver identifier"), max_length=32)
     target_identifier = SafeCharField(_("target identifier"), max_length=32)
+    signer_identifier = SafeCharField(_("signer identifier"), max_length=32, blank=True, default="")
+    agreement_identifier = SafeCharField(_("agreement identifier"), max_length=32, blank=True, default="")
     environment = SafeCharField(_("environment"), max_length=32, default="PRODUCTION")
     pin = SafeCharField("PIN", max_length=64, default="", blank=True)
     pki_endpoint = models.URLField(_("PKI endpoint"), blank=True, default="")
