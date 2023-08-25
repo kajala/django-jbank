@@ -92,3 +92,12 @@ def save_or_store_media(file: models.FileField, filename: str):
         with open(filename, "rb") as fp:
             plain_filename = os.path.basename(filename)
             file.save(plain_filename, File(fp))  # type: ignore  # noqa
+
+
+def limit_filename_length(name: str, max_length: int, hellip: str = "...") -> str:
+    if len(name) > max_length:
+        parts = name.rsplit(".", 1)
+        suffix = parts[-1] if len(parts) > 1 else ""
+        max_prefix_len = max(0, max_length - len(suffix) - 1)
+        name = parts[0][:max_prefix_len] + hellip + suffix
+    return name

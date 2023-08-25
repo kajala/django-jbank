@@ -14,7 +14,7 @@ from django.utils.timezone import now
 from jacc.models import Account
 from jbank.csr_helpers import create_private_key, create_csr_pem, get_private_key_pem, strip_pem_header_and_footer
 from jbank.ecb import parse_euro_exchange_rates_xml
-from jbank.helpers import validate_xml, parse_date_or_relative_date
+from jbank.helpers import validate_xml, parse_date_or_relative_date, limit_filename_length
 from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty, ReferencePaymentBatchFile, ReferencePaymentRecord
 from jbank.services import convert_currency
 from jbank.tito import parse_tiliote_statements_from_file
@@ -251,3 +251,6 @@ class Tests(TestCase):
         self.assertEqual(amt, Decimal("324.870000"))
         amt = convert_currency(Decimal("300"), "USD", "EUR", date(2023, 5, 17))
         self.assertEqual(amt, Decimal("277.033890"))
+
+    def test_limit_filename_length(self):
+        self.assertEqual(limit_filename_length("1579410530.XT", 12, "..."), "157941053...XT")

@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Optional
 from django.core.exceptions import ValidationError
+from django.db.models import QuerySet, Sum, Q, F
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from jbank.models import AccountBalance, CurrencyExchange
@@ -95,3 +96,22 @@ def convert_currency(  # pylint: disable=too-many-arguments
         amt *= get_currency_exchange_rate(target_currency, record_date, unit_currency, max_age_days)
 
     return amt.quantize(Decimal("1.000000"))
+
+
+def filter_settlements_for_bank_reconciliation(queryset: QuerySet) -> QuerySet:
+    """
+    Returns settlements which potentially need bank reconciliation:
+    1) is original (no parent) settlement type entry, and
+    2) is not marked as manually settled, and
+    3) sum amount of children is less than the amount
+
+    Args:
+        queryset: QuerySet
+
+    Returns:
+        QuerySet
+    """
+    queryset = queryset.filter(type__is_settlement=True, parent=None)  # original (non-derived) settlements only
+    queryset = queryset.exclude(manually_settled=True)  # ignore entries marked as manually settled
+    queryset = queryset.annotate(child_set_amount=Sum("child_set__amount"))  # sum amount of children
+    return queryset.filter(Q(child_set=None) | Q(child_set_amount__lt=F("amount")))  # return those which don't have children or children amount not enough

@@ -18,8 +18,7 @@ from django.contrib.messages import add_message, ERROR
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
-from django.db.models import F, Q, QuerySet
-from django.db.models.aggregates import Sum
+from django.db.models import Q, QuerySet
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse, path, re_path, URLPattern
@@ -32,6 +31,9 @@ from django.utils.translation import gettext_lazy as _
 from jacc.admin import AccountEntryNoteInline, AccountEntryNoteAdmin
 from jacc.helpers import sum_queryset
 from jacc.models import Account, EntryType, AccountEntryNote
+
+from jbank.helpers import limit_filename_length
+from jbank.services import filter_settlements_for_bank_reconciliation
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.format import dec2, format_timedelta, choices_label
 from jutil.request import get_ip
@@ -144,11 +146,7 @@ class AccountEntryMatchedFilter(SimpleListFilter):
             # return original settlements only
             queryset = queryset.filter(type__is_settlement=True, parent=None)
             if val == "1":
-                # return those which are not manually settled and
-                # have either a) no children b) sum of children less than amount
-                queryset = queryset.exclude(manually_settled=True)
-                queryset = queryset.annotate(child_set_amount=Sum("child_set__amount"))
-                return queryset.filter(Q(child_set=None) | Q(child_set_amount__lt=F("amount")))
+                return filter_settlements_for_bank_reconciliation(queryset)
             if val == "2":
                 # return any entries with derived account entries or marked as manually settled
                 return queryset.exclude(Q(child_set=None) & Q(manually_settled=False))
@@ -476,7 +474,6 @@ class StatementRecordAdmin(BankAdminBase):
         "id",
         "value_date_short",
         "type",
-        "record_code",
         "amount",
         "name",
         "source_file_link",
@@ -543,15 +540,14 @@ class StatementRecordAdmin(BankAdminBase):
             qs = qs.filter(statement__file_id=statement_file_id)
         return qs
 
+    @admin.display(description=_("source file"), ordering="statement")  # type: ignore
     def source_file_link(self, obj):
         assert isinstance(obj, StatementRecord)
-        if not obj.statement:
+        stm = obj.statement
+        if not stm:
             return ""
-        admin_url = reverse("admin:jbank_statementfile_change", args=(obj.statement.file.id,))
-        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.statement.name)
-
-    source_file_link.admin_order_field = "statement"  # type: ignore
-    source_file_link.short_description = _("source file")  # type: ignore
+        admin_url = reverse("admin:jbank_statementfile_change", args=(stm.file.id,))
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), mark_safe(limit_filename_length(stm.name, 12, "&hellip;")))
 
     def file_link(self, obj):
         assert isinstance(obj, StatementRecord)
@@ -743,15 +739,13 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
             qs = qs.filter(batch__file_id=stm_id)
         return qs
 
+    @admin.display(description=_("source file"), ordering="batch")  # type: ignore
     def source_file_link(self, obj):
         assert isinstance(obj, ReferencePaymentRecord)
         if not obj.batch:
             return ""
         admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.batch.file.id,))
-        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.name)
-
-    source_file_link.admin_order_field = "batch"  # type: ignore
-    source_file_link.short_description = _("source file")  # type: ignore
+        return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), mark_safe(limit_filename_length(obj.batch.name, 12, "&hellip;")))
 
 
 class ReferencePaymentBatchAdmin(BankAdminBase):
