@@ -8,7 +8,7 @@ from datetime import datetime, time, date
 from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -194,11 +194,9 @@ class StatementRecord(AccountEntry):
     @property
     def messages_combined(self) -> str:
         """
-        Returns: All statement record message fields separated with spaces.
+        Returns: All statement record message fields separated with newlines.
         """
         out = ""
-        if self.remittance_info:
-            out += self.remittance_info + "\n"
         if self.messages:
             out += self.messages + "\n"
         if self.bank_messages:
@@ -209,13 +207,23 @@ class StatementRecord(AccountEntry):
             assert isinstance(detail, StatementRecordDetail)
             if detail.unstructured_remittance_info:
                 out += detail.unstructured_remittance_info + "\n"
+        return out[:-1]
+
+    @property
+    def remittance_info_list(self) -> List[Tuple[str, Decimal, str]]:
+        """
+        Returns structured remittance info list.
+        Returns: List of (remittance_info, amount, currency_code)
+        """
+        out: List[str] = []
+        if self.remittance_info:
+            out.append((self.remittance_info, self.amount, self.statement.currency_code))
+        for detail in self.detail_set.all().order_by("id").distinct():
+            assert isinstance(detail, StatementRecordDetail)
             for rem in detail.remittanceinfo_set.all().order_by("id"):
                 assert isinstance(rem, StatementRecordRemittanceInfo)
-                if rem.reference:
-                    out += rem.reference + "\n"
-                if rem.additional_info:
-                    out += rem.additional_info + "\n"
-        return out[:-1]
+                out.append((rem.reference, rem.amount, rem.currency_code))
+        return out
 
     @property
     def is_settled(self) -> bool:
