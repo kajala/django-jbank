@@ -192,6 +192,32 @@ class StatementRecord(AccountEntry):
         verbose_name_plural = _("statement records")
 
     @property
+    def messages_combined(self) -> str:
+        """
+        Returns: All statement record message fields separated with spaces.
+        """
+        out = ""
+        if self.remittance_info:
+            out += self.remittance_info + "\n"
+        if self.messages:
+            out += self.messages + "\n"
+        if self.bank_messages:
+            out += self.bank_messages + "\n"
+        if self.bank_messages:
+            out += self.bank_messages + "\n"
+        for detail in self.detail_set.all().order_by("id").distinct():
+            assert isinstance(detail, StatementRecordDetail)
+            if detail.unstructured_remittance_info:
+                out += detail.unstructured_remittance_info + "\n"
+            for rem in detail.remittanceinfo_set.all().order_by("id"):
+                assert isinstance(rem, StatementRecordRemittanceInfo)
+                if rem.reference:
+                    out += rem.reference + "\n"
+                if rem.additional_info:
+                    out += rem.additional_info + "\n"
+        return out[:-1]
+
+    @property
     def is_settled(self) -> bool:
         """True if entry is either manually settled or has SUM(children)==amount."""
         return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
