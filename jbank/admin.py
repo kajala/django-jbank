@@ -440,7 +440,7 @@ class StatementRecordAdmin(BankAdminBase):
         "source_file",
         "archived",
         "marked_reconciled",
-        "marked_reconciled_bool",
+        "is_reconciled_bool",
         "child_links",
     )
     readonly_fields = fields
@@ -477,7 +477,7 @@ class StatementRecordAdmin(BankAdminBase):
         "amount",
         "name",
         "source_file_link",
-        "marked_reconciled_bool",
+        "is_reconciled_bool",
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
@@ -490,11 +490,11 @@ class StatementRecordAdmin(BankAdminBase):
         summarize_records,
     )
 
-    def marked_reconciled_bool(self, obj):
+    def is_reconciled_bool(self, obj):
         return obj.is_reconciled
 
-    marked_reconciled_bool.short_description = _("settled")  # type: ignore
-    marked_reconciled_bool.boolean = True  # type: ignore
+    is_reconciled_bool.short_description = _("settled")  # type: ignore
+    is_reconciled_bool.boolean = True  # type: ignore
 
     def value_date_short(self, obj):
         return date_format(obj.value_date, "SHORT_DATE_FORMAT")
@@ -603,7 +603,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "type",
         "description",
         "marked_reconciled",
-        "marked_reconciled_bool",
+        "is_reconciled_bool",
         "child_links",
         "instructed_amount",
         "instructed_currency",
@@ -643,7 +643,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "settled_invoice",
         "settled_item",
         "parent",
-        "marked_reconciled_bool",
+        "is_reconciled_bool",
         "child_links",
         "instructed_amount",
         "instructed_currency",
@@ -671,7 +671,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "payer_name",
         "remittance_info",
         "source_file_link",
-        "marked_reconciled_bool",
+        "is_reconciled_bool",
     )
     actions = (
         mark_as_marked_reconciled,
@@ -685,11 +685,11 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
-    def marked_reconciled_bool(self, obj):
+    def is_reconciled_bool(self, obj):
         return obj.is_reconciled
 
-    marked_reconciled_bool.short_description = _("settled")  # type: ignore
-    marked_reconciled_bool.boolean = True  # type: ignore
+    is_reconciled_bool.short_description = _("settled")  # type: ignore
+    is_reconciled_bool.boolean = True  # type: ignore
 
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")

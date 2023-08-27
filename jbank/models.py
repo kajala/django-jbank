@@ -227,7 +227,7 @@ class StatementRecord(AccountEntry):
 
     @property
     def is_reconciled(self) -> bool:
-        """True if entry is either manually reconciled or has SUM(children)==amount."""
+        """True if entry is either marked reconciled or has SUM(children)==amount."""
         return self.marked_reconciled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     def clean(self):
