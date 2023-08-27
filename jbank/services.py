@@ -102,7 +102,7 @@ def filter_settlements_for_bank_reconciliation(queryset: QuerySet) -> QuerySet:
     """
     Returns settlements which potentially need bank reconciliation:
     1) is original (no parent) settlement type entry, and
-    2) is not marked as manually settled, and
+    2) is not marked as reconciled, and
     3) sum amount of children is less than the amount
 
     Args:
@@ -112,6 +112,6 @@ def filter_settlements_for_bank_reconciliation(queryset: QuerySet) -> QuerySet:
         QuerySet
     """
     queryset = queryset.filter(type__is_settlement=True, parent=None)  # original (non-derived) settlements only
-    queryset = queryset.exclude(manually_settled=True)  # ignore entries marked as manually settled
+    queryset = queryset.exclude(marked_reconciled=True)  # ignore entries marked as reconciled
     queryset = queryset.annotate(child_set_amount=Sum("child_set__amount"))  # sum amount of children
     return queryset.filter(Q(child_set=None) | Q(child_set_amount__lt=F("amount")))  # return those which don't have children or children amount not enough

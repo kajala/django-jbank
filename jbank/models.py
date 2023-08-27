@@ -185,7 +185,7 @@ class StatementRecord(AccountEntry):
     messages = SafeTextField(_("messages"), blank=True, default="")
     client_messages = SafeTextField(_("client messages"), blank=True, default="")
     bank_messages = SafeTextField(_("bank messages"), blank=True, default="")
-    manually_settled = models.BooleanField(_("manually settled"), db_index=True, default=False, blank=True)
+    marked_reconciled = models.BooleanField(_("marked as reconciled"), db_index=True, default=False, blank=True)
 
     class Meta:
         verbose_name = _("statement record")
@@ -215,7 +215,7 @@ class StatementRecord(AccountEntry):
         Returns structured remittance info list.
         Returns: List of (remittance_info, amount, currency_code)
         """
-        out: List[str] = []
+        out: List[Tuple[str, Decimal, str]] = []
         if self.remittance_info:
             out.append((self.remittance_info, self.amount, self.statement.currency_code))
         for detail in self.detail_set.all().order_by("id").distinct():
@@ -226,9 +226,9 @@ class StatementRecord(AccountEntry):
         return out
 
     @property
-    def is_settled(self) -> bool:
-        """True if entry is either manually settled or has SUM(children)==amount."""
-        return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
+    def is_reconciled(self) -> bool:
+        """True if entry is either manually reconciled or has SUM(children)==amount."""
+        return self.marked_reconciled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     def clean(self):
         self.source_file = self.statement
@@ -403,7 +403,7 @@ class ReferencePaymentRecord(AccountEntry):
     correction_identifier = SafeCharField(_("correction identifier"), max_length=1, choices=CORRECTION_IDENTIFIER, default="")
     delivery_method = SafeCharField(_("delivery method"), max_length=1, db_index=True, choices=DELIVERY_METHOD, blank=True, default="")
     receipt_code = SafeCharField(_("receipt code"), max_length=1, choices=RECEIPT_CODE, db_index=True, blank=True, default="")
-    manually_settled = models.BooleanField(_("manually settled"), db_index=True, default=False, blank=True)
+    marked_reconciled = models.BooleanField(_("marked as reconciled"), db_index=True, default=False, blank=True)
     instructed_amount = models.DecimalField(_("instructed amount"), blank=True, default=None, null=True, max_digits=10, decimal_places=2)
     instructed_currency = SafeCharField(_("instructed currency"), blank=True, default="", max_length=3)
     creditor_bank_bic = SafeCharField(_("creditor bank BIC"), max_length=16, blank=True, default="")
@@ -414,9 +414,9 @@ class ReferencePaymentRecord(AccountEntry):
         verbose_name_plural = _("reference payment records")
 
     @property
-    def is_settled(self) -> bool:
-        """True if entry is either manually settled or has SUM(children)==amount."""
-        return self.manually_settled or sum_queryset(self.child_set) == self.amount  # type: ignore
+    def is_reconciled(self) -> bool:
+        """True if entry is either marked as reconciled or has SUM(children)==amount."""
+        return self.marked_reconciled or sum_queryset(self.child_set) == self.amount  # type: ignore
 
     @property
     def remittance_info_short(self) -> str:

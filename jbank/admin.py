@@ -148,14 +148,14 @@ class AccountEntryMatchedFilter(SimpleListFilter):
             if val == "1":
                 return filter_settlements_for_bank_reconciliation(queryset)
             if val == "2":
-                # return any entries with derived account entries or marked as manually settled
-                return queryset.exclude(Q(child_set=None) & Q(manually_settled=False))
+                # return any entries with derived account entries or marked as reconciled
+                return queryset.exclude(Q(child_set=None) & Q(marked_reconciled=False))
             if val == "3":
                 # return only manually marked as settled
-                return queryset.filter(manually_settled=True)
+                return queryset.filter(marked_reconciled=True)
             if val == "4":
                 # return everything but manually marked as settled
-                return queryset.filter(manually_settled=False)
+                return queryset.filter(marked_reconciled=False)
         return queryset
 
 
@@ -344,7 +344,7 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
         return False
 
 
-def mark_as_manually_settled(modeladmin, request, qs):  # pylint: disable=unused-argument
+def mark_as_marked_reconciled(modeladmin, request, qs):  # pylint: disable=unused-argument
     try:
         data = request.POST.dict()
 
@@ -352,31 +352,31 @@ def mark_as_manually_settled(modeladmin, request, qs):  # pylint: disable=unused
             description = data["description"]
             user = request.user
             assert isinstance(user, User)
-            for e in list(qs.filter(manually_settled=False)):
-                e.manually_settled = True
-                e.save(update_fields=["manually_settled"])
-                msg = "{}: {}".format(capfirst(_("marked as manually settled")), description)
+            for e in list(qs.filter(marked_reconciled=False)):
+                e.marked_reconciled = True
+                e.save(update_fields=["marked_reconciled"])
+                msg = "{}: {}".format(capfirst(_("marked as reconciled")), description)
                 admin_log([e], msg, who=user)
                 messages.info(request, "{}: {}".format(e, msg))
         else:
             cx = {
                 "qs": qs,
             }
-            return render(request, "admin/jbank/mark_as_manually_settled.html", context=cx)
+            return render(request, "admin/jbank/mark_as_marked_reconciled.html", context=cx)
     except ValidationError as e:
         messages.error(request, " ".join(e.messages))
     except Exception as e:
-        logger.error("mark_as_manually_settled: %s", traceback.format_exc())
+        logger.error("mark_as_marked_reconciled: %s", traceback.format_exc())
         messages.error(request, "{}".format(e))
     return None
 
 
-def unmark_manually_settled_flag(modeladmin, request, qs):  # pylint: disable=unused-argument
+def unmark_marked_reconciled_flag(modeladmin, request, qs):  # pylint: disable=unused-argument
     user = request.user
-    for e in list(qs.filter(manually_settled=True)):
-        e.manually_settled = False
-        e.save(update_fields=["manually_settled"])
-        msg = capfirst(_("manually settled flag cleared"))
+    for e in list(qs.filter(marked_reconciled=True)):
+        e.marked_reconciled = False
+        e.save(update_fields=["marked_reconciled"])
+        msg = capfirst(_("reconciled mark removed"))
         admin_log([e], msg, who=user)
         messages.info(request, "{}: {}".format(e, msg))
 
@@ -439,8 +439,8 @@ class StatementRecordAdmin(BankAdminBase):
         "description",
         "source_file",
         "archived",
-        "manually_settled",
-        "is_settled_bool",
+        "marked_reconciled",
+        "marked_reconciled_bool",
         "child_links",
     )
     readonly_fields = fields
@@ -457,7 +457,7 @@ class StatementRecordAdmin(BankAdminBase):
     list_filter = (
         "statement__file__tag",
         AccountNameFilter,
-        "manually_settled",
+        "marked_reconciled",
         SettlementEntryTypesFilter,
         "record_code",
     )
@@ -477,7 +477,7 @@ class StatementRecordAdmin(BankAdminBase):
         "amount",
         "name",
         "source_file_link",
-        "is_settled_bool",
+        "marked_reconciled_bool",
     )
     inlines = (
         StatementRecordSepaInfoInlineAdmin,
@@ -485,16 +485,16 @@ class StatementRecordAdmin(BankAdminBase):
         AccountEntryNoteInline,
     )
     actions = (
-        mark_as_manually_settled,
-        unmark_manually_settled_flag,
+        mark_as_marked_reconciled,
+        unmark_marked_reconciled_flag,
         summarize_records,
     )
 
-    def is_settled_bool(self, obj):
-        return obj.is_settled
+    def marked_reconciled_bool(self, obj):
+        return obj.is_reconciled
 
-    is_settled_bool.short_description = _("settled")  # type: ignore
-    is_settled_bool.boolean = True  # type: ignore
+    marked_reconciled_bool.short_description = _("settled")  # type: ignore
+    marked_reconciled_bool.boolean = True  # type: ignore
 
     def value_date_short(self, obj):
         return date_format(obj.value_date, "SHORT_DATE_FORMAT")
@@ -602,8 +602,8 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "timestamp",
         "type",
         "description",
-        "manually_settled",
-        "is_settled_bool",
+        "marked_reconciled",
+        "marked_reconciled_bool",
         "child_links",
         "instructed_amount",
         "instructed_currency",
@@ -630,7 +630,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "delivery_method",
         "receipt_code",
         "archived",
-        "manually_settled",
+        "marked_reconciled",
         "account",
         "timestamp",
         "created",
@@ -643,7 +643,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "settled_invoice",
         "settled_item",
         "parent",
-        "is_settled_bool",
+        "marked_reconciled_bool",
         "child_links",
         "instructed_amount",
         "instructed_currency",
@@ -671,11 +671,11 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "payer_name",
         "remittance_info",
         "source_file_link",
-        "is_settled_bool",
+        "marked_reconciled_bool",
     )
     actions = (
-        mark_as_manually_settled,
-        unmark_manually_settled_flag,
+        mark_as_marked_reconciled,
+        unmark_marked_reconciled_flag,
         summarize_records,
     )
     inlines = [
@@ -685,11 +685,11 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
-    def is_settled_bool(self, obj):
-        return obj.is_settled
+    def marked_reconciled_bool(self, obj):
+        return obj.is_reconciled
 
-    is_settled_bool.short_description = _("settled")  # type: ignore
-    is_settled_bool.boolean = True  # type: ignore
+    marked_reconciled_bool.short_description = _("settled")  # type: ignore
+    marked_reconciled_bool.boolean = True  # type: ignore
 
     def record_date_short(self, obj):
         return date_format(obj.record_date, "SHORT_DATE_FORMAT")
@@ -1641,8 +1641,8 @@ class AccountBalanceAdmin(BankAdminBase):
         return date_format(obj.record_datetime, "SHORT_DATETIME_FORMAT")
 
 
-mark_as_manually_settled.short_description = _("Mark as manually settled")  # type: ignore
-unmark_manually_settled_flag.short_description = _("Unmark manually settled flag")  # type: ignore
+mark_as_marked_reconciled.short_description = _("Mark as reconciled")  # type: ignore
+unmark_marked_reconciled_flag.short_description = _("Unmark reconciled flag")  # type: ignore
 send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: ignore
 mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
 regenerate_payout_message_identifiers.short_description = _("Regenerate payout message identifiers")  # type: ignore
