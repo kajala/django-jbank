@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-26 23:47+0000\n"
+"POT-Creation-Date: 2023-08-27 01:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,7 +91,7 @@ msgid "total"
 msgstr "yhteensä"
 
 #: jbank/admin.py:496 jbank/admin.py:691
-msgid "settled"
+msgid "reconciled"
 msgstr "kohdistettu"
 
 #: jbank/admin.py:502 jbank/admin.py:697
@@ -185,16 +185,12 @@ msgid "credit limit"
 msgstr "luottolimiitti"
 
 #: jbank/admin.py:1644
-#, fuzzy
-#| msgid "marked as reconciled"
 msgid "Mark as reconciled"
-msgstr "merkitty kohdistetuksi"
+msgstr "Merkitse kohdistetuksi"
 
 #: jbank/admin.py:1645
-#, fuzzy
-#| msgid "marked as reconciled"
 msgid "Unmark reconciled flag"
-msgstr "merkitty kohdistetuksi"
+msgstr "Kohdistettu-merkintä pois"
 
 #: jbank/admin.py:1646
 msgid "Send payouts to bank"
@@ -1218,6 +1214,9 @@ msgstr "Rivi {line}: Epäkelpo tietueen lisätietotyyppi \"{extra_info_type}\""
 #: jbank/wsedi.py:63 jbank/wspki.py:350
 msgid "ws.edi.connection.not.enabled"
 msgstr "WS-EDI yhteys {ws} ei päällä"
+
+#~ msgid "settled"
+#~ msgstr "kohdistettu"
 
 #~ msgid "Unmark manually settled flag"
 #~ msgstr "Merkitse tapahtuma avoimeksi/kohdistamattomaksi"

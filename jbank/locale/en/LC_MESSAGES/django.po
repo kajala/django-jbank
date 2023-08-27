@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-26 23:47+0000\n"
+"POT-Creation-Date: 2023-08-27 01:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,7 +94,7 @@ msgid "total"
 msgstr ""
 
 #: jbank/admin.py:496 jbank/admin.py:691
-msgid "settled"
+msgid "reconciled"
 msgstr ""
 
 #: jbank/admin.py:502 jbank/admin.py:697

@@ -493,7 +493,7 @@ class StatementRecordAdmin(BankAdminBase):
     def is_reconciled_bool(self, obj):
         return obj.is_reconciled
 
-    is_reconciled_bool.short_description = _("settled")  # type: ignore
+    is_reconciled_bool.short_description = _("reconciled")  # type: ignore
     is_reconciled_bool.boolean = True  # type: ignore
 
     def value_date_short(self, obj):
@@ -688,7 +688,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
     def is_reconciled_bool(self, obj):
         return obj.is_reconciled
 
-    is_reconciled_bool.short_description = _("settled")  # type: ignore
+    is_reconciled_bool.short_description = _("reconciled")  # type: ignore
     is_reconciled_bool.boolean = True  # type: ignore
 
     def record_date_short(self, obj):
