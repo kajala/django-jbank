@@ -119,7 +119,9 @@ def wsedi_execute(  # noqa
         envelope = etree.fromstring(body_bytes)
         binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
         soap_headers: dict = {}
-        envelope, soap_headers = binary_signature.apply(envelope, soap_headers)
+        envelope, soap_headers = binary_signature.apply(
+            envelope, soap_headers
+        )  # if you get AttributeError: 'NoneType' object has no attribute 'text' see https://bugs.launchpad.net/lxml/+bug/1960668/
         if ws.use_wsse_timestamp:
             wsse_insert_timestamp(envelope, soap_call.created)
         signed_body_bytes = etree.tostring(envelope)
