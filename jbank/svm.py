@@ -1,13 +1,10 @@
 from os.path import basename
 from typing import Union, Dict, List, Optional, Any
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
-from pytz import timezone
-
 from jbank.helpers import MESSAGE_STATEMENT_RECORD_FIELDS
 from jbank.models import (
     StatementFile,
@@ -19,6 +16,12 @@ from jbank.models import (
     ReferencePaymentRecord,
 )
 from jbank.parsers import parse_filename_suffix, parse_records, convert_date_fields, convert_decimal_fields
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 SVM_STATEMENT_SUFFIXES = ("SVM", "TXT", "KTL")
 
@@ -93,7 +96,7 @@ def parse_svm_batches(content: str, filename: str) -> list:
     lines = content.split("\n")
     nlines = len(lines)
     line_number = 1
-    tz = timezone("Europe/Helsinki")
+    tz = ZoneInfo("Europe/Helsinki")
     batches = []
     header: Optional[Dict[str, Union[int, str]]] = None
     records: List[Dict[str, Union[int, str]]] = []

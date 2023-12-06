@@ -3,8 +3,13 @@ from os.path import basename
 from typing import Dict, Any, List
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-from pytz import timezone
 from jbank.parsers import parse_filename_suffix, parse_records, convert_date_fields, convert_decimal_fields
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 TO_STATEMENT_SUFFIXES = ("TO", "TXT", "TITO")
 
@@ -203,7 +208,7 @@ def parse_tiliote_statements(content: str, filename: str) -> List[dict]:  # pyli
     nlines = len(lines)
 
     line_number = 1
-    tz = timezone("Europe/Helsinki")
+    tz = ZoneInfo("Europe/Helsinki")
 
     header = None
     records = []

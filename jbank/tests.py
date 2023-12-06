@@ -1,9 +1,8 @@
 import os
 import subprocess
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from os.path import join
-import pytz
 import zeep
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -25,6 +24,12 @@ from jutil.format import format_xml
 from jutil.validators import iban_bic
 from lxml import etree  # type: ignore  # pytype: disable=import-error
 from zeep.wsse import BinarySignature  # type: ignore
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 
 class Tests(TestCase):
@@ -166,9 +171,9 @@ class Tests(TestCase):
         ws.signing_key_file.name = "data/x509/key.pem"
         ws.save()
         cert = get_x509_cert_from_file("data/x509/cert.pem")
-        not_valid_before, not_valid_after = pytz.utc.localize(cert.not_valid_before), pytz.utc.localize(cert.not_valid_after)
-        self.assertEqual(not_valid_before, pytz.utc.localize(datetime(2019, 12, 3, 17, 54, 41)))
-        self.assertEqual(not_valid_after, pytz.utc.localize(datetime(2019, 12, 13, 17, 54, 41)))
+        not_valid_before, not_valid_after = cert.not_valid_before.replace(tzinfo=timezone.utc), cert.not_valid_after.replace(tzinfo=timezone.utc)
+        self.assertEqual(not_valid_before, datetime(2019, 12, 3, 17, 54, 41).replace(tzinfo=timezone.utc))
+        self.assertEqual(not_valid_after, datetime(2019, 12, 13, 17, 54, 41).replace(tzinfo=timezone.utc))
         self.assertEqual(WsEdiConnection.objects.get_by_receiver_identifier("123192031").id, ws.id)
         app = open("data/x509/appreq.xml", "rb").read()
         signed = ws.sign_application_request(app)
@@ -177,7 +182,7 @@ class Tests(TestCase):
         encoded = ws.encode_application_request(signed)
         ref_encoded = b"PEFwcGxpY2F0aW9uUmVxdWVzdCB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIiB4bWxuczp4c2Q9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hIiB4bWxucz0iaHR0cDovL2J4ZC5maS94bWxkYXRhLyI+CiAgICA8Q3VzdG9tZXJJZD4wNjExMzM8L0N1c3RvbWVySWQ+CiAgICA8VGltZXN0YW1wPjIwMTItMDItMjBUMDg6NTA6NTkuNDMxOTAxMiswMTowMDwvVGltZXN0YW1wPgogICAgPEVudmlyb25tZW50PlRFU1Q8L0Vudmlyb25tZW50PgogICAgPEZpbGVSZWZlcmVuY2VzPgogICAgPEZpbGVSZWZlcmVuY2U+MTIwMjE3MDA0Ni0xMjAyMTcxMzM0PC9GaWxlUmVmZXJlbmNlPgogICAgPC9GaWxlUmVmZXJlbmNlcz4KICAgIDxTb2Z0d2FyZUlkPkRCU0VQQUNsaWVudDwvU29mdHdhcmVJZD4KICAgIDxGaWxlVHlwZT5wYWluLjAwMi4wMDEuMDI8L0ZpbGVUeXBlPgogICAgPFNpZ25hdHVyZSB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnIyI+CiAgICAgICAgPFNpZ25lZEluZm8+CiAgICAgICAgICA8Q2Fub25pY2FsaXphdGlvbk1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuIyIvPgogICAgICAgICAgPFNpZ25hdHVyZU1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyNyc2Etc2hhMSIvPgogICAgICAgICAgPFJlZmVyZW5jZSBVUkk9IiI+CiAgICAgICAgICAgIDxUcmFuc2Zvcm1zPgogICAgICAgICAgICAgIDxUcmFuc2Zvcm0gQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwLzA5L3htbGRzaWcjZW52ZWxvcGVkLXNpZ25hdHVyZSIvPgogICAgICAgICAgICA8L1RyYW5zZm9ybXM+CiAgICAgICAgICAgIDxEaWdlc3RNZXRob2QgQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwLzA5L3htbGRzaWcjc2hhMSIvPgogICAgICAgICAgICA8RGlnZXN0VmFsdWU+RDRCZzlPSmRRSGdzWE1RTTJlY3lvcU53Q240PTwvRGlnZXN0VmFsdWU+CiAgICAgICAgICA8L1JlZmVyZW5jZT4KICAgICAgICA8L1NpZ25lZEluZm8+CiAgICAgICAgPFNpZ25hdHVyZVZhbHVlPk53b2NxSjU3Q3VMblFKYUlBMEptOEpNMldsTk9yTlNNNjVRdDlucTY5YXo0UU1DZ1pCd1JJR3VkWit1TVZXdTAKOFRScmlUSGdyQ1R3NVc1MGNWbmhDL3orc3cwbWNOdVlza1htR3ByKzRuVUFTWWJjYlQ2RXprdHJISGtiaFZUWgpJNFg0TmROOHNrVTA2VGRnekYxSnZ3L0d6S0VOcm00bDloQkxHYlF5SWFKcHBHbUsxbE4wZzFzdXhueXZ6Z1pLCmdGRUVKWmRGZ0ZXY1ArbUNVKzg4RmtjWU9Wam9YNDhyTHRyMGhTWHlXUmdVQzl4M1NlaXc1R29TM3RvYVk5ZEUKbW82R1JFV1VGRVg5VGphSDJzT3k0V2V4aWVqbFlpc0N5RUd6Qm55QkdaL1hpNUVkb1pTUm9Hcmg2MHIrWERMWAozVnUzdkNKbTV6RDNTUFg1ZlY5by9BPT08L1NpZ25hdHVyZVZhbHVlPgogICAgICAgIDxLZXlJbmZvPgogICAgICAgICAgPFg1MDlEYXRhPgogICAgICAgICAgICA8WDUwOUlzc3VlclNlcmlhbD4KICAgICAgICAgICAgICA8WDUwOUlzc3Vlck5hbWU+SXNzdWVyOiB7eyB3cy5zaWduaW5nX2NlcnQuaXNzdWVyLnJmYzQ1MTRfc3RyaW5nIH19PC9YNTA5SXNzdWVyTmFtZT4KICAgICAgICAgICAgICA8WDUwOVNlcmlhbE51bWJlcj57eyB3cy5zaWduaW5nX2NlcnQuc2VyaWFsX251bWJlciB9fTwvWDUwOVNlcmlhbE51bWJlcj4KICAgICAgICAgICAgPC9YNTA5SXNzdWVyU2VyaWFsPgogICAgICAgICAgICA8WDUwOUNlcnRpZmljYXRlPk1JSURWRENDQWp5Z0F3SUJBZ0lVR2hJR25iZE5kbkxITjJHYjNHQ2dVZVNKalFZd0RRWUpLb1pJaHZjTkFRRUwKQlFBd1Z6RUxNQWtHQTFVRUJoTUNWVk14Q3pBSkJnTlZCQWdNQWxSWU1ROHdEUVlEVlFRSERBWkVZV3hzWVhNeApGVEFUQmdOVkJBb01ERXRoYW1Gc1lTQkhjbTkxY0RFVE1CRUdBMVVFQXd3S2EyRnFZV3hoTG1OdmJUQWVGdzB4Ck9URXlNRE14TnpVME5ERmFGdzB4T1RFeU1UTXhOelUwTkRGYU1GY3hDekFKQmdOVkJBWVRBbFZUTVFzd0NRWUQKVlFRSURBSlVXREVQTUEwR0ExVUVCd3dHUkdGc2JHRnpNUlV3RXdZRFZRUUtEQXhMWVdwaGJHRWdSM0p2ZFhBeApFekFSQmdOVkJBTU1DbXRoYW1Gc1lTNWpiMjB3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUUR6cGdkZ01YaVc5U094bkZQTGRlRklsdGxDeEgyckF6L25qN2JMR0s5eWNWTU1PVzA4TTU1akxoTUsKZk9ueXJIRUNXU1AxYVNLVjZac05yUnFtODdKSzhMRUhnbklJRGF1cW1KWTRiRXFCOW5qN1N6aEFKV3c1ZEpXTgpWTlF0bzBjc0l0YXl3WG0wT2pZUm80c3BEb0tseVViZ1hFY0lvdUg0bldlOTFmdnB2Q2ZaaVRIbGZUb1RxS0p5Ckh0SitrUGkyK1BTeVNzNCsxNjdnM0ErdjRZbm9IZ3hUSkQrcTZLU2ltUVEwVkdwcWNWNE10NytVM1ZWM0piNjEKU0pOb2FuQjMxRExEdWdUakNPWW02UGZUMS9hYlFnUGk3VE9raXpOYTZISU10TU8vS0ZYQy82UCtCZzA1Y1FNOQoxUXE3aVpSMnpJZzYyQWpDN3o0MXhpdmRmOFBkQWdNQkFBR2pHREFXTUJRR0ExVWRFUVFOTUF1Q0NXeHZZMkZzCmFHOXpkREFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBQW40RC9RWThwZHZiUFl4K3lEZVlQbEhuWXY2OEVyQksKN0liMnJydE03anR1bUJWTDlCQ25lYWNqZHNMbXNyWHdOZFFrUU15bnhsNmJNYSt1UjNZa1h5UVNWcythU3dLeQpJa3orK3JJNUFMUkk1S1FyL0RHeldycm1sSWJCclh0UWtMVVIybW55dzl0K296U01QdGRlZFZDcjUwYzg4QjVqCmRua3NGNm9ka1hldDJncFZhNWFaOFQySFVsK0R0aXhrS29RNjZSYTAvY1hYZGkzcGs2emZSQW04L3d0Vkl6UVkKWDIrcnVyMk5PUFV1Q3pkV0F2Tmp6dVdDZ21IOEEyQnhDT1dCQU1KL0dwc1ZKcHFKcDB0Z203YWgxTityMXkwYwpScXhYWnc3YnUzTlhlZEIxWXFtT3ZZUmNBR0syV1hINGFWN0kvckRSQ2MrYU1zMUdDT29jYnc9PTwvWDUwOUNlcnRpZmljYXRlPgogICAgICAgICAgPC9YNTA5RGF0YT4KICAgICAgICA8L0tleUluZm8+CiAgICA8L1NpZ25hdHVyZT4KPC9BcHBsaWNhdGlvblJlcXVlc3Q+Cg=="  # noqa
         self.assertEqual(encoded, ref_encoded)
-        timestamp = pytz.timezone("Europe/Helsinki").localize(datetime(2015, 2, 3, 14, 30))
+        timestamp = datetime(2015, 2, 3, 14, 30, tzinfo=ZoneInfo("Europe/Helsinki"))
         soap_call = WsEdiSoapCall.objects.create(connection=ws, command="HelloWorld", created=timestamp)
         soap_body = get_template("jbank/soap_template.xml").render({"soap_call": soap_call, "payload": encoded.decode()})
         body_bytes = soap_body.encode()
@@ -229,7 +234,7 @@ class Tests(TestCase):
         call_command("parse_to", "data/to", auto_create_accounts=True)
 
     def test_parse_date_or_relative_date(self):
-        tz = pytz.utc
+        tz = timezone.utc
         time_now = now().astimezone(tz)
         date_now = time_now.date()
         self.assertEqual(parse_date_or_relative_date("yesterday", tz=tz), date_now - timedelta(days=1))

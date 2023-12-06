@@ -1,6 +1,5 @@
 import base64
 import logging
-import pytz
 from django.core.management.base import CommandParser
 from jutil.format import get_media_full_path
 from jutil.command import SafeCommand
@@ -8,6 +7,12 @@ from jbank.helpers import parse_start_and_end_date
 from jbank.models import WsEdiConnection
 from jbank.wsedi import wsedi_execute
 from xml.etree import ElementTree
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +36,7 @@ class Command(SafeCommand):
             logger.info("WS connection %s not enabled, exiting", ws)
             return
 
-        start_date, end_date = parse_start_and_end_date(pytz.timezone("Europe/Helsinki"), **options)
+        start_date, end_date = parse_start_and_end_date(ZoneInfo("Europe/Helsinki"), **options)
         cmd = options["cmd"]
         file_reference = options["file_reference"] or ""
         file_type = options["file_type"] or ""

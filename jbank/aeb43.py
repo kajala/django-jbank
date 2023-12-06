@@ -1,9 +1,14 @@
 from typing import Tuple, List, Optional, Dict, Any, Union
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-from pytz import timezone
 import os
 from jbank.parsers import parse_filename_suffix, parse_records, convert_date_fields, convert_decimal_fields
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 AEB43_STATEMENT_SUFFIXES = ["TXT", "AEB43"]
 
@@ -106,7 +111,7 @@ def parse_aeb43_statements(content: str, filename: str) -> list:  # pylint: disa
     lines = content.split("\n")
     nlines = len(lines)
     line_number = 0
-    tz = timezone("Europe/Madrid")
+    tz = ZoneInfo("Europe/Madrid")
     batches: List[dict] = []
     header: Optional[Dict[str, Any]] = None
     records: List[Dict[str, Any]] = []

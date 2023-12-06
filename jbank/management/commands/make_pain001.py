@@ -2,8 +2,6 @@ import logging
 import os
 import traceback
 from typing import Optional
-
-import pytz
 from django.core.management.base import CommandParser
 from django.template import Template, Context
 from django.utils import translation
@@ -24,6 +22,12 @@ from jbank.sepa import (
     PAIN001_REMITTANCE_INFO_OCR,
 )
 from jutil.command import SafeCommand
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +77,7 @@ class Command(SafeCommand):
             assert isinstance(p, Payout)
             try:
                 if p.due_date is None:
-                    p.due_date = now().astimezone(pytz.timezone(options["tz"])).date()
+                    p.due_date = now().astimezone(ZoneInfo(options["tz"])).date()
                     p.save(update_fields=["due_date"])
                 if options["verbose"]:
                     logger.info("%s", p)

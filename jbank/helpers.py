@@ -1,9 +1,8 @@
 # pylint: disable=c-extension-no-member
 import logging
 import os
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone
 from typing import Any, Tuple, Optional, List
-import pytz
 from django.conf import settings
 from django.core.files import File
 from django.db import models
@@ -73,7 +72,7 @@ def parse_date_or_relative_date(value: str, tz: Any = None) -> Optional[date]:
 def parse_start_and_end_date(tz: Any, **options) -> Tuple[Optional[date], Optional[date]]:
     start_date = None
     end_date = None
-    time_now = now().astimezone(tz if tz else pytz.utc)
+    time_now = now().astimezone(tz if tz else timezone.utc)
     if options["start_date"]:
         start_date = parse_date_or_relative_date(options["start_date"], tz=tz)
         end_date = time_now.astimezone(tz).date() + timedelta(days=1)

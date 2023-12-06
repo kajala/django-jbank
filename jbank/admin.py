@@ -3,11 +3,10 @@ import base64
 import logging
 import os
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from os.path import basename
 from typing import Optional, Sequence, List
-import pytz
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -1435,7 +1434,7 @@ class WsEdiConnectionAdmin(BankAdminBase):
         for filename in certs:
             if filename and os.path.isfile(filename):
                 cert = get_x509_cert_from_file(filename)
-                not_valid_after = pytz.utc.localize(cert.not_valid_after)
+                not_valid_after = cert.not_valid_after.replace(tzinfo=timezone.utc)
                 if min_not_valid_after is None or not_valid_after < min_not_valid_after:
                     min_not_valid_after = not_valid_after
         return date_format(min_not_valid_after.date(), "SHORT_DATE_FORMAT") if min_not_valid_after else ""

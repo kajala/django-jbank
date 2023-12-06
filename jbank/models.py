@@ -4,12 +4,11 @@ import os
 import re
 import subprocess
 import tempfile
-from datetime import datetime, time, date
+from datetime import datetime, time, date, timezone
 from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Tuple
-import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -24,6 +23,11 @@ from jutil.modelfields import SafeCharField, SafeTextField
 from jutil.format import format_xml, get_media_full_path, choices_label
 from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
 
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -217,12 +221,12 @@ class StatementRecord(AccountEntry):
         """
         out: List[Tuple[str, Decimal, str]] = []
         if self.remittance_info:
-            out.append((self.remittance_info, self.amount, self.statement.currency_code))
+            out.append((self.remittance_info, self.amount, self.statement.currency_code))  # type: ignore
         for detail in self.detail_set.all().order_by("id").distinct():
             assert isinstance(detail, StatementRecordDetail)
             for rem in detail.remittanceinfo_set.all().order_by("id"):
                 assert isinstance(rem, StatementRecordRemittanceInfo)
-                out.append((rem.reference, rem.amount, rem.currency_code))
+                out.append((rem.reference, rem.amount, rem.currency_code))  # type: ignore
         return out
 
     @property
@@ -232,7 +236,7 @@ class StatementRecord(AccountEntry):
 
     def clean(self):
         self.source_file = self.statement
-        self.timestamp = pytz.utc.localize(datetime.combine(self.record_date, time(0, 0)))
+        self.timestamp = datetime.combine(self.record_date, time(0, 0)).replace(tzinfo=timezone.utc)
         if self.name:
             self.description = "{name}: {record_description}".format(record_description=self.record_description, name=self.name)
         else:
@@ -358,7 +362,7 @@ class ReferencePaymentBatchManager(models.Manager):
 
 
 class ReferencePaymentBatch(AccountEntrySourceFile):
-    objects = ReferencePaymentBatchManager()
+    objects = ReferencePaymentBatchManager()  # type: ignore
     file = models.ForeignKey("ReferencePaymentBatchFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_("record date"), db_index=True)
     identifier = SafeCharField(_("institution"), max_length=32, blank=True)
@@ -429,7 +433,7 @@ class ReferencePaymentRecord(AccountEntry):
 
     def clean(self):
         self.source_file = self.batch
-        self.timestamp = pytz.utc.localize(datetime.combine(self.paid_date or self.record_date, time(0, 0)))
+        self.timestamp = datetime.combine(self.paid_date or self.record_date, time(0, 0)).replace(tzinfo=timezone.utc)
         self.description = "{amount} {remittance_info} {payer_name}".format(
             amount=self.amount, remittance_info=self.remittance_info, payer_name=self.payer_name
         )
@@ -702,7 +706,7 @@ class WsEdiSoapCall(models.Model):
 
     @property
     def timestamp(self) -> datetime:
-        return self.created.astimezone(pytz.timezone("Europe/Helsinki"))
+        return self.created.astimezone(ZoneInfo("Europe/Helsinki"))
 
     @property
     def timestamp_digits(self) -> str:
@@ -863,7 +867,7 @@ class WsEdiConnection(models.Model):
                     "ws": soap_call.connection,
                     "soap_call": soap_call,
                     "command": soap_call.command,
-                    "timestamp": now().astimezone(pytz.timezone("Europe/Helsinki")).isoformat(),
+                    "timestamp": now().astimezone(ZoneInfo("Europe/Helsinki")).isoformat(),
                     **kwargs,
                 }
             )
@@ -876,7 +880,7 @@ class WsEdiConnection(models.Model):
                 {
                     "ws": self,
                     "command": command,
-                    "timestamp": now().astimezone(pytz.timezone("Europe/Helsinki")).isoformat(),
+                    "timestamp": now().astimezone(ZoneInfo("Europe/Helsinki")).isoformat(),
                     **kwargs,
                 }
             )

@@ -6,7 +6,6 @@ from typing import Optional, List, Sequence, Union, Any, Dict, Tuple
 from xml.etree import ElementTree as ET  # noqa
 from xml.etree.ElementTree import Element
 from decimal import Decimal
-import pytz
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -22,6 +21,12 @@ from jutil.validators import (
     bic_validator,
 )
 from jutil.xml import xml_to_dict, _xml_element_set_data_r
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 
 PAIN001_REMITTANCE_INFO_MSG = "M"
@@ -157,7 +162,7 @@ class Pain001:
         if not t:
             t = now()
         if not self.tz:
-            self.tz = pytz.timezone(self.tz_str)
+            self.tz = ZoneInfo(self.tz_str)
         return t.astimezone(self.tz)
 
     def _timestamp(self, t: datetime) -> str:

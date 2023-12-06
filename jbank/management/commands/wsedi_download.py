@@ -2,7 +2,6 @@
 import base64
 import logging
 import os
-import pytz
 from django.core.management.base import CommandParser
 from django.utils.timezone import now
 from jutil.xml import xml_to_dict
@@ -11,6 +10,12 @@ from jbank.pain002 import process_pain002_file_content
 from jbank.models import WsEdiConnection
 from jbank.wsedi import wsedi_execute
 from jutil.command import SafeCommand
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +52,7 @@ class Command(SafeCommand):
             logger.info("WS connection %s not enabled, exiting", ws)
             return
 
-        start_date, end_date = parse_start_and_end_date(pytz.timezone("Europe/Helsinki"), **options)
+        start_date, end_date = parse_start_and_end_date(ZoneInfo("Europe/Helsinki"), **options)
         path = os.path.abspath(options["path"])
         command = "DownloadFileList"
         time_now = now()

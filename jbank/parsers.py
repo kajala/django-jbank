@@ -5,7 +5,12 @@ from decimal import Decimal
 from typing import Any, Tuple, Optional, Dict, Sequence, Union, List
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-from pytz import timezone
+
+try:
+    import zoneinfo  # noqa
+except ImportError:
+    from backports import zoneinfo  # type: ignore  # noqa
+from zoneinfo import ZoneInfo
 
 REGEX_SIMPLE_FIELD = re.compile(r"^(X|9)+$")
 
@@ -127,7 +132,7 @@ def convert_date_fields(data: dict, date_fields: Sequence[Union[str, Tuple[str, 
                 v_date = convert_date(v_date, k_date, date_fmt)
                 v_time = convert_time(v_time, k_time)
                 v_datetime = datetime.combine(v_date, v_time)
-                data[k_date] = tz.localize(v_datetime)
+                data[k_date] = v_datetime.replace(tzinfo=tz)
                 del data[k_time]
         # logger.debug('%s = %s (%s)', k, data.get(k), type(data.get(k)))
 
@@ -185,7 +190,7 @@ def parse_nordea_balance_query(content: str) -> Dict[str, Any]:
         ("available_balance", "available_balance_sign"),
         ("credit_limit", "credit_limit_sign"),
     )
-    tz = timezone("Europe/Helsinki")
+    tz = ZoneInfo("Europe/Helsinki")
     lines = content.split("\n")
     for line in lines:
         if line.strip():
@@ -228,7 +233,7 @@ def parse_samlink_real_time_statement(content: str) -> Dict[str, Any]:
     lines = content.split("\n")
     if len(lines) < 3:
         raise Exception("Invalid Samlink real time statement (.RA) content, less than 3 lines")
-    tz = timezone("Europe/Helsinki")
+    tz = ZoneInfo("Europe/Helsinki")
     header = parse_records(lines[0], RA_HEADER_FIELDS, line_number=1)
     convert_date_fields(header, ["record_date"], tz)
     balance = parse_records(lines[1], RA_BALANCE_FIELDS, line_number=2)
