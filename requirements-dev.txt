@@ -16,4 +16,5 @@ pre-commit
 black
 types-requests
 types-python-dateutil
+lxml-stubs
 psycopg
