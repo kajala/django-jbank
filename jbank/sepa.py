@@ -19,6 +19,7 @@ from jutil.validators import (
     ascii_filter,
     country_code_validator,
     bic_validator,
+    iban_bank_info,
 )
 from jutil.xml import xml_to_dict, _xml_element_set_data_r
 
@@ -62,6 +63,20 @@ class Pain001Party:
         self.org_id = org_id
         self.address_lines = address_lines
         self.country_code = country_code
+
+    def get_bic(self) -> str:
+        """
+        Returns bank BIC code.
+        If BIC is set explicitly, it is returned as is. Otherwise, resolving is tried from IBAN account number.
+        If BIC cannot be resolved ValidationError is raised.
+        Returns: str BIC code
+        """
+        if self.bic:
+            return self.bic
+        bic = iban_bank_info(self.account)[0]
+        if not bic:
+            raise ValidationError(_("BIC missing"))
+        return bic
 
 
 class Pain001Payment:
@@ -377,7 +392,7 @@ class Pain001:
                                         "FinInstnId",
                                         OrderedDict(
                                             [
-                                                ("BIC", self.debtor.bic),
+                                                ("BIC", self.debtor.get_bic()),
                                             ]
                                         ),
                                     ),
@@ -421,7 +436,7 @@ class Pain001:
                                                     "FinInstnId",
                                                     OrderedDict(
                                                         [
-                                                            ("BIC", p.creditor.bic),
+                                                            ("BIC", p.creditor.get_bic()),
                                                         ]
                                                     ),
                                                 ),
