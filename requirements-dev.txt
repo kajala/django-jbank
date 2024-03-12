@@ -1,4 +1,5 @@
 pip
+ruff
 setuptools
 pytype
 prospector

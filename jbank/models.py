@@ -777,6 +777,7 @@ class WsEdiConnection(models.Model):
     debug_commands = SafeTextField(_("debug commands"), blank=True, help_text=_("wsedi.connection.debug.commands.help.text"))
     created = models.DateTimeField(_("created"), default=now, db_index=True, editable=False, blank=True)
     _signing_cert = None
+    _valid_until: Optional[datetime] = None
 
     class Meta:
         verbose_name = _("WS-EDI connection")
@@ -977,6 +978,34 @@ class WsEdiConnection(models.Model):
     @property
     def debug_command_list(self) -> List[str]:
         return [x for x in re.sub(r"[^\w]+", " ", self.debug_commands).strip().split(" ") if x]
+
+    @property
+    def valid_until(self) -> Optional[datetime]:
+        """
+        Returns: The closest not-valid-after date found from certificates.
+        """
+        if self._valid_until is not None:
+            return self._valid_until
+        min_not_valid_after: Optional[datetime] = None
+        try:
+            certs = [
+                self.signing_cert_full_path,
+                self.encryption_cert_full_path,
+                self.bank_encryption_cert_full_path,
+                self.bank_root_cert_full_path,
+                self.ca_cert_full_path,
+            ]
+        except Exception as exc:
+            logger.warning("Missing certificate files: %s", exc)
+            return None
+        for filename in certs:
+            if filename and os.path.isfile(filename):
+                cert = get_x509_cert_from_file(filename)
+                not_valid_after = cert.not_valid_after.replace(tzinfo=timezone.utc)
+                if min_not_valid_after is None or not_valid_after < min_not_valid_after:
+                    min_not_valid_after = not_valid_after
+        self._valid_until = min_not_valid_after
+        return min_not_valid_after
 
     @staticmethod
     def _xmlsec1_example_bin(file: str) -> str:

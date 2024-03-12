@@ -3,7 +3,7 @@ import base64
 import logging
 import os
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from os.path import basename
 from typing import Optional, Sequence, List
@@ -33,7 +33,6 @@ from jacc.models import Account, EntryType, AccountEntryNote
 
 from jbank.helpers import limit_filename_length
 from jbank.services import filter_settlements_for_bank_reconciliation
-from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.format import dec2, format_timedelta, choices_label
 from jutil.request import get_ip
 from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
@@ -1419,24 +1418,7 @@ class WsEdiConnectionAdmin(BankAdminBase):
 
     def expires(self, obj: WsEdiConnection) -> str:
         assert isinstance(obj, WsEdiConnection)
-        min_not_valid_after: Optional[datetime] = None
-        try:
-            certs = [
-                obj.signing_cert_full_path,
-                obj.encryption_cert_full_path,
-                obj.bank_encryption_cert_full_path,
-                obj.bank_root_cert_full_path,
-                obj.ca_cert_full_path,
-            ]
-        except Exception as e:
-            logger.error(e)
-            return str(_("(missing certificate files)"))
-        for filename in certs:
-            if filename and os.path.isfile(filename):
-                cert = get_x509_cert_from_file(filename)
-                not_valid_after = cert.not_valid_after.replace(tzinfo=timezone.utc)
-                if min_not_valid_after is None or not_valid_after < min_not_valid_after:
-                    min_not_valid_after = not_valid_after
+        min_not_valid_after: Optional[datetime] = obj.valid_until
         return date_format(min_not_valid_after.date(), "SHORT_DATE_FORMAT") if min_not_valid_after else ""
 
     expires.short_description = _("expires")  # type: ignore
