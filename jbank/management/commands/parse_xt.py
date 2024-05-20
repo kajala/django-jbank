@@ -88,6 +88,7 @@ class Command(SafeCommand):
             self.parse_creditor_account_data()
             return
 
+        verbose = options["verbose"]
         files = list_dir_files(options["path"], options["suffix"])
         for filename in files:
             plain_filename = os.path.basename(filename)
@@ -116,7 +117,7 @@ class Command(SafeCommand):
                 print("Importing statement file {}".format(plain_filename))
 
                 statement = camt053_parse_statement_from_file(filename)
-                if options["verbose"]:
+                if verbose:
                     pprint(statement)
 
                 with transaction.atomic():
@@ -134,4 +135,5 @@ class Command(SafeCommand):
 
                         camt053_create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
-                print("Skipping statement file {}".format(filename))
+                if options["verbose"]:
+                    logger.info("Skipping statement file %s", filename)

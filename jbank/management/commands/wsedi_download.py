@@ -61,6 +61,7 @@ class Command(SafeCommand):
             command = "DownloadFile"
         status = options["status"]
         file_type = options["file_type"]
+        verbose = options["verbose"]
         if command == "DownloadFileList" and not file_type:
             print("--file-type required (e.g. TO, SVM, XP, NDCORPAYL, pain.002.001.03)")
             return
@@ -73,7 +74,7 @@ class Command(SafeCommand):
             start_date=start_date,
             end_date=end_date,
             file_reference=file_reference,
-            verbose=options["verbose"],
+            verbose=verbose,
         )
         data = xml_to_dict(content, array_tags=["FileDescriptor"])
 
@@ -118,7 +119,8 @@ class Command(SafeCommand):
                         if options["process_pain002"] and file_type in ["XP", "pain.002.001.03", "NDCORPAYL"]:
                             process_pain002_file_content(bcontent, file_path, created=time_now)
                     else:
-                        print("Skipping old file {}".format(file_path))
+                        if verbose:
+                            logger.info("Skipping old file %s", file_path)
             else:
                 print("Empty file list downloaded")
         elif command == "DownloadFile":
@@ -129,4 +131,5 @@ class Command(SafeCommand):
                     fp.write(bcontent)
                 logger.info("Wrote file {}".format(file_path))
             else:
-                print("Skipping old file {}".format(file_path))
+                if options["verbose"]:
+                    logger.info("Skipping old file %s", file_path)

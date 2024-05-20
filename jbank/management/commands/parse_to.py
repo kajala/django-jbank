@@ -72,4 +72,5 @@ class Command(SafeCommand):
 
                         create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
             else:
-                print("Skipping statement file {}".format(filename))
+                if options["verbose"]:
+                    logger.info("Skipping statement file %s", filename)

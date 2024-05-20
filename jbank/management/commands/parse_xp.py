@@ -9,7 +9,6 @@ from jbank.pain002 import process_pain002_file_content
 from jbank.models import PayoutStatus
 from jutil.command import SafeCommand
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -57,7 +56,7 @@ class Command(SafeCommand):
         for f in files:
             if PayoutStatus.objects.is_file_processed(f):
                 if options["verbose"]:
-                    print("Skipping processed payment status file", f)
+                    logger.info("Skipping processed payment status file %s", f)
                 continue
             if options["verbose"]:
                 print("Importing payment status file", f)

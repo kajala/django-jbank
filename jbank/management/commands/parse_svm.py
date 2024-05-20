@@ -75,4 +75,5 @@ class Command(SafeCommand):
 
                     file.get_total_amount(force=True)
             else:
-                print("Skipping reference payment file {}".format(filename))
+                if options["verbose"]:
+                    logger.info("Skipping reference payment file %s", filename)
