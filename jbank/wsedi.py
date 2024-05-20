@@ -5,6 +5,7 @@ import traceback
 from datetime import date, timedelta, datetime
 from typing import Callable, Optional
 import requests
+import xmlsec
 from django.template.loader import get_template
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
@@ -117,7 +118,13 @@ def wsedi_execute(  # noqa
 
         body_bytes = soap_body.encode()
         envelope = etree.fromstring(body_bytes)
-        binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path)
+        if ws.use_sha256:
+            signature_method = xmlsec.constants.TransformRsaSha256
+            digest_method = xmlsec.constants.TransformSha256
+        else:
+            signature_method = None
+            digest_method = None
+        binary_signature = BinarySignature(ws.signing_key_full_path, ws.signing_cert_full_path, signature_method=signature_method, digest_method=digest_method)
         soap_headers: dict = {}
         envelope, soap_headers = binary_signature.apply(
             envelope, soap_headers

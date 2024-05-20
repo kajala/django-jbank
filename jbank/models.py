@@ -920,13 +920,7 @@ class WsEdiConnection(models.Model):
             if self.use_sha256:
                 cmd = [self._xmlsec1_example_bin("sign3-sha256"), fp.name, signing_key_full_path, signing_cert_full_path]
             else:
-                cmd = [
-                    settings.XMLSEC1_PATH,
-                    "--sign",
-                    "--privkey-pem",
-                    "{},{}".format(signing_key_full_path, signing_cert_full_path),
-                    fp.name,
-                ]
+                cmd = [settings.XMLSEC1_PATH, "--sign", "--privkey-pem", signing_key_full_path + "," + signing_cert_full_path, fp.name]
             # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
         self.verify_signature(out, signing_key_full_path)
