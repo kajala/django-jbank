@@ -334,11 +334,11 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
                 d.debtor_name = d_dbt.get("Nm", "")
                 d_udbt = d_parties.get("UltmtDbtr", {})
                 d.ultimate_debtor_name = d_udbt.get("Nm", "")
-                d_cdtr = d_parties.get("Cdtr", {})
-                d.creditor_name = d_cdtr.get("Nm", "")
-                d_cdtr_acct = d_parties.get("CdtrAcct", {})
-                d_cdtr_acct_id = d_cdtr_acct.get("Id", {})
-                d.creditor_account = d_cdtr_acct_id.get("IBAN", "")
+                d_cdtr = d_parties.get("Cdtr") or {}
+                d.creditor_name = d_cdtr.get("Nm") or ""
+                d_cdtr_acct = d_parties.get("CdtrAcct") or {}
+                d_cdtr_acct_id = d_cdtr_acct.get("Id") or {}
+                d.creditor_account = d_cdtr_acct_id.get("IBAN") or ""
                 if d.creditor_account:
                     d.creditor_account_scheme = "IBAN"
                 else:
