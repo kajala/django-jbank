@@ -738,8 +738,11 @@ class WsEdiSoapCall(models.Model):
 
 
 class WsEdiConnectionManager(models.Manager):
-    def get_by_receiver_identifier(self, receiver_identifier: str):
-        objs = list(self.filter(receiver_identifier=receiver_identifier))
+    def get_by_receiver_identifier(self, receiver_identifier: str, include_disabled: bool = False):
+        qs = self.filter(receiver_identifier=receiver_identifier)
+        if not include_disabled:
+            qs = qs.filter(enabled=True)
+        objs = list(qs.distinct())
         if len(objs) != 1:
             raise ValidationError(
                 _("WS-EDI connection cannot be found by receiver identifier {receiver_identifier} since there are {matches} matches").format(
