@@ -1153,12 +1153,19 @@ def show_payout_summary(modeladmin, request, queryset):  # pylint: disable=unuse
         by_group_status[obj.group_status][0] += obj.amount
         by_group_status[obj.group_status][1] += 1
     out = "<table>"
+    all_amt, all_count = Decimal("0.00"), 0
     for group_status in sorted(by_group_status.keys()):
         total_amt, total_count = by_group_status[group_status]
+        all_count += total_count
+        all_amt += total_amt
         out += (
             f"<tr><td style='text-align: right'>{total_count}</td><td>x</td>"
             f"<td>{group_status}</td><td>=</td><td style='text-align: right'>{total_amt}</td></tr>"
         )
+    out += (
+        f"<tr><td style='text-align: right; font-weight: bold'>{all_count}</td><td>&nbsp;</td>"
+        f"<td>&nbsp;</td><td>=</td><td style='text-align: right; font-weight: bold'>{all_amt}</td></tr>"
+    )
     out += "</table>"
     messages.info(request, mark_safe(out))
 
