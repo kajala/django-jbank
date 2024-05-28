@@ -6,7 +6,7 @@ import traceback
 from datetime import datetime
 from decimal import Decimal
 from os.path import basename
-from typing import Optional, Sequence, List
+from typing import Optional, Sequence, List, Dict
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -1144,15 +1144,36 @@ def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: d
     messages.success(request, f"{n_count} message IDs regenerated and pain001 file names reset")
 
 
+def show_payout_summary(modeladmin, request, queryset):  # pylint: disable=unused-argument
+    queryset = queryset.order_by("id").distinct()
+    by_group_status: Dict[str, List[Decimal, int]] = {}
+    for obj in queryset:
+        assert isinstance(obj, Payout)
+        by_group_status.setdefault(obj.group_status, [Decimal("0.00"), 0])
+        by_group_status[obj.group_status][0] += obj.amount
+        by_group_status[obj.group_status][1] += 1
+    out = "<table>"
+    for group_status in sorted(by_group_status.keys()):
+        total_amt, total_count = by_group_status[group_status]
+        out += (
+            f"<tr><td style='text-align: right'>{total_count}</td><td>x</td>"
+            f"<td>{group_status}</td><td>=</td><td style='text-align: right'>{total_amt}</td></tr>"
+        )
+    out += "</table>"
+    messages.info(request, mark_safe(out))
+
+
 class PayoutAdmin(BankAdminBase):
     save_on_top = False
     inlines = [PayoutStatusInlineAdmin, AccountEntryNoteInline]
     date_hierarchy = "timestamp"
+    list_max_show_all = 1000
 
     actions = [
         send_payouts_to_bank,
         mark_payouts_as_paid,
         regenerate_payout_message_identifiers,
+        show_payout_summary,
     ]
 
     raw_id_fields: Sequence[str] = (
@@ -1627,6 +1648,7 @@ unmark_marked_reconciled_flag.short_description = _("Unmark reconciled flag")  #
 send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: ignore
 mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
 regenerate_payout_message_identifiers.short_description = _("Regenerate payout message identifiers")  # type: ignore
+show_payout_summary.short_description = _("Show payout summary")  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
