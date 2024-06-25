@@ -939,9 +939,20 @@ class ReferencePaymentBatchFileForm(forms.ModelForm):
 
 class ReferencePaymentBatchFileAdmin(BankAdminBase):
     save_on_top = False
-    exclude = ()
     form = ReferencePaymentBatchFileForm
     date_hierarchy = "created"
+
+    fields = [
+        "created",
+        "file",
+        "original_filename",
+        "tag",
+        "timestamp",
+        "msg_id",
+        "additional_info",
+        "errors",
+        "cached_total_amount",
+    ]
 
     list_display = (
         "id",
@@ -956,9 +967,14 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
 
     readonly_fields = (
         "created",
-        "errors",
         "file",
         "original_filename",
+        "tag",
+        "timestamp",
+        "msg_id",
+        "additional_info",
+        "errors",
+        "cached_total_amount",
     )
 
     def has_add_permission(self, request: HttpRequest) -> bool:
