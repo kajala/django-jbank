@@ -511,7 +511,7 @@ class Pain002:
     status_reason: str = ""
 
     def __init__(self, file_content: bytes):
-        self.data = xml_to_dict(file_content)
+        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf"])
 
         rpt = self.data.get("CstmrPmtStsRpt", {})
 
@@ -530,9 +530,11 @@ class Pain002:
         self.group_status = grp_inf.get("GrpSts")
         if not self.group_status:
             self.group_status = pmt_inf.get("PmtInfSts") or ""
-        self.status_reason = grp_inf.get("StsRsnInf", {}).get("Rsn", {}).get("Prtry", "")
+        sts_rsn_inf_list = grp_inf.get("StsRsnInf") or []
+        sts_rsn_inf = sts_rsn_inf_list[0] if sts_rsn_inf_list else {}
+        self.status_reason = sts_rsn_inf.get("Rsn", {}).get("Prtry", "")
         if not self.status_reason:
-            self.status_reason = (pmt_inf.get("StsRsnInf") or {}).get("AddtlInf") or ""
+            self.status_reason = sts_rsn_inf.get("AddtlInf") or ""
 
         if not self.msg_id:
             raise ValidationError("MsgId missing")
