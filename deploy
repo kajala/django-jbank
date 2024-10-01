@@ -1,5 +1,6 @@
 DIR=`pwd`
 PROJECT=`basename $DIR`
+PROJECT_UNDERSCORE="`echo $PROJECT | tr '-' '_'`"
 REL=`parse-setup-version.py`
 echo "Making release $REL of $PROJECT"
 
@@ -11,7 +12,7 @@ python3 setup.py sdist
 # TODO: cleaner way to do this
 cd dist
 FILE="$PROJECT-$REL"
-mv "${PROJECT}_${REL}.tar.gz" "${FILE}.tar.gz"
+mv "${PROJECT_UNDERSCORE}_${REL}.tar.gz" "${FILE}.tar.gz"
 echo $FILE
 cd dist
 tar xvf "$FILE.tar.gz"
