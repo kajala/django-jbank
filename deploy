@@ -10,6 +10,7 @@ python3 setup.py sdist
 # clean venv/ directory from the dist
 # TODO: cleaner way to do this
 cd dist
+mv "${PROJECT}_${REL}" "$PROJECT-$REL"
 FILE="$PROJECT-$REL"
 echo $FILE
 cd dist
