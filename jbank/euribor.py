@@ -2,7 +2,7 @@ import logging
 from typing import List
 import requests
 from jutil.parse import parse_datetime
-from jutil.format import dec4
+from jutil.format import dec4, json_dumps
 from jutil.xml import xml_to_dict
 from jbank.models import EuriborRate
 
@@ -10,26 +10,26 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_latest_euribor_rates(commit: bool = False, verbose: bool = False) -> List[EuriborRate]:
-    feed_url = (
-        "https://www.suomenpankki.fi/WebForms/ReportViewerPage.aspx?report=/tilastot/markkina-_ja_hallinnolliset_korot/euribor_korot_today_xml_en&output=xml"
-    )
+    feed_url = "https://reports.suomenpankki.fi/WebForms/ReportViewerPage.aspx?report=/tilastot/markkina-_ja_hallinnolliset_korot/euribor_korot_today_xml_fi&output=xml"  # noqa
     res = requests.get(feed_url, timeout=60)
     if verbose:
         logger.info("GET %s HTTP %s\n%s", feed_url, res.status_code, res.content)
     if res.status_code >= 300:
         raise Exception(f"Failed to load Euribor rate feed from {feed_url}")
     results = xml_to_dict(res.content)
+    if verbose:
+        logger.info(json_dumps(results))
     data = results["data"]["period_Collection"]["period"]
     rates: List[EuriborRate] = []
 
     if isinstance(data, list):  # Sometime get a list or single item
         assert len(data) > 0
-        data = data[len(data) - 1]  # Get from newest date
+        data = data[len(data) - 1]  # Get the latest
 
     record_date = parse_datetime(data["@value"]).date()
     for rate_data in data["matrix1_Title_Collection"]["rate"]:
         name = rate_data["@name"]
-        rate = dec4(rate_data["intr"]["@value"])
+        rate = dec4(rate_data["intr"]["@value"].replace(",", "."))
         obj = EuriborRate(name=name, record_date=record_date, rate=rate)
         rates.append(obj)
     if commit:
