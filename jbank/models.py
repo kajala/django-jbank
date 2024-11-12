@@ -659,7 +659,7 @@ class PayoutStatus(models.Model):
     response_text = SafeCharField(_("response text"), max_length=128, blank=True)
     msg_id = SafeCharField(_("message id"), max_length=64, blank=True, db_index=True)
     original_msg_id = SafeCharField(_("original message id"), blank=True, max_length=64, db_index=True)
-    group_status = SafeCharField(_("group status"), max_length=8, blank=True, db_index=True)
+    group_status = SafeCharField(_("payment.group.status"), max_length=8, blank=True, db_index=True)
     status_reason = SafeCharField(_("status reason"), max_length=255, blank=True)
 
     class Meta:
