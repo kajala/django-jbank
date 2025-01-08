@@ -342,6 +342,14 @@ class StatementRecordSepaInfoInlineAdmin(admin.StackedInline):
         return False
 
 
+@admin.display(description=_("Toggle on/off"))
+def toggle_enabled(modeladmin, request, qs):  # pylint: disable=unused-argument
+    for obj in qs.order_by("id").distinct():
+        obj.enabled = not obj.enabled
+        obj.save()
+        admin_log([obj], f"Set enabled={obj.enabled}", who=request.user)
+
+
 def mark_as_marked_reconciled(modeladmin, request, qs):  # pylint: disable=unused-argument
     try:
         data = request.POST.dict()
@@ -1391,6 +1399,10 @@ class CurrencyExchangeAdmin(BankAdminBase):
 class WsEdiConnectionAdmin(BankAdminBase):
     save_on_top = False
 
+    actions = [
+        toggle_enabled,
+    ]
+
     ordering = [
         "name",
     ]
@@ -1402,6 +1414,7 @@ class WsEdiConnectionAdmin(BankAdminBase):
         "sender_identifier",
         "receiver_identifier",
         "expires",
+        "enabled",
     )
 
     raw_id_fields = ()
