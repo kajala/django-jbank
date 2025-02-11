@@ -111,6 +111,7 @@ DELIVERY_METHOD = (
 
 PAYOUT_ON_HOLD = "H"
 PAYOUT_WAITING_PROCESSING = "W"
+PAYOUT_WAITING_BATCH_PROCESSING = "B"
 PAYOUT_WAITING_UPLOAD = "U"
 PAYOUT_UPLOADED = "D"
 PAYOUT_PAID = "P"
@@ -120,6 +121,7 @@ PAYOUT_ERROR = "E"
 PAYOUT_STATE = (
     (PAYOUT_ON_HOLD, _("on hold")),
     (PAYOUT_WAITING_PROCESSING, _("waiting processing")),
+    (PAYOUT_WAITING_BATCH_PROCESSING, _("waiting batch processing")),
     (PAYOUT_WAITING_UPLOAD, _("waiting upload")),
     (PAYOUT_UPLOADED, _("uploaded")),
     (PAYOUT_PAID, _("paid")),

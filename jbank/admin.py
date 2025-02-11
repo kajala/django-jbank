@@ -960,11 +960,12 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "additional_info",
         "errors",
         "cached_total_amount",
+        "entries",
     ]
 
     list_display = (
         "id",
-        "created",
+        "created_short",
         "file",
         "total",
     )
@@ -984,6 +985,10 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "errors",
         "cached_total_amount",
     )
+
+    @admin.display(description=_("created"), ordering="created")
+    def created_short(self, obj: ReferencePaymentBatchFile):
+        return date_format(obj.created, "SHORT_DATETIME_FORMAT")
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
