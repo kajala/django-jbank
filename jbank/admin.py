@@ -984,6 +984,7 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "additional_info",
         "errors",
         "cached_total_amount",
+        "entries",
     )
 
     @admin.display(description=_("created"), ordering="created")
@@ -999,6 +1000,14 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         return format_html('<a href="{}">{}</a>', path, localize(obj.total_amount))
 
     total.short_description = _("total amount")  # type: ignore
+
+    def entries(self, obj):
+        assert isinstance(obj, ReferencePaymentBatchFile)
+        ncount = ReferencePaymentRecord.objects.filter(batch__file=obj).distinct().count()
+        path = reverse("admin:jbank_referencepaymentrecord_statementfile_changelist", args=[obj.id])
+        return format_html('<a href="{}">{} {} ({} {})</a>', path, ncount, _("count.abbr"), _("total.abbr"), localize(obj.total_amount))
+
+    entries.short_description = _("account entries")  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
         if add:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-11 22:28+0000\n"
+"POT-Creation-Date: 2025-02-14 20:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -53,19 +53,19 @@ msgstr "settled"
 msgid "date"
 msgstr ""
 
-#: jbank/admin.py:243 jbank/admin.py:514 jbank/admin.py:799 jbank/admin.py:1681
+#: jbank/admin.py:243 jbank/admin.py:514 jbank/admin.py:799 jbank/admin.py:1690
 #: jbank/models.py:141 jbank/models.py:175 jbank/models.py:261
 #: jbank/models.py:369 jbank/models.py:401 jbank/models.py:1025
 #: jbank/models.py:1038
 msgid "record date"
 msgstr ""
 
-#: jbank/admin.py:251 jbank/admin.py:807
+#: jbank/admin.py:251 jbank/admin.py:807 jbank/admin.py:1010
 msgid "account entries"
 msgstr ""
 
-#: jbank/admin.py:261 jbank/admin.py:720 jbank/admin.py:817 jbank/admin.py:1058
-#: jbank/admin.py:1587 jbank/models.py:446 jbank/models.py:465
+#: jbank/admin.py:261 jbank/admin.py:720 jbank/admin.py:817 jbank/admin.py:1067
+#: jbank/admin.py:1596 jbank/models.py:446 jbank/models.py:465
 msgid "file"
 msgstr ""
 
@@ -132,86 +132,94 @@ msgstr ""
 msgid "statement records"
 msgstr ""
 
-#: jbank/admin.py:989 jbank/admin.py:1035 jbank/admin.py:1676
+#: jbank/admin.py:990 jbank/admin.py:1044 jbank/admin.py:1685
 #: jbank/models.py:250 jbank/models.py:445 jbank/models.py:464
 #: jbank/models.py:656 jbank/models.py:698 jbank/models.py:783
 #: jbank/models.py:1028 jbank/models.py:1043
 msgid "created"
 msgstr ""
 
-#: jbank/admin.py:1001 jbank/models.py:374 jbank/models.py:390
+#: jbank/admin.py:1002 jbank/models.py:374 jbank/models.py:390
 #: jbank/models.py:472 jbank/models.py:492
 msgid "total amount"
 msgstr ""
 
-#: jbank/admin.py:1042 jbank/models.py:468 jbank/models.py:657
+#: jbank/admin.py:1008
+msgid "count.abbr"
+msgstr "count"
+
+#: jbank/admin.py:1008
+msgid "total.abbr"
+msgstr "total"
+
+#: jbank/admin.py:1051 jbank/models.py:468 jbank/models.py:657
 msgid "timestamp"
 msgstr ""
 
-#: jbank/admin.py:1095 jbank/admin.py:1100
+#: jbank/admin.py:1104 jbank/admin.py:1109
 msgid "File {} not found"
 msgstr ""
 
-#: jbank/admin.py:1280 jbank/models.py:177 jbank/models.py:314
+#: jbank/admin.py:1289 jbank/models.py:177 jbank/models.py:314
 #: jbank/models.py:402 jbank/models.py:566
 msgid "paid date"
 msgstr ""
 
-#: jbank/admin.py:1486
+#: jbank/admin.py:1495
 msgid "expires"
 msgstr ""
 
-#: jbank/admin.py:1568
+#: jbank/admin.py:1577
 msgid "application request"
 msgstr ""
 
-#: jbank/admin.py:1577
+#: jbank/admin.py:1586
 msgid "application response"
 msgstr ""
 
-#: jbank/admin.py:1593
+#: jbank/admin.py:1602
 msgid "execution time"
 msgstr ""
 
-#: jbank/admin.py:1599 jbank/models.py:129 jbank/models.py:700
+#: jbank/admin.py:1608 jbank/models.py:129 jbank/models.py:700
 msgid "error"
 msgstr ""
 
-#: jbank/admin.py:1661 jbank/models.py:1039
+#: jbank/admin.py:1670 jbank/models.py:1039
 #, fuzzy
 #| msgid "account.entry.matched.filter"
 msgid "balance"
 msgstr "settled"
 
-#: jbank/admin.py:1666 jbank/models.py:1040
+#: jbank/admin.py:1675 jbank/models.py:1040
 msgid "available balance"
 msgstr ""
 
-#: jbank/admin.py:1671 jbank/models.py:1041
+#: jbank/admin.py:1680 jbank/models.py:1041
 msgid "credit limit"
 msgstr ""
 
-#: jbank/admin.py:1687
+#: jbank/admin.py:1696
 msgid "Mark as reconciled"
 msgstr ""
 
-#: jbank/admin.py:1688
+#: jbank/admin.py:1697
 msgid "Unmark reconciled flag"
 msgstr ""
 
-#: jbank/admin.py:1689
+#: jbank/admin.py:1698
 msgid "Send payouts to bank"
 msgstr ""
 
-#: jbank/admin.py:1690
+#: jbank/admin.py:1699
 msgid "Mark payouts as paid"
 msgstr ""
 
-#: jbank/admin.py:1691
+#: jbank/admin.py:1700
 msgid "Regenerate payout message identifiers"
 msgstr ""
 
-#: jbank/admin.py:1692
+#: jbank/admin.py:1701
 msgid "Show payout summary"
 msgstr ""
 
