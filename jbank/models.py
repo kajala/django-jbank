@@ -611,6 +611,13 @@ class Payout(AccountEntry):
             self.save(update_fields=["msg_id"])
 
     @property
+    def currency(self) -> str:
+        acc = self.account
+        if acc is not None:
+            return acc.currency
+        return ""
+
+    @property
     def state_name(self):
         return choices_label(PAYOUT_STATE, self.state)
 

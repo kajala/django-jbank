@@ -6,7 +6,7 @@ import traceback
 from datetime import datetime
 from decimal import Decimal
 from os.path import basename
-from typing import Optional, Sequence, List, Dict
+from typing import Optional, Sequence, List, Dict, Any
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -21,6 +21,7 @@ from django.db.models import Q, QuerySet
 from django.http import HttpRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import ResolverMatch, reverse, path, re_path, URLPattern
+from django.utils import translation
 from django.utils.formats import date_format, localize
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -35,7 +36,7 @@ from jbank.helpers import limit_filename_length
 from jbank.services import filter_settlements_for_bank_reconciliation
 from jutil.format import dec2, format_timedelta, choices_label
 from jutil.request import get_ip
-from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse
+from jutil.responses import FormattedXmlResponse, FormattedXmlFileResponse, CsvResponse
 from jutil.validators import iban_bic
 from jutil.xml import xml_to_dict
 from jbank.models import (
@@ -1208,6 +1209,57 @@ def show_payout_summary(modeladmin, request, queryset):  # pylint: disable=unuse
     messages.info(request, mark_safe(out))
 
 
+def download_payouts_to_csv(modeladmin, request, queryset):  # pylint: disable=unused-argument
+    with translation.override("en"):
+        payout_party_keys = [
+            "name",
+            "account_number",
+            "bic",
+            "org_id",
+            "address",
+            "country_code",
+        ]
+        payout_party_vars = ["payer", "recipient"]
+        keys = [
+            "id",
+            "created",
+            "payer",
+            "recipient",
+            "messages",
+            "reference",
+            "amount",
+            "currency",
+            "state_name",
+            "paid_date",
+            "msg_id",
+            "file_name",
+            "full_path",
+            "file_reference",
+            "due_date",
+        ]
+        column_headers: List[Any] = []
+        for k0 in keys:
+            if k0 in payout_party_vars:
+                for k in payout_party_keys:
+                    column_headers.append(f"{k0}.{k}")
+            else:
+                column_headers.append(k0)
+        rows = [column_headers]
+        for obj in queryset.order_by("id").distinct():
+            assert isinstance(obj, Payout)
+            row: List[Any] = []
+            for k0 in keys:
+                if k0 in payout_party_vars:
+                    obj2 = getattr(obj, k0)
+                    assert isinstance(obj2, PayoutParty)
+                    for k in payout_party_keys:
+                        row.append(getattr(obj2, k))
+                else:
+                    row.append(getattr(obj, k0))
+            rows.append(row)
+        return CsvResponse(rows, "payouts.csv")
+
+
 class PayoutAdmin(BankAdminBase):
     save_on_top = False
     inlines = [PayoutStatusInlineAdmin, AccountEntryNoteInline]
@@ -1219,6 +1271,7 @@ class PayoutAdmin(BankAdminBase):
         mark_payouts_as_paid,
         regenerate_payout_message_identifiers,
         show_payout_summary,
+        download_payouts_to_csv,
     ]
 
     raw_id_fields: Sequence[str] = (
@@ -1699,6 +1752,7 @@ send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: igno
 mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
 regenerate_payout_message_identifiers.short_description = _("Regenerate payout message identifiers")  # type: ignore
 show_payout_summary.short_description = _("Show payout summary")  # type: ignore
+download_payouts_to_csv.short_description = _("Download payouts to CSV")  # type: ignore
 
 admin.site.register(CurrencyExchangeSource, CurrencyExchangeSourceAdmin)
 admin.site.register(CurrencyExchange, CurrencyExchangeAdmin)
