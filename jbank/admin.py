@@ -1230,6 +1230,7 @@ def download_payouts_to_csv(modeladmin, request, queryset):  # pylint: disable=u
             "amount",
             "currency",
             "state_name",
+            "group_status",
             "paid_date",
             "msg_id",
             "file_name",
