@@ -24,7 +24,7 @@ class Command(SafeCommand):
         parser.add_argument("--xml-declaration", action="store_true")
         parser.add_argument("--ws", type=int, required=True)
 
-    def do(self, *args, **kwargs):
+    def do(self, *args, **kwargs):  # pylint: disable=too-many-locals
         target_dir = kwargs["dir"]
         payout_qs = Payout.objects.all().filter(state=kwargs["state"])
 
