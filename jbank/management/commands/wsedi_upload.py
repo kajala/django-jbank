@@ -79,8 +79,7 @@ class Command(SafeCommand):
                 response_text = data.get("ResponseText", "")[:255]
                 file_reference = ""
                 if response_code != "00":
-                    msg = "WS-EDI file {} upload failed: {} ({})".format(p.file_name, response_text, response_code)
-                    logger.error(msg)
+                    logger.error("WS-EDI file %s upload failed: %S (%s)", p.file_name, response_text, response_code)
                     raise Exception("Response code {} ({})".format(response_code, response_text))
                 if "FileDescriptors" in data:
                     fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
