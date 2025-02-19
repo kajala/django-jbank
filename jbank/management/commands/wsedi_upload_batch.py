@@ -25,6 +25,7 @@ class Command(SafeCommand):
         parser.add_argument("--archive-dir", type=str)
         parser.add_argument("--suffix", type=str, default="XL")
         parser.add_argument("--force", action="store_true")
+        parser.add_argument("--test", action="store_true")
 
     def do(self, *args, **options):  # pylint: disable=too-many-branches
         ws_connection = WsEdiConnection.objects.get(id=options["ws"])
@@ -33,6 +34,7 @@ class Command(SafeCommand):
         suffix = options["suffix"]
         if not suffix.startswith("."):
             suffix = "." + suffix
+        test = options["test"]
 
         for full_path in list_files(options["dir"], suffix):
             payout_list: List[Payout] = []
@@ -70,14 +72,20 @@ class Command(SafeCommand):
 
                 # upload file
                 logger.info("Executing WS-EDI command UploadFile (%s) %s", file_type, base_name)
-                content = wsedi_execute(
-                    ws_connection,
-                    "UploadFile",
-                    file_content=file_content,
-                    file_type=file_type,
-                    verbose=options["verbose"],
-                )
-                data = xml_to_dict(content, array_tags=["FileDescriptor"])
+                if not test:
+                    content = wsedi_execute(
+                        ws_connection,
+                        "UploadFile",
+                        file_content=file_content,
+                        file_type=file_type,
+                        verbose=options["verbose"],
+                    )
+                    data = xml_to_dict(content, array_tags=["FileDescriptor"])
+                else:
+                    data = {
+                        "ReponseCode": "00",
+                        "ReponseText": "Test OK, file not uploaded",
+                    }
 
                 # parse response
                 response_code = data.get("ResponseCode", "")[:4]

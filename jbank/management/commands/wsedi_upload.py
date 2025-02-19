@@ -25,6 +25,7 @@ class Command(SafeCommand):
         parser.add_argument("--force", action="store_true")
         parser.add_argument("--default-ws", type=int)
         parser.add_argument("--ws", type=int)
+        parser.add_argument("--test", action="store_true")
 
     def do(self, *args, **options):  # pylint: disable=too-many-branches
         default_ws = WsEdiConnection.objects.get(id=options["default_ws"]) if options["default_ws"] else None
@@ -33,6 +34,7 @@ class Command(SafeCommand):
         if not file_type:
             print("--file-type required (e.g. XL, NDCORPAYS, pain.001.001.03)")
             return
+        test = options["test"]
 
         payouts = Payout.objects.all()
         if options["payout"]:
@@ -75,14 +77,20 @@ class Command(SafeCommand):
                 p.state = PAYOUT_UPLOADED
                 p.save(update_fields=["state"])
 
-                content = wsedi_execute(
-                    ws_connection,
-                    "UploadFile",
-                    file_content=file_content,
-                    file_type=file_type,
-                    verbose=options["verbose"],
-                )
-                data = xml_to_dict(content, array_tags=["FileDescriptor"])
+                if not test:
+                    content = wsedi_execute(
+                        ws_connection,
+                        "UploadFile",
+                        file_content=file_content,
+                        file_type=file_type,
+                        verbose=options["verbose"],
+                    )
+                    data = xml_to_dict(content, array_tags=["FileDescriptor"])
+                else:
+                    data = {
+                        "ReponseCode": "00",
+                        "ReponseText": "Test OK, file not uploaded",
+                    }
 
                 # parse response
                 response_code = data.get("ResponseCode", "")[:4]
