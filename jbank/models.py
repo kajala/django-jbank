@@ -113,6 +113,7 @@ PAYOUT_ON_HOLD = "H"
 PAYOUT_WAITING_PROCESSING = "W"
 PAYOUT_WAITING_BATCH_PROCESSING = "B"
 PAYOUT_WAITING_UPLOAD = "U"
+PAYOUT_WAITING_BATCH_UPLOAD = "BU"
 PAYOUT_UPLOADED = "D"
 PAYOUT_PAID = "P"
 PAYOUT_CANCELED = "C"
@@ -123,6 +124,7 @@ PAYOUT_STATE = (
     (PAYOUT_WAITING_PROCESSING, _("waiting processing")),
     (PAYOUT_WAITING_BATCH_PROCESSING, _("waiting batch processing")),
     (PAYOUT_WAITING_UPLOAD, _("waiting upload")),
+    (PAYOUT_WAITING_BATCH_UPLOAD, _("waiting batch upload")),
     (PAYOUT_UPLOADED, _("uploaded")),
     (PAYOUT_PAID, _("paid")),
     (PAYOUT_CANCELED, _("canceled")),
@@ -564,7 +566,7 @@ class Payout(AccountEntry):
     file_reference = SafeCharField(_("file reference"), max_length=255, blank=True, db_index=True, editable=False)
     due_date = models.DateField(_("due date"), db_index=True, blank=True, null=True, default=None)
     paid_date = models.DateTimeField(_("paid date"), db_index=True, blank=True, null=True, default=None)
-    state = SafeCharField(_("state"), max_length=1, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True)
+    state = SafeCharField(_("state"), max_length=2, blank=True, default=PAYOUT_WAITING_PROCESSING, choices=PAYOUT_STATE, db_index=True)
 
     class Meta:
         verbose_name = _("payout")

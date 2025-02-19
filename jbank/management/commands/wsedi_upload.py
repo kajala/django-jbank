@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Command(SafeCommand):
     help = """
-        Upload Finnish bank files
+        Upload Finnish bank pain.001 files
         """
 
     def add_arguments(self, parser: CommandParser):
@@ -77,6 +77,7 @@ class Command(SafeCommand):
                 # parse response
                 response_code = data.get("ResponseCode", "")[:4]
                 response_text = data.get("ResponseText", "")[:255]
+                file_reference = ""
                 if response_code != "00":
                     msg = "WS-EDI file {} upload failed: {} ({})".format(p.file_name, response_text, response_code)
                     logger.error(msg)
@@ -85,9 +86,9 @@ class Command(SafeCommand):
                     fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
                     fd = {} if not fds else fds[0]
                     file_reference = fd.get("FileReference", "")
-                    if file_reference:
-                        p.file_reference = file_reference
-                        p.save(update_fields=["file_reference"])
+                if file_reference:
+                    p.file_reference = file_reference
+                    p.save(update_fields=["file_reference"])
                 PayoutStatus.objects.create(
                     payout=p,
                     msg_id=p.msg_id,
@@ -97,10 +98,9 @@ class Command(SafeCommand):
                     status_reason="File upload OK",
                 )
 
-            except Exception as e:
-                long_err = "File upload failed ({}): ".format(p.file_name) + traceback.format_exc()
-                logger.error(long_err)
-                short_err = "File upload failed: " + str(e)
+            except Exception as exc:
+                logger.error("File upload failed (%s): %s", p.file_name, traceback.format_exc())
+                short_err = f"File upload failed: {exc}"
                 p.state = PAYOUT_ERROR
                 p.save(update_fields=["state"])
                 PayoutStatus.objects.create(

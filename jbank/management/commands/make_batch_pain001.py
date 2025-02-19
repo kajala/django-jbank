@@ -6,7 +6,7 @@ from django.core.management import CommandParser
 from jacc.helpers import sum_queryset
 from django.utils.dateparse import parse_date
 from jbank.helpers import make_msg_id
-from jbank.models import Payout, PAYOUT_UPLOADED, PayoutParty, WsEdiConnection
+from jbank.models import Payout, PayoutParty, WsEdiConnection, PAYOUT_WAITING_BATCH_UPLOAD
 from jbank.sepa import Pain001, PAIN001_REMITTANCE_INFO_MSG, PAIN001_REMITTANCE_INFO_OCR_ISO, PAIN001_REMITTANCE_INFO_OCR
 from jutil.command import SafeCommand
 
@@ -84,7 +84,7 @@ class Command(SafeCommand):
                 remittance_info_type,
                 due_date or p.due_date,
             )
-            p.state = PAYOUT_UPLOADED
+            p.state = PAYOUT_WAITING_BATCH_UPLOAD
             p.file_name = file_name
             p.full_path = full_path
             p.save()
