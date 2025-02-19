@@ -1,9 +1,11 @@
 # pylint: disable=logging-format-interpolation,too-many-locals
 import logging
 import traceback
+from datetime import timedelta
 from django.core.management.base import CommandParser
+from django.utils.timezone import now
 from jutil.xml import xml_to_dict
-from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, WsEdiConnection
+from jbank.models import Payout, PayoutStatus, PAYOUT_ERROR, PAYOUT_WAITING_UPLOAD, PAYOUT_UPLOADED, WsEdiConnection, PAYOUT_PAID, PAYOUT_WAITING_BATCH_UPLOAD
 from jbank.wsedi import wsedi_execute
 from jutil.command import SafeCommand
 
@@ -57,6 +59,14 @@ class Command(SafeCommand):
                 if not ws_connection.enabled:
                     logger.info("WS connection %s not enabled, skipping payment %s", ws_connection, p)
                     continue
+
+                # make sure file has not been uploaded already
+                old = now() - timedelta(days=90)
+                dup_states = [PAYOUT_WAITING_UPLOAD, PAYOUT_WAITING_BATCH_UPLOAD, PAYOUT_UPLOADED, PAYOUT_PAID]
+                dup_pmt = Payout.objects.exclude(id=p.id).filter(created__gt=old, full_path=p.full_path, state__in=dup_states).first()
+                if dup_pmt is not None:
+                    assert isinstance(dup_pmt, Payout)
+                    raise Exception(f"File {p.file_name} is duplicate of payment id={dup_pmt.id}")
 
                 # upload file
                 logger.info("Uploading payment id={} {} file {}".format(p.id, file_type, p.full_path))
