@@ -83,8 +83,8 @@ class Command(SafeCommand):
                     data = xml_to_dict(content, array_tags=["FileDescriptor"])
                 else:
                     data = {
-                        "ReponseCode": "00",
-                        "ReponseText": "Test OK, file not uploaded",
+                        "ResponseCode": "00",
+                        "ResponseText": "Test OK, file not uploaded",
                     }
 
                 # parse response
