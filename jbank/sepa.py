@@ -501,20 +501,51 @@ class Pain001:
             fp.write(xml_bytes)
 
 
+class Pain002PaymentState:
+    original_payment_info_id: str = ""
+    group_status: str = ""
+    status_reason: str = ""
+
+    @property
+    def is_accepted(self):
+        return self.group_status in ["ACCP", "ACSC", "ACSP"]
+
+    @property
+    def is_technically_accepted(self):
+        return self.group_status == "ACTC"
+
+    @property
+    def is_accepted_with_change(self):
+        return self.group_status == "ACWC"
+
+    @property
+    def is_partially_accepted(self):
+        return self.group_status == "PART"
+
+    @property
+    def is_pending(self):
+        return self.group_status == "PDNG"
+
+    @property
+    def is_rejected(self):
+        return self.group_status == "RJCT"
+
+
 class Pain002:
     """Class for parsing pain.002.001.03 SEPA payment status XML files."""
 
+    data: dict
     credit_datetime: datetime
     msg_id: str = ""
     original_msg_id: str = ""
     group_status: str = ""
-    status_reason: str = ""
+    number_of_txs: int = 0
+    payment_states: List[Pain002PaymentState]
 
     def __init__(self, file_content: bytes):
-        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf"])
+        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf", "OrgnlPmtInfAndSts"])
 
         rpt = self.data.get("CstmrPmtStsRpt", {})
-
         grp_hdr = rpt.get("GrpHdr", {})
         credit_datetime = parse_datetime(grp_hdr.get("CreDtTm"))
         if credit_datetime is None:
@@ -522,29 +553,33 @@ class Pain002:
         assert isinstance(credit_datetime, datetime)
         self.credit_datetime = credit_datetime
         self.msg_id = grp_hdr.get("MsgId")
-
-        grp_inf = rpt.get("OrgnlGrpInfAndSts", {})
-        self.original_msg_id = grp_inf.get("OrgnlMsgId")
-        pmt_inf = rpt.get("OrgnlPmtInfAndSts") or {}
-
-        self.group_status = grp_inf.get("GrpSts")
-        if not self.group_status:
-            self.group_status = pmt_inf.get("PmtInfSts") or ""
-        sts_rsn_inf_list = grp_inf.get("StsRsnInf") or []
-        sts_rsn_inf = sts_rsn_inf_list[0] if sts_rsn_inf_list else {}
-        self.status_reason = sts_rsn_inf.get("Rsn", {}).get("Prtry", "")
-        if not self.status_reason:
-            self.status_reason = sts_rsn_inf.get("AddtlInf") or ""
-
         if not self.msg_id:
             raise ValidationError("MsgId missing")
-        if not self.original_msg_id:
-            raise ValidationError("OrgnlMsgId missing")
-        if not self.group_status:
-            raise ValidationError("GrpSts missing")
+
+        grp_inf = rpt.get("OrgnlGrpInfAndSts", {})
+        self.original_msg_id = grp_inf.get("OrgnlMsgId") or ""
+        self.group_status = grp_inf.get("GrpSts") or ""
+        self.number_of_txs = int(grp_inf.get("OrgnlNbOfTxs") or 0)
+
+        self.payment_states = []
+        pmt_inf_list = rpt.get("OrgnlPmtInfAndSts") or []
+        for pmt_inf in pmt_inf_list:
+            ps = Pain002PaymentState()
+            ps.original_payment_info_id = pmt_inf.get("OrgnlPmtInfId") or ""
+            ps.group_status = pmt_inf.get("PmtInfSts") or ""
+            ps.status_reason = ""
+            for sts_rsn_inf in pmt_inf.get("StsRsnInf") or []:
+                if ps.status_reason:
+                    ps.status_reason += "\n"
+                ps.status_reason += sts_rsn_inf.get("AddtlInf") or ""
+            if not ps.original_payment_info_id:
+                raise ValidationError("OrgnlPmtInfId missing")
+            if not ps.group_status:
+                raise ValidationError("PmtInfSts missing")
+            self.payment_states.append(ps)
 
     def __str__(self):
-        return "{}: {} {} {}".format(self.msg_id, self.original_msg_id, self.group_status, self.status_reason)
+        return "{}: {} {}".format(self.msg_id, self.original_msg_id, self.group_status)
 
     @property
     def is_accepted(self):

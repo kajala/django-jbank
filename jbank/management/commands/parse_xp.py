@@ -3,7 +3,7 @@ import os
 import traceback
 from django.core.management.base import CommandParser
 from jutil.admin import admin_log
-from jutil.format import strip_media_root
+from jutil.format import strip_media_root, json_dumps
 from jbank.files import list_dir_files
 from jbank.pain002 import process_pain002_file_content
 from jbank.models import PayoutStatus
@@ -62,8 +62,10 @@ class Command(SafeCommand):
                 print("Importing payment status file", f)
             try:
                 with open(f, "rb") as fp:
-                    process_pain002_file_content(fp.read(), f)
+                    pain002 = process_pain002_file_content(fp.read(), f)
+                    if options["verbose"]:
+                        print(json_dumps(pain002.data))
             except Exception:
-                logger.error("Error while processing PayoutStatus id=%s: %s", f.id, traceback.format_exc())  # type: ignore
+                logger.error("Error while processing PayoutStatus id=%s: %s", f, traceback.format_exc())  # type: ignore
                 if not options["ignore_errors"]:
                     raise
