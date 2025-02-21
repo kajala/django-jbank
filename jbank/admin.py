@@ -1082,10 +1082,16 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
         "group_status",
         "status_reason",
     )
+    search_fields = [
+        "=msg_id",
+        "=original_msg_id",
+        "file_name",
+    ]
     date_hierarchy = "created"
     readonly_fields = fields
     list_filter = [
         "group_status",
+        "response_code",
     ]
     list_display = (
         "id",
