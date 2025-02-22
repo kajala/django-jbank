@@ -59,11 +59,10 @@ from jbank.models import (
     WsEdiSoapCall,
     EuriborRate,
     PAYOUT_WAITING_PROCESSING,
-    PAYOUT_ERROR,
     PAYOUT_PAID,
-    PAYOUT_ON_HOLD,
     AccountBalance,
     PAYOUT_STATE,
+    PAYOUT_CANCELED,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches, create_statement, create_reference_payment_batch
@@ -1147,26 +1146,29 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
     readonly_fields = fields
 
 
-def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
+def admin_set_payouts_state(modeladmin, request, qs: QuerySet, state: str):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
-    qs = qs.filter(state__in=[PAYOUT_ERROR, PAYOUT_ON_HOLD])
-    n_count = qs.count()
+    qs = qs.exclude(state__in=[state])
     qs_list = list(qs.order_by("id").distinct())
-    qs.update(state=PAYOUT_WAITING_PROCESSING)
-    state_name = choices_label(PAYOUT_STATE, PAYOUT_WAITING_PROCESSING)
-    messages.success(request, f"{n_count}x {state_name}")
-    admin_log(qs_list, f"Changed state to {state_name}", who=request.user, ip=user_ip)
+    state_name = choices_label(PAYOUT_STATE, state)
+    for obj in qs_list:
+        assert isinstance(obj, Payout)
+        obj.state = state
+        obj.save()
+        admin_log([obj], f"Changed state to {state_name}", who=request.user, ip=user_ip)
+        messages.success(request, f"{obj}: Changed payout state to {state_name}")
+
+
+def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
+    admin_set_payouts_state(modeladmin, request, qs, PAYOUT_WAITING_PROCESSING)
 
 
 def mark_payouts_as_paid(modeladmin, request, qs):  # pylint: disable=unused-argument
-    user_ip = get_ip(request)
-    qs = qs.exclude(state__in=[PAYOUT_PAID])
-    n_count = qs.count()
-    qs_list = list(qs.order_by("id").distinct())
-    qs.update(state=PAYOUT_PAID)
-    state_name = choices_label(PAYOUT_STATE, PAYOUT_WAITING_PROCESSING)
-    messages.success(request, f"{n_count}x {state_name}")
-    admin_log(qs_list, f"Changed state to {state_name}", who=request.user, ip=user_ip)
+    admin_set_payouts_state(modeladmin, request, qs, PAYOUT_PAID)
+
+
+def mark_payouts_as_canceled(modeladmin, request, qs):  # pylint: disable=unused-argument
+    admin_set_payouts_state(modeladmin, request, qs, PAYOUT_CANCELED)
 
 
 def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: disable=unused-argument
@@ -1757,6 +1759,7 @@ mark_as_marked_reconciled.short_description = _("Mark as reconciled")  # type: i
 unmark_marked_reconciled_flag.short_description = _("Unmark reconciled flag")  # type: ignore
 send_payouts_to_bank.short_description = _("Send payouts to bank")  # type: ignore
 mark_payouts_as_paid.short_description = _("Mark payouts as paid")  # type: ignore
+mark_payouts_as_canceled.short_description = _("Mark payouts as canceled")  # type: ignore
 regenerate_payout_message_identifiers.short_description = _("Regenerate payout message identifiers")  # type: ignore
 show_payout_summary.short_description = _("Show payout summary")  # type: ignore
 download_payouts_to_csv.short_description = _("Download payouts to CSV")  # type: ignore

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-19 19:40+0000\n"
+"POT-Creation-Date: 2025-02-22 00:58+0000\n"
 "PO-Revision-Date: 2023-09-12 20:10-0500\n"
 "Last-Translator: Google Translate API v3\n"
 "Language-Team: sv <jani>\n"
@@ -44,7 +44,7 @@ msgstr "konto.namn.filter"
 msgid "date"
 msgstr "datum"
 
-#: jbank/admin.py:244 jbank/admin.py:515 jbank/admin.py:800 jbank/admin.py:1744
+#: jbank/admin.py:244 jbank/admin.py:515 jbank/admin.py:800 jbank/admin.py:1753
 #: jbank/models.py:143 jbank/models.py:177 jbank/models.py:263
 #: jbank/models.py:371 jbank/models.py:403 jbank/models.py:1034
 #: jbank/models.py:1047
@@ -56,7 +56,7 @@ msgid "account entries"
 msgstr "kontoposter"
 
 #: jbank/admin.py:262 jbank/admin.py:721 jbank/admin.py:818 jbank/admin.py:1068
-#: jbank/admin.py:1650 jbank/models.py:448 jbank/models.py:467
+#: jbank/admin.py:1659 jbank/models.py:448 jbank/models.py:467
 msgid "file"
 msgstr "fil"
 
@@ -121,7 +121,7 @@ msgstr "Ohanterat fel"
 msgid "statement records"
 msgstr "uttalandeposter"
 
-#: jbank/admin.py:991 jbank/admin.py:1045 jbank/admin.py:1739
+#: jbank/admin.py:991 jbank/admin.py:1045 jbank/admin.py:1748
 #: jbank/models.py:252 jbank/models.py:447 jbank/models.py:466
 #: jbank/models.py:665 jbank/models.py:707 jbank/models.py:792
 #: jbank/models.py:1037 jbank/models.py:1052
@@ -147,74 +147,80 @@ msgstr "total"
 msgid "timestamp"
 msgstr "tidsstämpel"
 
-#: jbank/admin.py:1105 jbank/admin.py:1110
+#: jbank/admin.py:1111 jbank/admin.py:1116
 msgid "File {} not found"
 msgstr "Filen hittades inte"
 
-#: jbank/admin.py:1343 jbank/models.py:179 jbank/models.py:316
+#: jbank/admin.py:1352 jbank/models.py:179 jbank/models.py:316
 #: jbank/models.py:404 jbank/models.py:568
 msgid "paid date"
 msgstr "betaldatum"
 
-#: jbank/admin.py:1549
+#: jbank/admin.py:1558
 msgid "expires"
 msgstr "löper ut"
 
-#: jbank/admin.py:1631
+#: jbank/admin.py:1640
 msgid "application request"
 msgstr "ansökan"
 
-#: jbank/admin.py:1640
+#: jbank/admin.py:1649
 msgid "application response"
 msgstr "ansökan svar"
 
-#: jbank/admin.py:1656
+#: jbank/admin.py:1665
 msgid "execution time"
 msgstr "utförandetid"
 
-#: jbank/admin.py:1662 jbank/models.py:131 jbank/models.py:709
+#: jbank/admin.py:1671 jbank/models.py:131 jbank/models.py:709
 msgid "error"
 msgstr "fel"
 
-#: jbank/admin.py:1724 jbank/models.py:1048
+#: jbank/admin.py:1733 jbank/models.py:1048
 msgid "balance"
 msgstr "balans"
 
-#: jbank/admin.py:1729 jbank/models.py:1049
+#: jbank/admin.py:1738 jbank/models.py:1049
 msgid "available balance"
 msgstr "Tillgängligt Saldo"
 
-#: jbank/admin.py:1734 jbank/models.py:1050
+#: jbank/admin.py:1743 jbank/models.py:1050
 msgid "credit limit"
 msgstr "kreditgräns"
 
-#: jbank/admin.py:1750
+#: jbank/admin.py:1759
 msgid "Mark as reconciled"
 msgstr "Markera som avstämt"
 
-#: jbank/admin.py:1751
+#: jbank/admin.py:1760
 msgid "Unmark reconciled flag"
 msgstr "Avmarkera avstämd flagga"
 
-#: jbank/admin.py:1752
+#: jbank/admin.py:1761
 msgid "Send payouts to bank"
 msgstr "Skicka utbetalningar till banken"
 
-#: jbank/admin.py:1753
+#: jbank/admin.py:1762
 msgid "Mark payouts as paid"
 msgstr "Markera utbetalningar som betalda"
 
-#: jbank/admin.py:1754
+#: jbank/admin.py:1763
+#, fuzzy
+#| msgid "Mark payouts as paid"
+msgid "Mark payouts as canceled"
+msgstr "Markera utbetalningar som betalda"
+
+#: jbank/admin.py:1764
 msgid "Regenerate payout message identifiers"
 msgstr "Återskapa identifierare för utbetalningsmeddelanden"
 
-#: jbank/admin.py:1755
+#: jbank/admin.py:1765
 #, fuzzy
 #| msgid "payout party"
 msgid "Show payout summary"
 msgstr "utbetalningsfest"
 
-#: jbank/admin.py:1756
+#: jbank/admin.py:1766
 #, fuzzy
 #| msgid "Send payouts to bank"
 msgid "Download payouts to CSV"
