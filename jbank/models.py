@@ -72,6 +72,7 @@ RECORD_DOMAIN = (
     ("XTND", _("Entended Domain")),
     ("SECU", _("Securities")),
     ("FORX", _("Foreign Exchange")),
+    ("TRAD", _("Trade Services")),
     ("XTND", _("Entended Domain")),
     ("NTAV", _("Not Available")),
 )
