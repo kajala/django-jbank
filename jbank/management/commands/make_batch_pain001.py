@@ -23,6 +23,7 @@ class Command(SafeCommand):
         parser.add_argument("--due-date", type=str)
         parser.add_argument("--xml-declaration", action="store_true")
         parser.add_argument("--ws", type=int, required=True)
+        parser.add_argument("--file-id-as-pmt-id", action="store_true")
 
     def do(self, *args, **kwargs):  # pylint: disable=too-many-locals
         target_dir = kwargs["dir"]
@@ -74,6 +75,8 @@ class Command(SafeCommand):
                 remittance_info_type = PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == "RF" else PAIN001_REMITTANCE_INFO_OCR
             if not p.msg_id:
                 p.msg_id = f"{file_id}P{p.id}"
+            if kwargs["file_id_as_pmt_id"]:
+                p.msg_id = file_id
             pain001.add_payment(
                 p.msg_id,
                 p.recipient.name,
