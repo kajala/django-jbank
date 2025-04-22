@@ -547,7 +547,7 @@ class Pain002:
     payment_states: List[Pain002PaymentState]
 
     def __init__(self, file_content: bytes):
-        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf", "OrgnlPmtInfAndSts", "TxInfAndSts"])
+        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf", "OrgnlPmtInfAndSts", "TxInfAndSts", "NbOfTxsPerSts"])
 
         rpt = self.data.get("CstmrPmtStsRpt", {})
         grp_hdr = rpt.get("GrpHdr", {})
