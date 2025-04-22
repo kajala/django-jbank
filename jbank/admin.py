@@ -1077,6 +1077,7 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
         "response_code",
         "response_text",
         "msg_id",
+        "end_to_end_id",
         "original_msg_id",
         "group_status",
         "status_reason",
@@ -1084,6 +1085,7 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
     search_fields = [
         "=msg_id",
         "=original_msg_id",
+        "=end_to_end_id",
         "file_name",
     ]
     date_hierarchy = "created"
@@ -1139,6 +1141,7 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
         "response_code",
         "response_text",
         "msg_id",
+        "end_to_end_id",
         "original_msg_id",
         "group_status",
         "status_reason",
@@ -1180,11 +1183,20 @@ def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: d
             if p.state == PAYOUT_PAID:
                 messages.warning(request, f"{p}: {p.state_name}")
                 continue
-            old = p.msg_id
+            old_msg_id = p.msg_id
+            old_end_to_end_id = p.end_to_end_id
+            old_file_name = p.file_name
             p.generate_msg_id(commit=False)
+            p.generate_end_to_end_id(commit=False)
             p.file_name = ""
-            p.save(update_fields=["msg_id", "file_name"])
-            admin_log([p], f"Regenerated msg_id from {old} to {p.msg_id}, file name reset", who=request.user, ip=user_ip)
+            p.save(update_fields=["msg_id", "file_name", "end_to_end_id"])
+            admin_log(
+                [p],
+                f"Regenerated message from {old_msg_id} to {p.msg_id} and end-to-end identifiers from {old_end_to_end_id} "
+                f"to {p.end_to_end_id}, file name reset from {old_file_name}",
+                who=request.user,
+                ip=user_ip,
+            )
             n_count += 1
         except Exception as err:
             messages.error(request, f"{p}: {err}")
@@ -1241,6 +1253,7 @@ def download_payouts_to_csv(modeladmin, request, queryset):  # pylint: disable=u
             "group_status",
             "paid_date",
             "msg_id",
+            "end_to_end_id",
             "file_name",
             "full_path",
             "file_reference",
@@ -1308,6 +1321,7 @@ class PayoutAdmin(BankAdminBase):
         "reference",
         "due_date",
         "msg_id",
+        "end_to_end_id",
         "file_name",
         "timestamp",
         "paid_date",
@@ -1330,6 +1344,7 @@ class PayoutAdmin(BankAdminBase):
         "paid_date",
         "timestamp",
         "msg_id",
+        "end_to_end_id",
         "file_name",
         "group_status",
     ]
@@ -1419,6 +1434,7 @@ class RefundAdmin(PayoutAdmin):
         "reference",
         "attachment",
         "msg_id",
+        "end_to_end_id",
         "file_name",
         "timestamp",
         "paid_date",
@@ -1427,6 +1443,7 @@ class RefundAdmin(PayoutAdmin):
     ]
     readonly_fields = [
         "msg_id",
+        "end_to_end_id",
         "file_name",
         "timestamp",
         "paid_date",

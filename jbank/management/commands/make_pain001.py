@@ -85,8 +85,10 @@ class Command(SafeCommand):
                     logger.warning("Skipping %s since payment state %s", p, p.state_name)
                     continue
 
+                if not p.end_to_end_id:
+                    p.generate_end_to_end_id(commit=False)
                 if not p.msg_id or options["generate_msg_id"]:
-                    p.generate_msg_id()
+                    p.generate_msg_id(commit=False)
                 if not p.file_name:
                     p.file_name = p.msg_id + "." + options["suffix"]
                     p.save(update_fields=["file_name"])
@@ -121,6 +123,7 @@ class Command(SafeCommand):
                         remittance_info,
                         remittance_info_type,
                         p.due_date,
+                        p.end_to_end_id,
                     )
                     pain001.render_to_file(p.full_path)
                 else:
@@ -131,13 +134,13 @@ class Command(SafeCommand):
 
                 logger.info("%s written", p.full_path)
                 p.state = PAYOUT_WAITING_UPLOAD
-                p.save(update_fields=["full_path", "state"])
+                p.save()
                 PayoutStatus.objects.create(payout=p, file_name=p.file_name, msg_id=p.msg_id, status_reason="File generation OK")
             except Exception as exc:
                 short_err = "File generation failed: " + str(exc)
                 logger.error("File generation failed (%s): %s", p.file_name, traceback.format_exc())
                 p.state = PAYOUT_ERROR
-                p.save(update_fields=["state"])
+                p.save()
                 PayoutStatus.objects.create(
                     payout=p,
                     group_status=PAYOUT_ERROR,

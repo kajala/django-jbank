@@ -88,8 +88,10 @@ class Pain001Payment:
         remittance_info: str,
         remittance_info_type: str,
         due_date: date,
+        end_to_end_id: str,
     ):
         self.payment_id = payment_id
+        self.end_to_end_id = end_to_end_id
         self.creditor = creditor
         self.amount = amount
         self.remittance_info = remittance_info
@@ -144,7 +146,7 @@ class Pain001:
 
     def add_payment(
         self,
-        payment_id,
+        payment_id: str,
         creditor_name: str,
         creditor_account: str,
         creditor_bic: str,
@@ -152,11 +154,12 @@ class Pain001:
         remittance_info: str,
         remittance_info_type: str = PAIN001_REMITTANCE_INFO_MSG,
         due_date: Optional[date] = None,
+        end_to_end_id: str = "",
     ):
         if not due_date:
             due_date = self.local_time().date()
         creditor = Pain001Party(creditor_name, creditor_account, creditor_bic)
-        p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, remittance_info_type, due_date)
+        p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, remittance_info_type, due_date, end_to_end_id)
         p.clean()
         self.payments.append(p)
 
@@ -408,7 +411,7 @@ class Pain001:
                                         "PmtId",
                                         OrderedDict(
                                             [
-                                                ("EndToEndId", str(p.payment_id)),
+                                                ("EndToEndId", str(p.end_to_end_id or p.payment_id)),
                                             ]
                                         ),
                                     ),

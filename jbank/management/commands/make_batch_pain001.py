@@ -24,6 +24,7 @@ class Command(SafeCommand):
         parser.add_argument("--xml-declaration", action="store_true")
         parser.add_argument("--ws", type=int, required=True)
         parser.add_argument("--file-id-as-pmt-id", action="store_true")
+        parser.add_argument("--generate-msg-id", action="store_true")
 
     def do(self, *args, **kwargs):  # pylint: disable=too-many-locals
         target_dir = kwargs["dir"]
@@ -52,7 +53,7 @@ class Command(SafeCommand):
             due_date = parse_date(kwargs["due_date"])
 
         file_id = make_msg_id()
-        file_name = f"B{file_id}.xl"
+        file_name = f"B{file_id}.XL"
         full_path = os.path.join(target_dir, file_name)
         pain001 = Pain001(
             file_id,
@@ -73,8 +74,10 @@ class Command(SafeCommand):
             else:
                 remittance_info = p.reference
                 remittance_info_type = PAIN001_REMITTANCE_INFO_OCR_ISO if remittance_info[:2] == "RF" else PAIN001_REMITTANCE_INFO_OCR
-            if not p.msg_id:
-                p.msg_id = f"{file_id}P{p.id}"
+            if not p.end_to_end_id:
+                p.generate_end_to_end_id(commit=False)
+            if not p.msg_id or kwargs["generate_msg_id"]:
+                p.generate_msg_id(commit=False)
             if kwargs["file_id_as_pmt_id"]:
                 p.msg_id = file_id
             pain001.add_payment(
@@ -86,6 +89,7 @@ class Command(SafeCommand):
                 remittance_info,
                 remittance_info_type,
                 due_date or p.due_date,
+                p.end_to_end_id,
             )
             p.state = PAYOUT_WAITING_BATCH_UPLOAD
             p.file_name = file_name

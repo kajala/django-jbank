@@ -562,6 +562,7 @@ class Payout(AccountEntry):
     messages = SafeTextField(_("recipient messages"), blank=True, default="")
     reference = SafeCharField(_("recipient reference"), blank=True, default="", max_length=32)
     msg_id = SafeCharField(_("message id"), max_length=64, blank=True, db_index=True, editable=False)
+    end_to_end_id = SafeCharField(_("end-to-end id"), max_length=64, blank=True, db_index=True, editable=False)
     file_name = SafeCharField(_("file name"), max_length=255, blank=True, db_index=True, editable=False)
     full_path = SafeTextField(_("full path"), blank=True, editable=False)
     file_reference = SafeCharField(_("file reference"), max_length=255, blank=True, db_index=True, editable=False)
@@ -608,10 +609,16 @@ class Payout(AccountEntry):
             raise ValidationError({"amount": _("value > 0 required")})
 
     def generate_msg_id(self, commit: bool = True):
-        msg_id_base = re.sub(r"[^\d]", "", now().isoformat())[:-4]
-        self.msg_id = msg_id_base + "P" + str(self.id)
+        id_base = re.sub(r"[^\d]", "", now().isoformat())[:-4]
+        self.msg_id = id_base + "P" + str(self.id)
         if commit:
             self.save(update_fields=["msg_id"])
+
+    def generate_end_to_end_id(self, commit: bool = True):
+        id_base = re.sub(r"[^\d]", "", now().isoformat())[:-4]
+        self.end_to_end_id = id_base + "P" + str(self.id)
+        if commit:
+            self.save(update_fields=["end_to_end_id"])
 
     @property
     def currency(self) -> str:
@@ -670,6 +677,7 @@ class PayoutStatus(models.Model):
     response_code = SafeCharField(_("response code"), max_length=4, blank=True, db_index=True)
     response_text = SafeCharField(_("response text"), max_length=128, blank=True)
     msg_id = SafeCharField(_("message id"), max_length=64, blank=True, db_index=True)
+    end_to_end_id = SafeCharField(_("end-to-end id"), max_length=64, blank=True, db_index=True)
     original_msg_id = SafeCharField(_("original message id"), blank=True, max_length=64, db_index=True)
     group_status = SafeCharField(_("payment.group.status"), max_length=8, blank=True, db_index=True)
     status_reason = SafeCharField(_("status reason"), max_length=255, blank=True)
