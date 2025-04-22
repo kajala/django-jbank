@@ -91,11 +91,11 @@ class Command(SafeCommand):
                 response_code = data.get("ResponseCode", "")[:4]
                 response_text = data.get("ResponseText", "")[:255]
                 if response_code != "00":
-                    logger.error("WS-EDI file %s upload failed: %S (%s)", p.file_name, response_text, response_code)
+                    logger.error("WS-EDI file %s upload failed: %s (%s)", base_name, response_text, response_code)
                     raise Exception("Response code {} ({})".format(response_code, response_text))
                 file_reference = ""
                 if "FileDescriptors" in data:
-                    fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
+                    fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])  # type: ignore
                     fd = {} if not fds else fds[0]
                     file_reference = fd.get("FileReference", "")
                 for p in payout_list:

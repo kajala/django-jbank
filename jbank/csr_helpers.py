@@ -81,7 +81,7 @@ def strip_pem_header_and_footer(pem: bytes) -> bytes:
     return b"\n".join(pem.split(b"\n")[1:-2])
 
 
-def create_csr_pem(  # pylint: disable=too-many-arguments,too-many-locals
+def create_csr_pem(  # noqa
     private_key: RSAPrivateKey,
     common_name: str,
     country_name: str,

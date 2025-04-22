@@ -6,7 +6,7 @@ import traceback
 from datetime import datetime
 from decimal import Decimal
 from os.path import basename
-from typing import Optional, Sequence, List, Dict, Any
+from typing import Optional, Sequence, List, Dict, Any, Union
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -1106,7 +1106,7 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
         "group_status",
     )
 
-    def file_download_view(self, request, pk, filename, form_url="", extra_context=None):  # pylint: disable=unused-argument
+    def file_download_view(self, request, pk, filename, form_url="", extra_context=None):  # noqa
         user = request.user
         if not user.is_authenticated or not user.is_staff:
             raise Http404(_("File {} not found").format(filename))
@@ -1205,7 +1205,7 @@ def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: d
 
 def show_payout_summary(modeladmin, request, queryset):  # pylint: disable=unused-argument
     queryset = queryset.order_by("id").distinct()
-    by_group_status: Dict[str, List[Decimal, int]] = {}
+    by_group_status: Dict[str, List[Union[Decimal, int]]] = {}
     for obj in queryset:
         assert isinstance(obj, Payout)
         by_group_status.setdefault(obj.group_status, [Decimal("0.00"), 0])
@@ -1627,7 +1627,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
             fields = fields[:-2]
         return fields
 
-    def soap_download_view(self, request, object_id, file_type: str, form_url="", extra_context=None):  # pylint: disable=unused-argument
+    def soap_download_view(self, request, object_id, file_type: str, form_url="", extra_context=None):  # noqa
         user = request.user
         if not user.is_authenticated or not user.is_superuser:
             raise Http404("File not found")

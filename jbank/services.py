@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from jbank.models import AccountBalance, CurrencyExchange
 
 
-def create_account_balance(  # pylint: disable=too-many-arguments
+def create_account_balance(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     record_datetime: datetime,
     account_number: str,
     bic: str,
@@ -63,7 +63,7 @@ def get_currency_exchange_rate(target_currency: str, record_date: date, source_c
     return rate
 
 
-def convert_currency(  # pylint: disable=too-many-arguments
+def convert_currency(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     source_amount: Decimal, source_currency: str, target_currency: str, record_date: Optional[date], unit_currency: str = "EUR", max_age_days: int = 7
 ) -> Decimal:
     """

@@ -27,7 +27,7 @@ class Command(SafeCommand):
         parser.add_argument("--ws", type=int)
         parser.add_argument("--test", action="store_true")
 
-    def do(self, *args, **options):  # pylint: disable=too-many-branches
+    def do(self, *args, **options):  # noqa
         default_ws = WsEdiConnection.objects.get(id=options["default_ws"]) if options["default_ws"] else None
         assert default_ws is None or isinstance(default_ws, WsEdiConnection)
         file_type = options["file_type"]
@@ -97,10 +97,10 @@ class Command(SafeCommand):
                 response_text = data.get("ResponseText", "")[:255]
                 file_reference = ""
                 if response_code != "00":
-                    logger.error("WS-EDI file %s upload failed: %S (%s)", p.file_name, response_text, response_code)
+                    logger.error("WS-EDI file %s upload failed: %s (%s)", p.file_name, response_text, response_code)
                     raise Exception("Response code {} ({})".format(response_code, response_text))
                 if "FileDescriptors" in data:
-                    fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])
+                    fds = data.get("FileDescriptors", {}).get("FileDescriptor", [])  # type: ignore
                     fd = {} if not fds else fds[0]
                     file_reference = fd.get("FileReference", "")
                 if file_reference:

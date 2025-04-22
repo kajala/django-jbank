@@ -286,7 +286,7 @@ def parse_tiliote_statements(content: str, filename: str) -> List[dict]:  # pyli
     return statements
 
 
-def combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records) -> Dict[str, Any]:  # pylint: disable=too-many-arguments
+def combine_statement(header, records, balance, cumulative, cumulative_adjustment, special_records) -> Dict[str, Any]:  # noqa
     data = {
         "header": header,
         "records": records,

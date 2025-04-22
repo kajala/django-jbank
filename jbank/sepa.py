@@ -44,7 +44,7 @@ PAIN001_REMITTANCE_INFO_VALUES = [t[0] for t in PAIN001_REMITTANCE_INFO_TYPE]
 
 
 class Pain001Party:
-    def __init__(
+    def __init__(  # pylint: disable=too-many-positional-arguments
         self,
         name: str,
         account: str,
@@ -80,7 +80,7 @@ class Pain001Party:
 
 
 class Pain001Payment:
-    def __init__(
+    def __init__(  # pylint: disable=too-many-positional-arguments
         self,
         payment_id: Union[str, int],
         creditor: Pain001Party,
@@ -120,7 +120,7 @@ class Pain001:
     tz: Any = None
     xml_declaration: Any = None
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-positional-arguments
         self,
         msg_id: str,
         debtor_name: str,
@@ -144,7 +144,7 @@ class Pain001:
         self.debtor = Pain001Party(debtor_name, debtor_account, debtor_bic, debtor_org_id, debtor_address_lines, debtor_country_code)
         self.payments: List[Pain001Payment] = []
 
-    def add_payment(
+    def add_payment(  # pylint: disable=too-many-positional-arguments
         self,
         payment_id: str,
         creditor_name: str,

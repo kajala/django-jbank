@@ -323,7 +323,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         raise Exception("{} unsupported".format(command))
 
 
-def wspki_execute(  # pylint: disable=too-many-arguments
+def wspki_execute(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     ws: WsEdiConnection,
     payout_party: PayoutParty,
     command: str,
