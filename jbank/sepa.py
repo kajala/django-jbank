@@ -506,6 +506,7 @@ class Pain001:
 
 class Pain002PaymentState:
     original_payment_info_id: str = ""
+    original_end_to_end_id: str = ""
     group_status: str = ""
     status_reason: str = ""
 
@@ -546,7 +547,7 @@ class Pain002:
     payment_states: List[Pain002PaymentState]
 
     def __init__(self, file_content: bytes):
-        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf", "OrgnlPmtInfAndSts"])
+        self.data = xml_to_dict(file_content, array_tags=["StsRsnInf", "OrgnlPmtInfAndSts", "TxInfAndSts"])
 
         rpt = self.data.get("CstmrPmtStsRpt", {})
         grp_hdr = rpt.get("GrpHdr", {})
@@ -580,6 +581,23 @@ class Pain002:
             if not ps.group_status:
                 raise ValidationError("PmtInfSts missing")
             self.payment_states.append(ps)
+            if ps.group_status == "PART":
+                tx_inf_list = pmt_inf.get("TxInfAndSts") or []
+                for tx_inf in tx_inf_list:
+                    ps_tx = Pain002PaymentState()
+                    ps_tx.original_payment_info_id = ""
+                    ps_tx.original_end_to_end_id = tx_inf.get("OrgnlEndToEndId") or ""
+                    if not ps_tx.original_end_to_end_id:
+                        raise ValidationError("OrgnlEndToEndId missing")
+                    ps_tx.group_status = tx_inf.get("TxSts") or ""
+                    if not ps_tx.group_status:
+                        raise ValidationError("TxSts missing")
+                    ps_tx.status_reason = ""
+                    for sts_rsn_inf in tx_inf.get("StsRsnInf") or []:
+                        if ps_tx.status_reason:
+                            ps_tx.status_reason += "\n"
+                        ps_tx.status_reason += sts_rsn_inf.get("AddtlInf") or ""
+                    self.payment_states.append(ps_tx)
 
     def __str__(self):
         return "{}: {} {}".format(self.msg_id, self.original_msg_id, self.group_status)

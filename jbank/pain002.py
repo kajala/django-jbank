@@ -13,13 +13,20 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: Option
         created = now()
     ps_file = Pain002(bcontent)
     for s in ps_file.payment_states:
-        for p in Payout.objects.filter(msg_id=s.original_payment_info_id).order_by("id").distinct():
+        if s.original_end_to_end_id:
+            p_qs = Payout.objects.filter(end_to_end_id=s.original_end_to_end_id)
+        elif s.original_payment_info_id:
+            p_qs = Payout.objects.filter(msg_id=s.original_payment_info_id)
+        else:
+            raise Exception(f"Both message identifier and end-to-end identifier missing from pain002 file {filename}")
+        for p in list(p_qs.order_by("id").distinct()):
             assert isinstance(p, Payout)
             ps = PayoutStatus(
                 payout=p,
                 file_name=basename(filename),
                 file_path=strip_media_root(filename),
                 msg_id=ps_file.msg_id,
+                end_to_end_id=s.original_end_to_end_id,
                 original_msg_id=ps_file.original_msg_id,
                 group_status=s.group_status,
                 status_reason=s.status_reason[:255],
@@ -33,6 +40,7 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: Option
                 "response_code",
                 "response_text",
                 "msg_id",
+                "end_to_end_id",
                 "original_msg_id",
                 "group_status",
                 "status_reason",
