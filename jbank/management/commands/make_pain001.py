@@ -48,20 +48,21 @@ class Command(SafeCommand):
         parser.add_argument("--template-file", type=str)
         parser.add_argument("--force", action="store_true")
         parser.add_argument("--generate-msg-id", action="store_true")
+        parser.add_argument("--generate-end-to-end-id", action="store_true")
         parser.add_argument("--tz", type=str, default="Europe/Helsinki")
 
-    def do(self, *args, **options):  # noqa
-        target_dir = options["dir"]
-        if options["verbose"]:
+    def do(self, *args, **kwargs):  # noqa
+        target_dir = kwargs["dir"]
+        if kwargs["verbose"]:
             logger.info("Writing pain.001 files to %s", target_dir)
 
         payouts = Payout.objects.all()
-        if options["payout"]:
-            payouts = payouts.filter(id=options["payout"])
+        if kwargs["payout"]:
+            payouts = payouts.filter(id=kwargs["payout"])
         else:
             payouts = payouts.filter(state=PAYOUT_WAITING_PROCESSING)
-        if options["ws"]:
-            ws = WsEdiConnection.objects.get(id=options["ws"])
+        if kwargs["ws"]:
+            ws = WsEdiConnection.objects.get(id=kwargs["ws"])
             assert isinstance(ws, WsEdiConnection)
             if ws and not ws.enabled:
                 logger.info("WS connection %s not enabled, exiting", ws)
@@ -69,28 +70,28 @@ class Command(SafeCommand):
             payouts = payouts.filter(connection=ws)
 
         pain001_template: Optional[Template] = None
-        if options["template_file"]:
-            with open(options["template_file"], "rt", encoding="UTF-8") as fp:
+        if kwargs["template_file"]:
+            with open(kwargs["template_file"], "rt", encoding="UTF-8") as fp:
                 pain001_template = Template(fp.read())
 
         for p in list(payouts.order_by("id").distinct()):
             assert isinstance(p, Payout)
             try:
                 if p.due_date is None:
-                    p.due_date = now().astimezone(ZoneInfo(options["tz"])).date()
+                    p.due_date = now().astimezone(ZoneInfo(kwargs["tz"])).date()
                     p.save(update_fields=["due_date"])
-                if options["verbose"]:
+                if kwargs["verbose"]:
                     logger.info("%s", p)
-                if p.state != PAYOUT_WAITING_PROCESSING and not options["force"]:
+                if p.state != PAYOUT_WAITING_PROCESSING and not kwargs["force"]:
                     logger.warning("Skipping %s since payment state %s", p, p.state_name)
                     continue
 
-                if not p.end_to_end_id:
+                if not p.end_to_end_id or kwargs["generate_end_to_end_id"]:
                     p.generate_end_to_end_id(commit=False)
-                if not p.msg_id or options["generate_msg_id"]:
+                if not p.msg_id or kwargs["generate_msg_id"]:
                     p.generate_msg_id(commit=False)
                 if not p.file_name:
-                    p.file_name = p.msg_id + "." + options["suffix"]
+                    p.file_name = p.msg_id + "." + kwargs["suffix"]
                     p.save(update_fields=["file_name"])
                 p.full_path = os.path.join(target_dir, p.file_name)
 
@@ -104,10 +105,10 @@ class Command(SafeCommand):
                         p.payer.address_lines,
                         p.payer.country_code,
                     )
-                    if options["tz"]:
-                        pain001.tz_str = options["tz"]
-                    if options["xml_declaration"]:
-                        pain001.xml_declaration = options["xml_declaration"]
+                    if kwargs["tz"]:
+                        pain001.tz_str = kwargs["tz"]
+                    if kwargs["xml_declaration"]:
+                        pain001.xml_declaration = kwargs["xml_declaration"]
                     if p.messages:
                         remittance_info = p.messages
                         remittance_info_type = PAIN001_REMITTANCE_INFO_MSG
