@@ -241,8 +241,7 @@ class Pain001:
                 continue
             if payment.payment_id != payment_id:
                 raise ValidationError("All payments in PmtInf element must have identical PmtInfId")
-            if payment.due_date < due_date:
-                due_date = payment.due_date
+            due_date = min(due_date, payment.due_date)
         assert isinstance(due_date, date)
 
         return self._dict_to_element(
