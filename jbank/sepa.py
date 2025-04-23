@@ -161,6 +161,8 @@ class Pain001:
         creditor = Pain001Party(creditor_name, creditor_account, creditor_bic)
         p = Pain001Payment(payment_id, creditor, dec2(amount), remittance_info, remittance_info_type, due_date, end_to_end_id)
         p.clean()
+        if not end_to_end_id and self.payments:
+            raise ValidationError(_("Adding multiple payments to single pain.001 file requires end-to-end identifier for the payments"))
         self.payments.append(p)
 
     def _ctrl_sum(self) -> Decimal:
@@ -227,7 +229,114 @@ class Pain001:
         )
         return g
 
-    def _pmt_inf(self, p: Pain001Payment) -> Element:
+    def _pmt_inf(self, payment_list: List[Pain001Payment]) -> Element:
+        if not payment_list:
+            raise ValidationError("PmtInf requires a list of payments")
+        payment_id = ""
+        due_date: Optional[date] = None
+        for payment in payment_list:
+            if not payment_id:
+                payment_id = payment.payment_id
+                due_date = payment.due_date
+                continue
+            if payment.payment_id != payment_id:
+                raise ValidationError("All payments in PmtInf element must have identical PmtInfId")
+            if payment.due_date < due_date:
+                due_date = payment.due_date
+        assert isinstance(due_date, date)
+
+        return self._dict_to_element(
+            {
+                "PmtInf": OrderedDict(
+                    [
+                        ("PmtInfId", str(payment_id)),
+                        ("PmtMtd", "TRF"),  # payment order
+                        ("ReqdExctnDt", due_date.isoformat()),
+                        (
+                            "Dbtr",
+                            OrderedDict(
+                                [
+                                    ("Nm", self.debtor.name),
+                                    (
+                                        "PstlAdr",
+                                        OrderedDict(
+                                            [
+                                                ("Ctry", self.debtor.country_code),
+                                                ("AdrLine", [{"@": al} for al in self.debtor.address_lines]),
+                                            ]
+                                        ),
+                                    ),
+                                    (
+                                        "Id",
+                                        OrderedDict(
+                                            [
+                                                (
+                                                    "OrgId",
+                                                    OrderedDict(
+                                                        [
+                                                            (
+                                                                "Othr",
+                                                                OrderedDict(
+                                                                    [
+                                                                        ("Id", self.debtor.org_id),
+                                                                        (
+                                                                            "SchmeNm",
+                                                                            OrderedDict(
+                                                                                [
+                                                                                    ("Cd", "BANK"),
+                                                                                ]
+                                                                            ),
+                                                                        ),
+                                                                    ]
+                                                                ),
+                                                            ),
+                                                        ]
+                                                    ),
+                                                ),
+                                            ]
+                                        ),
+                                    ),
+                                ]
+                            ),
+                        ),
+                        (
+                            "DbtrAcct",
+                            OrderedDict(
+                                [
+                                    (
+                                        "Id",
+                                        OrderedDict(
+                                            [
+                                                ("IBAN", self.debtor.account),
+                                            ]
+                                        ),
+                                    ),
+                                ]
+                            ),
+                        ),
+                        (
+                            "DbtrAgt",
+                            OrderedDict(
+                                [
+                                    (
+                                        "FinInstnId",
+                                        OrderedDict(
+                                            [
+                                                ("BIC", self.debtor.get_bic()),
+                                            ]
+                                        ),
+                                    ),
+                                ]
+                            ),
+                        ),
+                        ("ChrgBr", "SLEV"),  # FollowingService level
+                        ("CdtTrfTxInf", [self._cdt_trf_tx_inf(p) for p in payment_list]),
+                    ]
+                ),
+            }
+        )
+
+    def _cdt_trf_tx_inf(self, p: Pain001Payment) -> OrderedDict:
         rmt_inf: Tuple[str, Any]
         if p.remittance_info_type == PAIN001_REMITTANCE_INFO_MSG:
             rmt_inf = (
@@ -318,165 +427,74 @@ class Pain001:
         else:
             raise ValidationError(_("Invalid remittance info type: {}").format(p.remittance_info_type))
 
-        return self._dict_to_element(
-            {
-                "PmtInf": OrderedDict(
-                    [
-                        ("PmtInfId", str(p.payment_id)),
-                        ("PmtMtd", "TRF"),  # payment order
-                        ("ReqdExctnDt", p.due_date.isoformat()),
-                        (
-                            "Dbtr",
-                            OrderedDict(
-                                [
-                                    ("Nm", self.debtor.name),
-                                    (
-                                        "PstlAdr",
-                                        OrderedDict(
-                                            [
-                                                ("Ctry", self.debtor.country_code),
-                                                ("AdrLine", [{"@": al} for al in self.debtor.address_lines]),
-                                            ]
-                                        ),
-                                    ),
-                                    (
-                                        "Id",
-                                        OrderedDict(
-                                            [
-                                                (
-                                                    "OrgId",
-                                                    OrderedDict(
-                                                        [
-                                                            (
-                                                                "Othr",
-                                                                OrderedDict(
-                                                                    [
-                                                                        ("Id", self.debtor.org_id),
-                                                                        (
-                                                                            "SchmeNm",
-                                                                            OrderedDict(
-                                                                                [
-                                                                                    ("Cd", "BANK"),
-                                                                                ]
-                                                                            ),
-                                                                        ),
-                                                                    ]
-                                                                ),
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ),
-                                            ]
-                                        ),
-                                    ),
-                                ]
-                            ),
-                        ),
-                        (
-                            "DbtrAcct",
-                            OrderedDict(
-                                [
-                                    (
-                                        "Id",
-                                        OrderedDict(
-                                            [
-                                                ("IBAN", self.debtor.account),
-                                            ]
-                                        ),
-                                    ),
-                                ]
-                            ),
-                        ),
-                        (
-                            "DbtrAgt",
-                            OrderedDict(
-                                [
-                                    (
-                                        "FinInstnId",
-                                        OrderedDict(
-                                            [
-                                                ("BIC", self.debtor.get_bic()),
-                                            ]
-                                        ),
-                                    ),
-                                ]
-                            ),
-                        ),
-                        ("ChrgBr", "SLEV"),  # FollowingService level
-                        (
-                            "CdtTrfTxInf",
-                            OrderedDict(
-                                [
-                                    (
-                                        "PmtId",
-                                        OrderedDict(
-                                            [
-                                                ("EndToEndId", str(p.end_to_end_id or p.payment_id)),
-                                            ]
-                                        ),
-                                    ),
-                                    (
-                                        "Amt",
-                                        OrderedDict(
-                                            [
-                                                ("InstdAmt", {"@": str(p.amount), "@Ccy": "EUR"}),
-                                            ]
-                                        ),
-                                    ),
-                                    (
-                                        "UltmtDbtr",
-                                        OrderedDict(
-                                            [
-                                                ("Nm", self.debtor.name),
-                                            ]
-                                        ),
-                                    ),
-                                    (
-                                        "CdtrAgt",
-                                        OrderedDict(
-                                            [
-                                                (
-                                                    "FinInstnId",
-                                                    OrderedDict(
-                                                        [
-                                                            ("BIC", p.creditor.get_bic()),
-                                                        ]
-                                                    ),
-                                                ),
-                                            ]
-                                        ),
-                                    ),
-                                    (
-                                        "Cdtr",
-                                        OrderedDict(
-                                            [
-                                                ("Nm", ascii_filter(p.creditor.name)),
-                                            ]
-                                        ),
-                                    ),
-                                    (
-                                        "CdtrAcct",
-                                        OrderedDict(
-                                            [
-                                                (
-                                                    "Id",
-                                                    OrderedDict(
-                                                        [
-                                                            ("IBAN", p.creditor.account),
-                                                        ]
-                                                    ),
-                                                ),
-                                            ]
-                                        ),
-                                    ),
-                                    rmt_inf,
-                                ]
-                            ),
-                        ),
-                    ]
+        payload = OrderedDict(
+            [
+                (
+                    "PmtId",
+                    OrderedDict(
+                        [
+                            ("EndToEndId", str(p.end_to_end_id or p.payment_id)),
+                        ]
+                    ),
                 ),
-            }
+                (
+                    "Amt",
+                    OrderedDict(
+                        [
+                            ("InstdAmt", {"@": str(p.amount), "@Ccy": "EUR"}),
+                        ]
+                    ),
+                ),
+                (
+                    "UltmtDbtr",
+                    OrderedDict(
+                        [
+                            ("Nm", self.debtor.name),
+                        ]
+                    ),
+                ),
+                (
+                    "CdtrAgt",
+                    OrderedDict(
+                        [
+                            (
+                                "FinInstnId",
+                                OrderedDict(
+                                    [
+                                        ("BIC", p.creditor.get_bic()),
+                                    ]
+                                ),
+                            ),
+                        ]
+                    ),
+                ),
+                (
+                    "Cdtr",
+                    OrderedDict(
+                        [
+                            ("Nm", ascii_filter(p.creditor.name)),
+                        ]
+                    ),
+                ),
+                (
+                    "CdtrAcct",
+                    OrderedDict(
+                        [
+                            (
+                                "Id",
+                                OrderedDict(
+                                    [
+                                        ("IBAN", p.creditor.account),
+                                    ]
+                                ),
+                            ),
+                        ]
+                    ),
+                ),
+                rmt_inf,
+            ]
         )
+        return payload
 
     def render_to_element(self) -> Element:
         if not self.payments:
@@ -485,9 +503,14 @@ class Pain001:
         pain = Element(self.pain_element_name)
         doc.append(pain)
         pain.append(self._grp_hdr())
+        payments_by_payment_id: Dict[str, list] = {}
         for p in self.payments:
             assert isinstance(p, Pain001Payment)
-            pain.append(self._pmt_inf(p))
+            payment_id = str(p.payment_id)
+            payments_by_payment_id.setdefault(payment_id, [])
+            payments_by_payment_id[payment_id].append(p)
+        for payment_id, payment_list in payments_by_payment_id.items():
+            pain.append(self._pmt_inf(payment_list))
         return doc
 
     def render_to_bytes(self, doc: Optional[Element] = None) -> bytes:

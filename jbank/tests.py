@@ -18,7 +18,7 @@ from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty, Re
 from jbank.services import convert_currency
 from jbank.tito import parse_tiliote_statements_from_file
 from jbank.svm import parse_svm_batches_from_file
-from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO
+from jbank.sepa import Pain001, Pain002, PAIN001_REMITTANCE_INFO_OCR, PAIN001_REMITTANCE_INFO_OCR_ISO, PAIN001_REMITTANCE_INFO_MSG
 from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.format import format_xml
 from jutil.validators import iban_bic
@@ -56,24 +56,31 @@ class Tests(TestCase):
             "FI",
         )
         creditor_acc = "FI8847304720017517"
-        p.add_payment("201802071339A0001", "Jani Kajala", creditor_acc, iban_bic(creditor_acc), Decimal("49.00"), "vuokratilitys")
+        payment_id = "201802071339A0001"
         p.add_payment(
-            "201802071339A0001",
+            payment_id,
             "Jani Kajala",
             creditor_acc,
             iban_bic(creditor_acc),
             Decimal("49.00"),
-            "302300",
-            PAIN001_REMITTANCE_INFO_OCR,
+            "vuokratilitys",
+            PAIN001_REMITTANCE_INFO_MSG,
+            None,
+            payment_id + "-1",
         )
         p.add_payment(
-            "201802071339A0001",
+            payment_id, "Jani Kajala", creditor_acc, iban_bic(creditor_acc), Decimal("49.00"), "302300", PAIN001_REMITTANCE_INFO_OCR, None, payment_id + "-2"
+        )
+        p.add_payment(
+            payment_id,
             "Jani Kajala",
             creditor_acc,
             iban_bic(creditor_acc),
             Decimal("49.00"),
             "RF92 1229",
             PAIN001_REMITTANCE_INFO_OCR_ISO,
+            None,
+            payment_id + "-3",
         )
         xml_str = format_xml(p.render_to_bytes().decode())
         # print(xml_str)
