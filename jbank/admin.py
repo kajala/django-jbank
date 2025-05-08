@@ -66,7 +66,7 @@ from jbank.models import (
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches, create_statement, create_reference_payment_batch
-from jutil.admin import ModelAdminBase, admin_log
+from jutil.admin import ModelAdminBase, admin_log, admin_obj_link
 
 logger = logging.getLogger(__name__)
 
@@ -1072,7 +1072,7 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
     fields = (
         "created_brief",
         "timestamp_brief",
-        "payout",
+        "payout_link",
         "file_name_link",
         "response_code",
         "response_text",
@@ -1098,13 +1098,18 @@ class PayoutStatusAdmin(BankAdminBase, PayoutStatusAdminMixin):
         "id",
         "created_brief",
         "timestamp_brief",
-        "payout",
+        "payout_link",
         "file_name_link",
         "response_code",
         "response_text",
         "original_msg_id",
         "group_status",
     )
+
+    @admin.display(description=_("payout"), ordering="payout")
+    def payout_link(self, obj):
+        assert isinstance(obj, PayoutStatus)
+        return admin_obj_link(obj.payout)
 
     def file_download_view(self, request, pk, filename, form_url="", extra_context=None):  # noqa
         user = request.user

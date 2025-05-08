@@ -4,7 +4,7 @@ from typing import Optional
 from django.utils.timezone import now
 from jbank.helpers import logger
 from jbank.models import Payout, PayoutStatus, PAYOUT_PAID
-from jbank.sepa import Pain002
+from jbank.sepa import Pain002, Pain002PaymentState
 from jutil.format import strip_media_root
 
 
@@ -12,7 +12,13 @@ def process_pain002_file_content(bcontent: bytes, filename: str, created: Option
     if not created:
         created = now()
     ps_file = Pain002(bcontent)
-    for s in ps_file.payment_states:
+    payment_states = list(ps_file.payment_states)
+    if not payment_states and ps_file.original_msg_id and ps_file.group_status:
+        pmt_state = Pain002PaymentState()
+        pmt_state.original_payment_info_id = ps_file.original_msg_id
+        pmt_state.group_status = ps_file.group_status
+        payment_states.append(pmt_state)
+    for s in payment_states:
         if s.original_end_to_end_id:
             p_qs = Payout.objects.filter(end_to_end_id=s.original_end_to_end_id)
         elif s.original_payment_info_id:
