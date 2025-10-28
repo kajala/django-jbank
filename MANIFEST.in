@@ -1,8 +1,9 @@
-recursive-include . *.txt *.md *.ini *.conf *.css *.png *.js *.html *.po *.mo *.xml *.typed *.c Makefile
-global-include *.html *.css *.js *.png *.jpg *.po *.mo *.txt *.md *.xml *.typed *.c Makefile
+recursive-include . *.txt *.md *.ini *.conf *.css *.png *.js *.html *.po *.mo *.xml *.typed *.toml
+global-include *.html *.css *.js *.png *.jpg *.po *.mo *.txt *.md *.xml *.typed *.toml
+prune htmlcov
 prune venv
-prune project
 prune certs
+prune project
 prune downloads
 prune uploads
 prune logs
