@@ -30,8 +30,11 @@ classifiers = [
 ]
 
 [tool.setuptools]
-packages = ["jbank"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["jbank*"]
 
 [project.urls]
 "Homepage" = "https://github.com/kajala/django-jbank"
