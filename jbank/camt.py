@@ -482,9 +482,7 @@ def camt054_parse_debtor_name(data: dict, key: str) -> str:
         dbtr = val.get("Dbtr")
         if dbtr:
             debtor_name = dbtr.get("Nm")
-    if not debtor_name:
-        raise Exception(_("Failed to parse debtor '{}'").format(key))
-    return debtor_name
+    return debtor_name or ""
 
 
 def camt054_parse_rltdagts_cdtragt_fininstnid_bic(data: dict, key: str) -> str:
