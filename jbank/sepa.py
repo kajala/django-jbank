@@ -600,10 +600,8 @@ class Pain002:
                 ps.status_reason += sts_rsn_inf.get("AddtlInf") or ""
             if not ps.original_payment_info_id:
                 raise ValidationError("OrgnlPmtInfId missing")
-            if not ps.group_status:
-                raise ValidationError("PmtInfSts missing")
             self.payment_states.append(ps)
-            if ps.group_status == "PART":
+            if ps.group_status == "PART" or not ps.group_status:
                 tx_inf_list = pmt_inf.get("TxInfAndSts") or []
                 for tx_inf in tx_inf_list:
                     ps_tx = Pain002PaymentState()

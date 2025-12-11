@@ -23,6 +23,7 @@ class Command(SafeCommand):
         parser.add_argument("--set-default-paths", action="store_true")
         parser.add_argument("--ignore-errors", action="store_true")
         parser.add_argument("--ws", type=int)
+        parser.add_argument("--force", action="store_true")
 
     def _set_default_paths(self, options: dict):
         default_path = os.path.abspath(options["path"])
@@ -55,9 +56,11 @@ class Command(SafeCommand):
         files = list_dir_files(options["path"], "." + options["suffix"])
         for f in files:
             if PayoutStatus.objects.is_file_processed(f):
-                if options["verbose"]:
-                    logger.info("Skipping processed payment status file %s", f)
-                continue
+                if not options["force"]:
+                    if options["verbose"]:
+                        logger.info("Skipping processed payment status file %s", f)
+                    continue
+                logger.info("Re-processing payment status file %s", f)
             if options["verbose"]:
                 print("Importing payment status file", f)
             try:
