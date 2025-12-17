@@ -59,8 +59,8 @@ class Command(SafeCommand):
                 if not options["force"]:
                     if options["verbose"]:
                         logger.info("Skipping processed payment status file %s", f)
-                    continue
-                logger.info("Re-processing payment status file %s", f)
+                    logger.info("Re-processing payment status file %s", f)
+                continue
             if options["verbose"]:
                 print("Importing payment status file", f)
             try:
