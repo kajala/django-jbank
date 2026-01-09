@@ -8,7 +8,7 @@ from datetime import datetime, time, date, timezone
 from decimal import Decimal
 from os.path import basename, join
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, TYPE_CHECKING
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -22,6 +22,9 @@ from jbank.x509_helpers import get_x509_cert_from_file
 from jutil.modelfields import SafeCharField, SafeTextField
 from jutil.format import format_xml, get_media_full_path, choices_label
 from jutil.validators import iban_validator, iban_bic, iso_payment_reference_validator, fi_payment_reference_validator
+
+if TYPE_CHECKING:
+    from django_stubs_ext.db.models.manager import RelatedManager
 
 try:
     import zoneinfo  # noqa
@@ -196,6 +199,9 @@ class StatementRecord(AccountEntry):
     bank_messages = SafeTextField(_("bank messages"), blank=True, default="")
     marked_reconciled = models.BooleanField(_("marked as reconciled"), db_index=True, default=False, blank=True)
 
+    if TYPE_CHECKING:
+        detail_set: RelatedManager["StatementRecordDetail"]
+
     class Meta:
         verbose_name = _("statement record")
         verbose_name_plural = _("statement records")
@@ -367,7 +373,7 @@ class ReferencePaymentBatchManager(models.Manager):
 
 
 class ReferencePaymentBatch(AccountEntrySourceFile):
-    objects = ReferencePaymentBatchManager()  # type: ignore
+    objects:ReferencePaymentBatchManager = ReferencePaymentBatchManager()  # type: ignore
     file = models.ForeignKey("ReferencePaymentBatchFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_("record date"), db_index=True)
     identifier = SafeCharField(_("institution"), max_length=32, blank=True)
@@ -473,6 +479,9 @@ class ReferencePaymentBatchFile(models.Model):
     additional_info = models.CharField(_("additional information"), max_length=128, default="", blank=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
     cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
+
+    if TYPE_CHECKING:
+        referencepaymentbatch_set: RelatedManager[ReferencePaymentBatch]
 
     class Meta:
         verbose_name = _("reference payment batch file")
@@ -773,7 +782,7 @@ class WsEdiConnectionManager(models.Manager):
 
 
 class WsEdiConnection(models.Model):
-    objects = WsEdiConnectionManager()
+    objects:WsEdiConnectionManager = WsEdiConnectionManager()
     name = SafeCharField(_("name"), max_length=64)
     enabled = models.BooleanField(_("enabled"), blank=True, default=True)
     sender_identifier = SafeCharField(_("sender identifier"), max_length=32)
