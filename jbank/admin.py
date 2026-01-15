@@ -63,6 +63,7 @@ from jbank.models import (
     AccountBalance,
     PAYOUT_STATE,
     PAYOUT_CANCELED,
+    PAYOUT_WAITING_APPROVAL,
 )
 from jbank.tito import parse_tiliote_statements_from_file, parse_tiliote_statements
 from jbank.svm import parse_svm_batches_from_file, parse_svm_batches, create_statement, create_reference_payment_batch
@@ -1156,7 +1157,7 @@ class PayoutStatusInlineAdmin(admin.TabularInline, PayoutStatusAdminMixin):
 
 def admin_set_payouts_state(modeladmin, request, qs: QuerySet, state: str):  # pylint: disable=unused-argument
     user_ip = get_ip(request)
-    qs = qs.exclude(state__in=[state])
+    qs = qs.exclude(state=state)
     qs_list = list(qs.order_by("id").distinct())
     state_name = choices_label(PAYOUT_STATE, state)
     for obj in qs_list:
@@ -1168,7 +1169,7 @@ def admin_set_payouts_state(modeladmin, request, qs: QuerySet, state: str):  # p
 
 
 def send_payouts_to_bank(modeladmin, request, qs):  # pylint: disable=unused-argument
-    admin_set_payouts_state(modeladmin, request, qs, PAYOUT_WAITING_PROCESSING)
+    admin_set_payouts_state(modeladmin, request, qs.exclude(state__in=[PAYOUT_WAITING_APPROVAL, PAYOUT_PAID, PAYOUT_CANCELED]), PAYOUT_WAITING_PROCESSING)
 
 
 def mark_payouts_as_paid(modeladmin, request, qs):  # pylint: disable=unused-argument
@@ -1292,6 +1293,7 @@ class PayoutAdmin(BankAdminBase):
     inlines = [PayoutStatusInlineAdmin, AccountEntryNoteInline]
     date_hierarchy = "timestamp"
     list_max_show_all = 1000
+    exclude_waiting_approval = True
 
     actions = [
         send_payouts_to_bank,
@@ -1363,6 +1365,12 @@ class PayoutAdmin(BankAdminBase):
         "=msg_id",
         "=amount",
     ]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if self.exclude_waiting_approval:
+            qs = qs.exclude(state=PAYOUT_WAITING_APPROVAL)
+        return qs
 
     def paid_date_brief(self, obj):
         assert isinstance(obj, Payout)
