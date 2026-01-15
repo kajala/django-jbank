@@ -122,6 +122,7 @@ PAYOUT_UPLOADED = "D"
 PAYOUT_PAID = "P"
 PAYOUT_CANCELED = "C"
 PAYOUT_ERROR = "E"
+PAYOUT_WAITING_APPROVAL = "WA"
 
 PAYOUT_STATE = (
     (PAYOUT_ON_HOLD, _("on hold")),
@@ -133,6 +134,7 @@ PAYOUT_STATE = (
     (PAYOUT_PAID, _("paid")),
     (PAYOUT_CANCELED, _("canceled")),
     (PAYOUT_ERROR, _("error")),
+    (PAYOUT_WAITING_APPROVAL, _("waiting approval")),
 )
 
 
@@ -373,7 +375,7 @@ class ReferencePaymentBatchManager(models.Manager):
 
 
 class ReferencePaymentBatch(AccountEntrySourceFile):
-    objects:ReferencePaymentBatchManager = ReferencePaymentBatchManager()  # type: ignore
+    objects: ReferencePaymentBatchManager = ReferencePaymentBatchManager()  # type: ignore
     file = models.ForeignKey("ReferencePaymentBatchFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
     record_date = models.DateTimeField(_("record date"), db_index=True)
     identifier = SafeCharField(_("institution"), max_length=32, blank=True)
@@ -782,7 +784,7 @@ class WsEdiConnectionManager(models.Manager):
 
 
 class WsEdiConnection(models.Model):
-    objects:WsEdiConnectionManager = WsEdiConnectionManager()
+    objects: WsEdiConnectionManager = WsEdiConnectionManager()
     name = SafeCharField(_("name"), max_length=64)
     enabled = models.BooleanField(_("enabled"), blank=True, default=True)
     sender_identifier = SafeCharField(_("sender identifier"), max_length=32)
