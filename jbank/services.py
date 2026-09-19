@@ -16,7 +16,7 @@ def create_account_balance(  # pylint: disable=too-many-arguments,too-many-posit
     available_balance: Decimal,
     credit_limit: Optional[Decimal] = None,
     currency: str = "EUR",
-    **kwargs  # noqa  # type: ignore
+    **kwargs,  # noqa  # type: ignore
 ):
     return AccountBalance.objects.get_or_create(
         record_datetime=record_datetime,
@@ -80,6 +80,7 @@ def convert_currency(  # pylint: disable=too-many-arguments,too-many-positional-
     Returns:
         Amount in target currency
     """
+    assert unit_currency == "EUR"  # rates based on ECB
     source_currency = source_currency.upper()
     target_currency = target_currency.upper()
     unit_currency = unit_currency.upper()
