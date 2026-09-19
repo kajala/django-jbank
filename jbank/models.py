@@ -30,7 +30,7 @@ try:
     import zoneinfo  # noqa
 except ImportError:
     from backports import zoneinfo  # type: ignore  # noqa
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo  # type: ignore  # noqa
 
 logger = logging.getLogger(__name__)
 
