@@ -436,7 +436,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/71/d4/e8843576c7e1eec65
 
 [[package]]
 name = "django-jbank"
-version = "5.0.3"
+version = "5.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
