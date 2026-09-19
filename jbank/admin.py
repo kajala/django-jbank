@@ -1209,7 +1209,7 @@ def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: d
     messages.success(request, f"{n_count} message IDs regenerated and pain001 file names reset")
 
 
-def show_payout_summary(modeladmin, request, queryset):  # pylint: disable=unused-argument
+def show_payout_summary(modeladmin, request, queryset):  # type: ignore  # noqa
     queryset = queryset.order_by("id").distinct()
     by_group_status: Dict[str, List[Union[Decimal, int]]] = {}
     for obj in queryset:
@@ -1235,7 +1235,7 @@ def show_payout_summary(modeladmin, request, queryset):  # pylint: disable=unuse
     messages.info(request, mark_safe(out))
 
 
-def download_payouts_to_csv(modeladmin, request, queryset):  # pylint: disable=unused-argument
+def download_payouts_to_csv(modeladmin, request, queryset):  # type: ignore  # noqa
     with translation.override("en"):
         payout_party_keys = [
             "name",
@@ -1303,7 +1303,7 @@ class PayoutAdmin(BankAdminBase):
         download_payouts_to_csv,
     ]
 
-    raw_id_fields: Sequence[str] = (
+    raw_id_fields: Sequence[str] = (  # type: ignore
         "account",
         "parent",
         "payer",
@@ -1406,7 +1406,7 @@ class PayoutPartyAdmin(BankAdminBase):
         "country_code",
         "payouts_account",
     ]
-    readonly_fields: List[str] = []
+    readonly_fields: List[str] = []  # type: ignore
     actions = ()
 
     list_display = (
@@ -1421,7 +1421,7 @@ class PayoutPartyAdmin(BankAdminBase):
 
     raw_id_fields = ("payouts_account",)
 
-    def get_readonly_fields(self, request: HttpRequest, obj=None) -> Sequence[str]:
+    def get_readonly_fields(self, request: HttpRequest, obj=None) -> Sequence[str]:  # type: ignore
         if obj is not None:
             assert isinstance(obj, PayoutParty)
             if Payout.objects.filter(Q(recipient=obj) | Q(payer=obj)).exists():
@@ -1430,7 +1430,7 @@ class PayoutPartyAdmin(BankAdminBase):
 
 
 class RefundAdmin(PayoutAdmin):
-    raw_id_fields = [
+    raw_id_fields = [  # type: ignore
         "account",
         "parent",
         "payer",

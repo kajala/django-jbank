@@ -44,7 +44,7 @@ def get_or_create_bank_account_entry_types() -> List[EntryType]:
 
 
 def get_or_create_bank_account(account_number: str, currency: str = "EUR") -> Account:
-    a_type = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={"name": _("bank account")})[0]
+    a_type = AccountType.objects.get_or_create(code=settings.ACCOUNT_BANK_ACCOUNT, is_asset=True, defaults={"name": str(_("bank account"))})[0]
     acc, created = Account.objects.get_or_create(name=account_number, type=a_type, currency=currency)
     if created:
         get_or_create_bank_account_entry_types()

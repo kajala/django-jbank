@@ -3,7 +3,7 @@ import logging
 import sys
 from django.core.management.base import CommandParser
 from jutil.command import SafeCommand
-from lxml import etree, objectify  # noqa  # type: ignore
+from lxml import etree, objectify  # type: ignore  # noqa
 
 logger = logging.getLogger(__name__)
 

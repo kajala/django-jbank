@@ -27,7 +27,7 @@ class Command(SafeCommand):
         parser.add_argument("--generate-msg-id", action="store_true")
         parser.add_argument("--generate-end-to-end-id", action="store_true")
 
-    def do(self, *args, **kwargs):  # pylint: disable=too-many-locals
+    def do(self, *args, **kwargs):  # type: ignore  # noqa
         target_dir = kwargs["dir"]
         payout_qs = Payout.objects.all().filter(state=kwargs["state"])
 

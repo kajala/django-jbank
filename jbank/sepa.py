@@ -236,11 +236,12 @@ class Pain001:
         due_date: Optional[date] = None
         for payment in payment_list:
             if not payment_id:
-                payment_id = payment.payment_id
+                payment_id = str(payment.payment_id)
                 due_date = payment.due_date
                 continue
-            if payment.payment_id != payment_id:
+            if str(payment.payment_id) != payment_id:
                 raise ValidationError("All payments in PmtInf element must have identical PmtInfId")
+            assert due_date is not None
             due_date = min(due_date, payment.due_date)
         assert isinstance(due_date, date)
 

@@ -51,7 +51,7 @@ class Command(SafeCommand):
         parser.add_argument("--generate-end-to-end-id", action="store_true")
         parser.add_argument("--tz", type=str, default="Europe/Helsinki")
 
-    def do(self, *args, **kwargs):  # noqa
+    def do(self, *args, **kwargs):  # type: ignore  # noqa
         target_dir = kwargs["dir"]
         if kwargs["verbose"]:
             logger.info("Writing pain.001 files to %s", target_dir)

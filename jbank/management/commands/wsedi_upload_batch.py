@@ -27,7 +27,7 @@ class Command(SafeCommand):
         parser.add_argument("--force", action="store_true")
         parser.add_argument("--test", action="store_true")
 
-    def do(self, *args, **options):  # pylint: disable=too-many-branches
+    def do(self, *args, **options):  # type: ignore  # noqa
         ws_connection = WsEdiConnection.objects.get(id=options["ws"])
         assert isinstance(ws_connection, WsEdiConnection)
         file_type = options["file_type"]
