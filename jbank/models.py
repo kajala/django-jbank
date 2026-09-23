@@ -521,6 +521,8 @@ class PayoutParty(models.Model):
     address = SafeTextField(_("address"), blank=True, default="")
     country_code = SafeCharField(_("country code"), max_length=2, default="FI", blank=True, db_index=True)
     payouts_account = models.ForeignKey(Account, verbose_name=_("payouts account"), null=True, default=None, blank=True, on_delete=models.PROTECT)
+    name_verified = models.BooleanField(_("name verified"), default=False)
+    notes = SafeTextField(_("notes"), blank=True, default="")
 
     class Meta:
         verbose_name = _("payout party")
