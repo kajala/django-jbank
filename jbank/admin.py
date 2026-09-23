@@ -1406,7 +1406,7 @@ class PayoutPartyAdmin(BankAdminBase):
         "country_code",
         "payouts_account",
         "notes",
-        "name_verified",
+        "verification_of_payee",
     ]
     readonly_fields: List[str] = []  # type: ignore
     actions = ()
@@ -1419,6 +1419,7 @@ class PayoutPartyAdmin(BankAdminBase):
         "org_id",
         "address",
         "country_code",
+        "verification_of_payee",
     )
 
     raw_id_fields = ("payouts_account",)

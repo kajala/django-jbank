@@ -137,6 +137,18 @@ PAYOUT_STATE = (
     (PAYOUT_WAITING_APPROVAL, _("waiting approval")),
 )
 
+VERIFICATION_OF_PAYEE_UNKNOWN = ""
+VERIFICATION_OF_PAYEE_MATCH = "M"
+VERIFICATION_OF_PAYEE_PARTIAL = "P"
+VERIFICATION_OF_PAYEE_NOT_MATCH = "N"
+
+VERIFICATION_OF_PAYEE_CHOICES = (
+    (VERIFICATION_OF_PAYEE_UNKNOWN, _("verification.of.payee.unknown")),
+    (VERIFICATION_OF_PAYEE_MATCH, _("verification.of.payee.match")),
+    (VERIFICATION_OF_PAYEE_PARTIAL, _("verification.of.payee.partial.match")),
+    (VERIFICATION_OF_PAYEE_NOT_MATCH, _("verification.of.payee.not.match")),
+)
+
 
 class Statement(AccountEntrySourceFile):
     file = models.ForeignKey("StatementFile", blank=True, default=None, null=True, on_delete=models.CASCADE)
@@ -521,7 +533,7 @@ class PayoutParty(models.Model):
     address = SafeTextField(_("address"), blank=True, default="")
     country_code = SafeCharField(_("country code"), max_length=2, default="FI", blank=True, db_index=True)
     payouts_account = models.ForeignKey(Account, verbose_name=_("payouts account"), null=True, default=None, blank=True, on_delete=models.PROTECT)
-    name_verified = models.BooleanField(_("name verified"), default=False)
+    verification_of_payee = models.CharField(_("verification of payee"), max_length=1, default="", blank=True, choices=VERIFICATION_OF_PAYEE_CHOICES)
     notes = SafeTextField(_("notes"), blank=True, default="")
 
     class Meta:
