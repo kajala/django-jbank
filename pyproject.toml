@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-jbank"
-version = "5.0.5"
+version = "5.0.6"
 description = "Basic Finnish bank file format support for Django projects"
 readme = "README.md"
 requires-python = ">=3.10"
