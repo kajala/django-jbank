@@ -536,6 +536,7 @@ class PayoutParty(models.Model):
     verification_of_payee = models.CharField(_("verification of payee"), max_length=1, default="", blank=True, choices=VERIFICATION_OF_PAYEE_CHOICES)
     notes = SafeTextField(_("notes"), blank=True, default="")
     archived = models.BooleanField(_("archived"), default=False, blank=True, db_index=True, editable=False)
+    original = models.ForeignKey("PayoutParty", verbose_name=_("original"), null=True, default=None, blank=True, on_delete=models.SET_NULL, editable=False)
 
     class Meta:
         verbose_name = _("payout party")
