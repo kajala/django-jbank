@@ -1424,6 +1424,13 @@ class PayoutPartyAdmin(BankAdminBase):
 
     raw_id_fields = ("payouts_account",)
 
+    def get_queryset(self, request: HttpRequest):
+        return super().get_queryset(request).filter(archived=False)
+
+    def get_object(self, request: HttpRequest, object_id, from_field=None):
+        queryset = super().get_queryset(request)
+        return queryset.filter(pk=object_id).first()
+
     def get_readonly_fields(self, request: HttpRequest, obj=None) -> Sequence[str]:  # type: ignore
         if obj is not None:
             assert isinstance(obj, PayoutParty)
