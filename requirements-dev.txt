@@ -1,5 +1,6 @@
 pip
 pytype
+pyright
 prospector
 coverage
 mypy

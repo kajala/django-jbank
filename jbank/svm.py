@@ -213,7 +213,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, creat
     return stm
 
 
-def create_reference_payment_batch(
+def create_reference_payment_batch(  # pylint: disable=too-many-locals
     batch_data: dict, name: str, file: ReferencePaymentBatchFile, created: Optional[datetime] = None, **kwargs  # pylint: disable=too-many-locals
 ) -> ReferencePaymentBatch:
     """

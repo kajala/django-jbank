@@ -65,13 +65,13 @@ class Command(SafeCommand):
                 # make sure file has not been uploaded already
                 old = now() - timedelta(days=90)
                 dup_states = [PAYOUT_WAITING_UPLOAD, PAYOUT_WAITING_BATCH_UPLOAD, PAYOUT_UPLOADED, PAYOUT_PAID]
-                dup_pmt = Payout.objects.exclude(id=p.id).filter(created__gt=old, full_path=p.full_path, state__in=dup_states).first()
+                dup_pmt = Payout.objects.exclude(id=p.pk).filter(created__gt=old, full_path=p.full_path, state__in=dup_states).first()
                 if dup_pmt is not None:
                     assert isinstance(dup_pmt, Payout)
-                    raise Exception(f"File {p.file_name} is duplicate of payment id={dup_pmt.id}")
+                    raise Exception(f"File {p.file_name} is duplicate of payment id={dup_pmt.pk}")
 
                 # upload file
-                logger.info("Uploading payment id={} {} file {}".format(p.id, file_type, p.full_path))
+                logger.info("Uploading payment id={} {} file {}".format(p.pk, file_type, p.full_path))
                 with open(p.full_path, "rt", encoding="utf-8") as fp:
                     file_content = fp.read()
                 p.state = PAYOUT_UPLOADED

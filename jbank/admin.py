@@ -115,7 +115,7 @@ class SettlementEntryTypesFilter(SimpleListFilter):
         choices = []
         for e in EntryType.objects.all().filter(is_settlement=True).order_by("name"):
             assert isinstance(e, EntryType)
-            choices.append((e.id, capfirst(e.name)))
+            choices.append((e.pk, capfirst(e.name)))
         return choices
 
     def queryset(self, request, queryset):
@@ -246,7 +246,7 @@ class StatementAdmin(BankAdminBase):
 
     def account_entry_list(self, obj):
         assert isinstance(obj, Statement)
-        admin_url = reverse("admin:jbank_statementrecord_statement_changelist", args=(obj.id,))
+        admin_url = reverse("admin:jbank_statementrecord_statement_changelist", args=(obj.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), StatementRecord.objects.filter(statement=obj).count())
 
     account_entry_list.short_description = _("account entries")  # type: ignore
@@ -255,7 +255,7 @@ class StatementAdmin(BankAdminBase):
         assert isinstance(obj, Statement)
         if not obj.file:
             return ""
-        admin_url = reverse("admin:jbank_statementfile_change", args=(obj.file.id,))
+        admin_url = reverse("admin:jbank_statementfile_change", args=(obj.file.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.name)
 
     file_link.admin_order_field = "file"  # type: ignore
@@ -309,7 +309,7 @@ class StatementRecordDetailInlineAdmin(admin.StackedInline):
     def structured_remittance_info(self, obj):
         assert isinstance(obj, StatementRecordDetail)
         lines = []
-        for rinfo in obj.remittanceinfo_set.all().order_by("id"):
+        for rinfo in obj.remittanceinfo_set.all().order_by("id"):  # type: ignore
             assert isinstance(rinfo, StatementRecordRemittanceInfo)
             lines.append(str(rinfo))
         return mark_safe("<br>".join(lines))
@@ -553,7 +553,7 @@ class StatementRecordAdmin(BankAdminBase):
         stm = obj.statement
         if not stm:
             return ""
-        admin_url = reverse("admin:jbank_statementfile_change", args=(stm.file.id,))
+        admin_url = reverse("admin:jbank_statementfile_change", args=(stm.file.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), mark_safe(limit_filename_length(stm.name, 12, "&hellip;")))
 
     def file_link(self, obj):
@@ -561,7 +561,7 @@ class StatementRecordAdmin(BankAdminBase):
         if not obj.statement or not obj.statement.file:
             return ""
         name = basename(obj.statement.file.file.name)
-        admin_url = reverse("admin:jbank_statementfile_change", args=(obj.statement.file.id,))
+        admin_url = reverse("admin:jbank_statementfile_change", args=(obj.statement.file.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), name)
 
     file_link.admin_order_field = "file"  # type: ignore
@@ -714,7 +714,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         assert isinstance(obj, ReferencePaymentRecord)
         if not obj.batch or not obj.batch.file:
             return ""
-        admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.batch.file.id,))
+        admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.batch.file.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.batch.file)
 
     file_link.admin_order_field = "file"  # type: ignore
@@ -751,7 +751,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         assert isinstance(obj, ReferencePaymentRecord)
         if not obj.batch:
             return ""
-        admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.batch.file.id,))
+        admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.batch.file.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), mark_safe(limit_filename_length(obj.batch.name, 12, "&hellip;")))
 
 
@@ -802,7 +802,7 @@ class ReferencePaymentBatchAdmin(BankAdminBase):
 
     def account_entry_list(self, obj):
         assert isinstance(obj, ReferencePaymentBatch)
-        admin_url = reverse("admin:jbank_referencepaymentrecord_batch_changelist", args=(obj.id,))
+        admin_url = reverse("admin:jbank_referencepaymentrecord_batch_changelist", args=(obj.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), ReferencePaymentRecord.objects.filter(batch=obj).count())
 
     account_entry_list.short_description = _("account entries")  # type: ignore
@@ -811,7 +811,7 @@ class ReferencePaymentBatchAdmin(BankAdminBase):
         assert isinstance(obj, ReferencePaymentBatch)
         if not obj.file:
             return ""
-        admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.file.id,))
+        admin_url = reverse("admin:jbank_referencepaymentbatchfile_change", args=(obj.file.pk,))
         return format_html("<a href='{}'>{}</a>", mark_safe(admin_url), obj.file)
 
     file_link.admin_order_field = "file"  # type: ignore
@@ -881,16 +881,18 @@ class StatementFileAdmin(BankAdminBase):
     )
 
     readonly_fields = (
-        "created",
         "errors",
         "file",
         "original_filename",
         "records",
+        "created",
+        "processed",
+        "archived",
     )
 
     def records(self, obj):
         assert isinstance(obj, StatementFile)
-        admin_url = reverse("admin:jbank_statementrecord_statementfile_changelist", args=[obj.id])
+        admin_url = reverse("admin:jbank_statementrecord_statementfile_changelist", args=[obj.pk])
         return format_html('<a href="{}">{}</a>', admin_url, _("statement records"))
 
     records.short_description = _("statement records")  # type: ignore
@@ -952,7 +954,6 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
     date_hierarchy = "created"
 
     fields = [
-        "created",
         "file",
         "original_filename",
         "tag",
@@ -962,6 +963,9 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "errors",
         "total_amount",
         "entries",
+        "created",
+        "processed",
+        "archived",
     ]
 
     list_display = (
@@ -977,6 +981,8 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
 
     readonly_fields = (
         "created",
+        "processed",
+        "archived",
         "file",
         "original_filename",
         "tag",
@@ -997,7 +1003,7 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
 
     def total(self, obj):
         assert isinstance(obj, ReferencePaymentBatchFile)
-        path = reverse("admin:jbank_referencepaymentrecord_statementfile_changelist", args=[obj.id])
+        path = reverse("admin:jbank_referencepaymentrecord_statementfile_changelist", args=[obj.pk])
         return format_html('<a href="{}">{}</a>', path, localize(obj.total_amount))
 
     total.short_description = _("total amount")  # type: ignore
@@ -1005,7 +1011,7 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
     def entries(self, obj):
         assert isinstance(obj, ReferencePaymentBatchFile)
         ncount = ReferencePaymentRecord.objects.filter(batch__file=obj).distinct().count()
-        path = reverse("admin:jbank_referencepaymentrecord_statementfile_changelist", args=[obj.id])
+        path = reverse("admin:jbank_referencepaymentrecord_statementfile_changelist", args=[obj.pk])
         return format_html('<a href="{}">{} {} ({} {})</a>', path, ncount, _("count.abbr"), _("total.abbr"), localize(obj.total_amount))
 
     entries.short_description = _("account entries")  # type: ignore
@@ -1053,12 +1059,12 @@ class PayoutStatusAdminMixin:
 
     def file_name_link(self, obj):
         assert isinstance(obj, PayoutStatus)
-        if obj.id is None or not obj.full_path:
+        if obj.pk is None or not obj.full_path:
             return obj.file_name
         admin_url = reverse(
             "admin:jbank_payoutstatus_file_download",
             args=(
-                obj.id,
+                obj.pk,
                 obj.file_name,
             ),
         )
@@ -1672,7 +1678,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         assert isinstance(obj, WsEdiSoapCall)
         if not os.path.isfile(obj.debug_request_full_path):
             return ""
-        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "q"])
+        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.pk), "q"])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_request_full_path)))
 
     admin_application_request.short_description = _("application request")  # type: ignore
@@ -1681,7 +1687,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         assert isinstance(obj, WsEdiSoapCall)
         if not os.path.isfile(obj.debug_response_full_path):
             return ""
-        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), "s"])
+        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.pk), "s"])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, os.path.basename(obj.debug_response_full_path)))
 
     admin_application_response.short_description = _("application response")  # type: ignore
@@ -1691,7 +1697,7 @@ class WsEdiSoapCallAdmin(BankAdminBase):
         if obj.command != "DownloadFile" or not obj.executed:
             return ""
         file_type = "f"
-        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.id), file_type])
+        download_url = reverse("admin:jbank_wsedisoapcall_soap_download", args=[str(obj.pk), file_type])
         return mark_safe(format_html('<a href="{}">{}</a>', download_url, obj.debug_get_filename(file_type)))
 
     admin_application_response_file.short_description = _("file")  # type: ignore

@@ -45,5 +45,9 @@ if [ "$?" != "0" ]; then
 fi
 echo "Pytype cleared build (`dt -q -d`), proceeding..."
 
+# pyright
+dt -q
+pyright jbank
+
 echo "Pre-release script ok"
 exit 0

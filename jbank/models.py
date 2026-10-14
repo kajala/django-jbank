@@ -6,7 +6,6 @@ import subprocess
 import tempfile
 from datetime import datetime, time, date, timezone
 from decimal import Decimal
-from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Tuple, TYPE_CHECKING
 from django.conf import settings
@@ -371,7 +370,7 @@ class StatementRecordSepaInfo(models.Model):
         verbose_name_plural = _("SEPA")
 
     def __str__(self):
-        return "[{}]".format(self.id)
+        return "[{}]".format(self.pk)
 
 
 class ReferencePaymentBatchManager(models.Manager):
@@ -471,6 +470,8 @@ class StatementFile(models.Model):
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
     processed = models.DateTimeField(_("processed"), default=None, null=True, blank=True, db_index=True, editable=False)
+    archived_filename = SafeCharField(_("archived filename"), blank=True, default="", max_length=512, editable=False)
+    archived = models.BooleanField(_("archived"), db_index=True, default=False, blank=True, editable=False)
 
     class Meta:
         verbose_name = _("account statement file")
@@ -478,10 +479,12 @@ class StatementFile(models.Model):
 
     @property
     def full_path(self):
-        return join(settings.MEDIA_ROOT, self.file.name) if self.file else ""
+        if self.archived:
+            return get_media_full_path(self.archived_filename)
+        return get_media_full_path(self.file.name) if self.file else ""
 
     def __str__(self):
-        return basename(str(self.file.name)) if self.file else ""
+        return os.path.basename(str(self.file.name)) if self.file else ""
 
     def mark_processed(self):
         self.processed = now()
@@ -499,6 +502,8 @@ class ReferencePaymentBatchFile(models.Model):
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
     total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
     processed = models.DateTimeField(_("processed"), default=None, null=True, blank=True, db_index=True, editable=False)
+    archived_filename = SafeCharField(_("archived filename"), blank=True, default="", max_length=512, editable=False)
+    archived = models.BooleanField(_("archived"), db_index=True, default=False, blank=True, editable=False)
 
     if TYPE_CHECKING:
         referencepaymentbatch_set: RelatedManager[ReferencePaymentBatch]
@@ -513,10 +518,12 @@ class ReferencePaymentBatchFile(models.Model):
 
     @property
     def full_path(self):
-        return join(settings.MEDIA_ROOT, self.file.name) if self.file else ""
+        if self.archived:
+            return get_media_full_path(self.archived_filename)
+        return get_media_full_path(self.file.name) if self.file else ""
 
     def __str__(self):
-        return basename(str(self.file.name)) if self.file else ""
+        return os.path.basename(str(self.file.name)) if self.file else ""
 
     def get_total_amount(self) -> Decimal:
         logger.warning("ReferencePaymentBatchFile.get_total_amount is deprecated, use total_amount instead")
@@ -551,16 +558,16 @@ class PayoutParty(models.Model):
     @property
     def is_payout_party_used(self) -> bool:
         """True if payout party has been used in any payment."""
-        if not hasattr(self, "id") or self.id is None:
+        if not hasattr(self, "id") or self.pk is None:
             return False
         return Payout.objects.all().filter(Q(recipient=self) | Q(payer=self)).exists()
 
     @property
     def is_account_number_changed(self) -> bool:
         """True if account number has been changed compared to the one stored in DB."""
-        if not hasattr(self, "id") or self.id is None:
+        if not hasattr(self, "id") or self.pk is None:
             return False
-        return PayoutParty.objects.all().filter(id=self.id).exclude(account_number=self.account_number).exists()
+        return PayoutParty.objects.all().filter(id=self.pk).exclude(account_number=self.account_number).exists()
 
     def clean(self):
         if not self.bic:
@@ -640,13 +647,13 @@ class Payout(AccountEntry):
 
     def generate_msg_id(self, commit: bool = True):
         id_base = re.sub(r"[^\d]", "", now().isoformat())[:-4]
-        self.msg_id = id_base + "P" + str(self.id)
+        self.msg_id = id_base + "P" + str(self.pk)
         if commit:
             self.save(update_fields=["msg_id"])
 
     def generate_end_to_end_id(self, commit: bool = True):
         id_base = re.sub(r"[^\d]", "", now().isoformat())[:-4]
-        self.end_to_end_id = id_base + "P" + str(self.id)
+        self.end_to_end_id = id_base + "P" + str(self.pk)
         if commit:
             self.save(update_fields=["end_to_end_id"])
 
@@ -686,7 +693,7 @@ class Payout(AccountEntry):
 
 class PayoutStatusManager(models.Manager):
     def is_file_processed(self, filename: str) -> bool:
-        return self.filter(file_name=basename(filename)).first() is not None
+        return self.filter(file_name=os.path.basename(filename)).exists()
 
 
 class PayoutStatus(models.Model):
@@ -711,6 +718,8 @@ class PayoutStatus(models.Model):
     original_msg_id = SafeCharField(_("original message id"), blank=True, max_length=64, db_index=True)
     group_status = SafeCharField(_("payment.group.status"), max_length=8, blank=True, db_index=True)
     status_reason = SafeCharField(_("status reason"), max_length=255, blank=True)
+    archived_filename = SafeCharField(_("archived filename"), blank=True, default="", max_length=512, editable=False)
+    archived = models.BooleanField(_("archived"), db_index=True, default=False, blank=True, editable=False)
 
     class Meta:
         verbose_name = _("payout status")
@@ -721,6 +730,8 @@ class PayoutStatus(models.Model):
 
     @property
     def full_path(self) -> str:
+        if self.archived:
+            return get_media_full_path(self.archived_filename)
         return get_media_full_path(self.file_path) if self.file_path else ""
 
     @property
@@ -752,7 +763,7 @@ class WsEdiSoapCall(models.Model):
         verbose_name_plural = _("WS-EDI SOAP calls")
 
     def __str__(self):
-        return "WsEdiSoapCall({})".format(self.id)
+        return "WsEdiSoapCall({})".format(self.pk)
 
     @property
     def timestamp(self) -> datetime:
@@ -765,14 +776,14 @@ class WsEdiSoapCall(models.Model):
 
     @property
     def request_identifier(self) -> str:
-        return str(self.id)
+        return str(self.pk)
 
     @property
     def command_camelcase(self) -> str:
         return self.command[0:1].lower() + self.command[1:]  # noqa
 
     def debug_get_filename(self, file_type: str) -> str:
-        return "{:08}{}.xml".format(self.id, file_type)
+        return "{:08}{}.xml".format(self.pk, file_type)
 
     @property
     def debug_request_full_path(self) -> str:
@@ -901,7 +912,6 @@ class WsEdiConnection(models.Model):
                 "-in",
                 src_file,
             ]
-            # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
             with open(file, "wb") as fp:
                 fp.write(out)
@@ -946,7 +956,6 @@ class WsEdiConnection(models.Model):
             fp.write(content)
             fp.flush()
             cmd = [settings.XMLSEC1_PATH, "--verify", "--pubkey-pem", signing_key_full_path, fp.name]
-            # logger.info(' '.join(cmd))
             subprocess.check_output(cmd)
 
     def sign_pki_request(self, content: bytes, signing_key_full_path: str, signing_cert_full_path: str) -> bytes:
@@ -974,7 +983,6 @@ class WsEdiConnection(models.Model):
                 cmd = [self._xmlsec1_example_bin("sign3-sha256"), fp.name, signing_key_full_path, signing_cert_full_path]
             else:
                 cmd = [settings.XMLSEC1_PATH, "--sign", "--privkey-pem", signing_key_full_path + "," + signing_cert_full_path, fp.name]
-            # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
         self.verify_signature(out, signing_key_full_path)
         return out
@@ -995,7 +1003,6 @@ class WsEdiConnection(models.Model):
                 self.bank_encryption_cert_with_public_key_full_path,
                 self.bank_encryption_cert_full_path,
             ]
-            # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
         return out
 
@@ -1018,7 +1025,6 @@ class WsEdiConnection(models.Model):
                 fp.name,
                 self.encryption_key_full_path,
             ]
-            # logger.info(' '.join(cmd))
             out = subprocess.check_output(cmd)
         return out
 

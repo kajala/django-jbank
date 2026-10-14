@@ -120,7 +120,7 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
         if is_create or is_renew:
             logger.info(
                 "To restore old connection:\nws=WsEdiConnection.objects.get(id=%s); ws.signing_cert_file='%s'; ws.signing_key_file='%s'; ws.encryption_cert_file='%s'; ws.encryption_key_file='%s'; ws.save()",  # noqa
-                ws.id,
+                ws.pk,
                 ws.signing_cert_file,
                 ws.signing_key_file,
                 ws.encryption_cert_file,
@@ -130,8 +130,8 @@ def generate_wspki_request(  # pylint: disable=too-many-locals,too-many-statemen
             signing_pk = create_private_key()
             encryption_pk_pem = get_private_key_pem(encryption_pk)
             signing_pk_pem = get_private_key_pem(signing_pk)
-            encryption_pk_filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, "EncryptionKey")
-            signing_pk_filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, "SigningKey")
+            encryption_pk_filename = "certs/ws{}-{}-{}.pem".format(ws.pk, soap_call.timestamp_digits, "EncryptionKey")
+            signing_pk_filename = "certs/ws{}-{}-{}.pem".format(ws.pk, soap_call.timestamp_digits, "SigningKey")
             ws.old_encryption_key_file = ws.encryption_key_file
             ws.old_signing_key_file = ws.signing_key_file
             ws.encryption_key_file.name = encryption_pk_filename
@@ -250,7 +250,7 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
         res_el = etree_get_element(envelope, elem_ns, command + "Response")
         for cert_name in ["BankEncryptionCert", "BankSigningCert", "BankRootCert"]:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
-            filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+            filename = "certs/ws{}-{}-{}.pem".format(ws.pk, soap_call.timestamp_digits, cert_name)
             write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
             if cert_name == "BankEncryptionCert":
                 ws.bank_encryption_cert_file.name = filename
@@ -259,40 +259,40 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             elif cert_name == "BankRootCert":
                 ws.bank_root_cert_file.name = filename
             ws.save()
-            admin_log([ws], "{} set by system from SOAP call response id={}".format(cert_name, soap_call.id))
+            admin_log([ws], "{} set by system from SOAP call response id={}".format(cert_name, soap_call.pk))
 
     elif command_lower == "createcertificate":
         res_el = etree_get_element(envelope, elem_ns, command + "Response")
         for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
-            filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+            filename = "certs/ws{}-{}-{}.pem".format(ws.pk, soap_call.timestamp_digits, cert_name)
             write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
             if cert_name == "EncryptionCert":
                 ws.encryption_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.id, filename))
+                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.pk, filename))
             elif cert_name == "SigningCert":
                 ws.signing_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
+                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.pk, filename))
             elif cert_name == "CACert":
                 ws.ca_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.id, filename))
+                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.pk, filename))
             ws.save()
 
     elif command_lower == "renewcertificate":
         res_el = etree_get_element(envelope, elem_ns, command + "Response")
         for cert_name in ["EncryptionCert", "SigningCert", "CACert"]:
             data_base64 = etree_get_element(res_el, elem_ns, cert_name).text
-            filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+            filename = "certs/ws{}-{}-{}.pem".format(ws.pk, soap_call.timestamp_digits, cert_name)
             write_cert_pem_file(get_media_full_path(filename), data_base64.encode())
             if cert_name == "EncryptionCert":
                 ws.encryption_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.id, filename))
+                admin_log([ws], "soap_call(id={}): encryption_cert_file={}".format(soap_call.pk, filename))
             elif cert_name == "SigningCert":
                 ws.signing_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
+                admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.pk, filename))
             elif cert_name == "CACert":
                 ws.ca_cert_file.name = filename
-                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.id, filename))
+                admin_log([ws], "soap_call(id={}): ca_cert_file={}".format(soap_call.pk, filename))
             ws.save()
 
     elif command_lower == "getcertificate":
@@ -310,13 +310,13 @@ def process_wspki_response(content: bytes, soap_call: WsEdiSoapCall):  # noqa
             raise Exception("{} not found from {}".format("Certificate", cert_app_res))
         cert_bytes = base64.decodebytes(str(cert_el.text).encode())
         cert_name = "SigningCert"
-        filename = "certs/ws{}-{}-{}.pem".format(ws.id, soap_call.timestamp_digits, cert_name)
+        filename = "certs/ws{}-{}-{}.pem".format(ws.pk, soap_call.timestamp_digits, cert_name)
         cert_full_path = get_media_full_path(filename)
         with open(cert_full_path, "wb") as fp:
             fp.write(cert_bytes)
             logger.info("%s written", cert_full_path)
         ws.signing_cert_file.name = filename
-        admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.id, filename))
+        admin_log([ws], "soap_call(id={}): signing_cert_file={}".format(soap_call.pk, filename))
         ws.save()
 
     else:
