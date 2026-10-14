@@ -467,7 +467,7 @@ class ReferencePaymentRecord(AccountEntry):
 class StatementFile(models.Model):
     created = models.DateTimeField(_("created"), default=now, db_index=True, blank=True, editable=False)
     file = models.FileField(verbose_name=_("file"), upload_to="uploads")
-    original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256)
+    original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256, db_index=True)
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
     processed = models.DateTimeField(_("processed"), default=None, null=True, blank=True, db_index=True, editable=False)
@@ -491,7 +491,7 @@ class StatementFile(models.Model):
 class ReferencePaymentBatchFile(models.Model):
     created = models.DateTimeField(_("created"), default=now, db_index=True, blank=True, editable=False)
     file = models.FileField(verbose_name=_("file"), upload_to="uploads")
-    original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256)
+    original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256, db_index=True)
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
     timestamp = models.DateTimeField(_("timestamp"), default=None, null=True, db_index=True, blank=True, editable=False)
     msg_id = models.CharField(_("message identifier"), max_length=32, default="", blank=True, db_index=True)
