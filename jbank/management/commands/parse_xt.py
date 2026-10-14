@@ -1,10 +1,10 @@
 import logging
 import os
-from pprint import pprint
-
+from pprint import pformat
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandParser
-from django.db import transaction
+from django.utils.timezone import now
+
 from jbank.camt import (
     camt053_get_account_iban,
     camt053_create_statement,
@@ -107,33 +107,40 @@ class Command(SafeCommand):
 
             if options["test"]:
                 statement = camt053_parse_statement_from_file(filename)
-                pprint(statement)
+                logger.info("%s", pformat(statement))
                 continue
 
             if options["delete_old"]:
                 Statement.objects.filter(name=plain_filename).delete()
 
-            if not Statement.objects.filter(name=plain_filename).first():
-                print("Importing statement file {}".format(plain_filename))
-
-                statement = camt053_parse_statement_from_file(filename)
+            if Statement.objects.filter(name=plain_filename).exists():
                 if verbose:
-                    pprint(statement)
+                    logger.info("Skipping existing camt.053 since name %s", plain_filename)
+                continue
+            if StatementFile.objects.filter(original_filename=filename).exists():
+                if verbose:
+                    logger.info("Skipping existing camt.053 since original filename %s", filename)
+                continue
 
-                with transaction.atomic():
-                    file = StatementFile(original_filename=filename, tag=options["tag"])
-                    file.save()
-                    save_or_store_media(file.file, filename)
-                    file.save()
+            logger.info("Importing camt.053 %s", plain_filename)
+            statement = camt053_parse_statement_from_file(filename)
+            if verbose:
+                logger.debug("%s", pformat(statement))
 
-                    for data in [statement]:
-                        if options["auto_create_accounts"]:
-                            account_number = camt053_get_account_iban(data)
-                            currency = camt053_get_account_currency(data)
-                            if account_number:
-                                get_or_create_bank_account(account_number, currency)
+            time_now = now()
+            file = StatementFile(original_filename=filename, tag=options["tag"], created=time_now)
+            file.save()
+            save_or_store_media(file.file, filename)
+            file.save()
 
-                        camt053_create_statement(data, name=plain_filename, file=file)  # pytype: disable=not-callable
-            else:
-                if options["verbose"]:
-                    logger.info("Skipping statement file %s", filename)
+            for data in [statement]:
+                if options["auto_create_accounts"]:
+                    account_number = camt053_get_account_iban(data)
+                    currency = camt053_get_account_currency(data)
+                    if account_number:
+                        get_or_create_bank_account(account_number, currency)
+
+                camt053_create_statement(data, name=plain_filename, file=file, created=time_now)  # pytype: disable=not-callable
+
+            logger.info("Marking camt.053 %s processed", file)
+            file.mark_processed()

@@ -470,6 +470,7 @@ class StatementFile(models.Model):
     original_filename = SafeCharField(_("original filename"), blank=True, default="", max_length=256)
     tag = SafeCharField(_("tag"), blank=True, max_length=64, default="", db_index=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
+    processed = models.DateTimeField(_("processed"), default=None, null=True, blank=True, db_index=True, editable=False)
 
     class Meta:
         verbose_name = _("account statement file")
@@ -482,6 +483,10 @@ class StatementFile(models.Model):
     def __str__(self):
         return basename(str(self.file.name)) if self.file else ""
 
+    def mark_processed(self):
+        self.processed = now()
+        self.save(update_fields=["processed"])
+
 
 class ReferencePaymentBatchFile(models.Model):
     created = models.DateTimeField(_("created"), default=now, db_index=True, blank=True, editable=False)
@@ -492,7 +497,8 @@ class ReferencePaymentBatchFile(models.Model):
     msg_id = models.CharField(_("message identifier"), max_length=32, default="", blank=True, db_index=True)
     additional_info = models.CharField(_("additional information"), max_length=128, default="", blank=True)
     errors = SafeTextField(_("errors"), max_length=4086, default="", blank=True)
-    cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
+    total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
+    processed = models.DateTimeField(_("processed"), default=None, null=True, blank=True, db_index=True, editable=False)
 
     if TYPE_CHECKING:
         referencepaymentbatch_set: RelatedManager[ReferencePaymentBatch]
@@ -505,24 +511,21 @@ class ReferencePaymentBatchFile(models.Model):
         if self.timestamp is None:
             self.timestamp = self.created
 
-    def get_total_amount(self, force: bool = False) -> Decimal:
-        if self.cached_total_amount is None or force:
-            self.cached_total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch__file=self))
-            self.save(update_fields=["cached_total_amount"])
-        return self.cached_total_amount
-
-    @property
-    def total_amount(self) -> Decimal:
-        return self.get_total_amount()
-
-    total_amount.fget.short_description = _("total amount")  # type: ignore
-
     @property
     def full_path(self):
         return join(settings.MEDIA_ROOT, self.file.name) if self.file else ""
 
     def __str__(self):
         return basename(str(self.file.name)) if self.file else ""
+
+    def get_total_amount(self) -> Decimal:
+        logger.warning("ReferencePaymentBatchFile.get_total_amount is deprecated, use total_amount instead")
+        return self.total_amount or Decimal("0.00")
+
+    def mark_processed(self):
+        self.processed = now()
+        self.total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch__file=self))
+        self.save(update_fields=["total_amount", "processed"])
 
 
 class PayoutParty(models.Model):

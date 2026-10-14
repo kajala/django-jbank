@@ -1,8 +1,9 @@
 import logging
 import os
-from pprint import pprint
+from pprint import pformat
 from django.core.management.base import CommandParser
-from django.db import transaction
+from django.utils.timezone import now
+
 from jbank.helpers import get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
@@ -27,12 +28,13 @@ class Command(SafeCommand):
 
     def do(self, *args, **options):  # pylint: disable=too-many-branches
         files = list_dir_files(options["path"])
-        # pprint(files)
+        verbose = options["verbose"]
         for filename in files:
             plain_filename = os.path.basename(filename)
 
             if parse_filename_suffix(plain_filename).upper() not in SVM_STATEMENT_SUFFIXES:
-                print("Ignoring non-SVM file {}".format(filename))
+                if verbose:
+                    logger.info("Ignoring non-SVM file %s", filename)
                 continue
 
             if options["resolve_original_filenames"]:
@@ -48,32 +50,37 @@ class Command(SafeCommand):
 
             if options["test"]:
                 batches = parse_svm_batches_from_file(filename)
-                pprint(batches)
+                logger.info("%s", pformat(batches))
                 continue
 
-            if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
-                print("Importing statement file {}".format(filename))
+            if ReferencePaymentBatch.objects.filter(name=plain_filename).exists():
+                if verbose:
+                    logger.info("Skipping existing SVM since name %s", plain_filename)
+                continue
+            if ReferencePaymentBatchFile.objects.filter(original_filename=filename).exists():
+                if verbose:
+                    logger.info("Skipping existing SVM since original filename %s", filename)
+                continue
 
-                batches = parse_svm_batches_from_file(filename)
-                if options["verbose"]:
-                    pprint(batches)
+            logger.info("Importing reference payment batch file %s", filename)
+            batches = parse_svm_batches_from_file(filename)
+            if options["verbose"]:
+                logger.info("%s", pformat(batches))
 
-                with transaction.atomic():
-                    file = ReferencePaymentBatchFile(original_filename=filename, tag=options["tag"])
-                    file.save()
-                    save_or_store_media(file.file, filename)
-                    file.save()
+            time_now = now()
+            file = ReferencePaymentBatchFile(original_filename=filename, tag=options["tag"], created=time_now)
+            file.save()
+            save_or_store_media(file.file, filename)
+            file.save()
 
-                    for data in batches:
-                        if options["auto_create_accounts"]:
-                            for rec_data in data["records"]:
-                                account_number = rec_data.get("account_number")
-                                if account_number:
-                                    get_or_create_bank_account(account_number)
+            for data in batches:
+                if options["auto_create_accounts"]:
+                    for rec_data in data["records"]:
+                        account_number = rec_data.get("account_number")
+                        if account_number:
+                            get_or_create_bank_account(account_number)
 
-                        create_reference_payment_batch(data, name=plain_filename, file=file)  # pytype: disable=not-callable
+                create_reference_payment_batch(data, name=plain_filename, file=file, created=time_now)
 
-                    file.get_total_amount(force=True)
-            else:
-                if options["verbose"]:
-                    logger.info("Skipping reference payment file %s", filename)
+            logger.info("Marking SVM %s processed", plain_filename)
+            file.mark_processed()

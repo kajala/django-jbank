@@ -14,7 +14,18 @@ from jacc.models import Account
 from jbank.csr_helpers import create_private_key, create_csr_pem, get_private_key_pem, strip_pem_header_and_footer
 from jbank.ecb import parse_euro_exchange_rates_xml
 from jbank.helpers import validate_xml, parse_date_or_relative_date, limit_filename_length
-from jbank.models import WsEdiConnection, WsEdiSoapCall, Payout, PayoutParty, ReferencePaymentBatchFile, ReferencePaymentRecord
+from jbank.models import (
+    WsEdiConnection,
+    WsEdiSoapCall,
+    Payout,
+    PayoutParty,
+    ReferencePaymentBatchFile,
+    ReferencePaymentRecord,
+    StatementFile,
+    Statement,
+    ReferencePaymentBatch,
+    StatementRecord,
+)
 from jbank.services import convert_currency
 from jbank.tito import parse_tiliote_statements_from_file
 from jbank.svm import parse_svm_batches_from_file
@@ -236,9 +247,44 @@ class Tests(TestCase):
             call_command("parse_xt", "downloads/xt", auto_create_accounts=True)
         if os.path.isdir("./downloads/svm"):
             call_command("parse_svm", "downloads/svm", auto_create_accounts=True)
+        counts0 = sum(
+            [
+                StatementFile.objects.count(),
+                StatementRecord.objects.count(),
+                Statement.objects.count(),
+                ReferencePaymentRecord.objects.count(),
+                ReferencePaymentBatchFile.objects.count(),
+                ReferencePaymentBatch.objects.count(),
+            ]
+        )
         call_command("parse_xt", "data/xt", auto_create_accounts=True)
         call_command("parse_svm", "data/svm", auto_create_accounts=True)
         call_command("parse_to", "data/to", auto_create_accounts=True)
+        counts1 = sum(
+            [
+                StatementFile.objects.count(),
+                StatementRecord.objects.count(),
+                Statement.objects.count(),
+                ReferencePaymentRecord.objects.count(),
+                ReferencePaymentBatchFile.objects.count(),
+                ReferencePaymentBatch.objects.count(),
+            ]
+        )
+        self.assertGreater(counts1, counts0)
+        call_command("parse_xt", "data/xt", auto_create_accounts=True)
+        call_command("parse_svm", "data/svm", auto_create_accounts=True)
+        call_command("parse_to", "data/to", auto_create_accounts=True)
+        counts2 = sum(
+            [
+                StatementFile.objects.count(),
+                StatementRecord.objects.count(),
+                Statement.objects.count(),
+                ReferencePaymentRecord.objects.count(),
+                ReferencePaymentBatchFile.objects.count(),
+                ReferencePaymentBatch.objects.count(),
+            ]
+        )
+        self.assertEqual(counts2, counts1)
 
     def test_parse_date_or_relative_date(self):
         tz = timezone.utc
@@ -253,7 +299,7 @@ class Tests(TestCase):
         call_command("parse_xm", "data/xm", verbose=True, auto_create_accounts=True)
         file = ReferencePaymentBatchFile.objects.all().order_by("-id").first()
         assert isinstance(file, ReferencePaymentBatchFile)
-        self.assertEqual(file.get_total_amount(), Decimal("7048.00"))
+        self.assertEqual(file.total_amount, Decimal("7048.00"))
         self.assertEqual(ReferencePaymentRecord.objects.filter(batch__file=file).count(), 4)
 
     def test_currency_conversion(self):

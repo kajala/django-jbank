@@ -960,7 +960,7 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "msg_id",
         "additional_info",
         "errors",
-        "cached_total_amount",
+        "total_amount",
         "entries",
     ]
 
@@ -984,7 +984,7 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "msg_id",
         "additional_info",
         "errors",
-        "cached_total_amount",
+        "total_amount",
         "entries",
     )
 
@@ -1019,9 +1019,8 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
                 plain_filename = basename(full_path)
                 try:
                     batches = parse_svm_batches_from_file(full_path)
-                    with transaction.atomic():
-                        for data in batches:
-                            create_reference_payment_batch(data, name=plain_filename, file=instance)
+                    for data in batches:
+                        create_reference_payment_batch(data, name=plain_filename, file=instance)
                 except Exception as e:
                     user = request.user
                     assert isinstance(user, User)
@@ -1211,7 +1210,7 @@ def regenerate_payout_message_identifiers(modeladmin, request, qs):  # pylint: d
 
 def show_payout_summary(modeladmin, request, queryset):  # type: ignore  # noqa
     queryset = queryset.order_by("id").distinct()
-    by_group_status: Dict[str, List[Union[Decimal, int]]] = {}
+    by_group_status: Dict[str, List[Union[Decimal, int]]] = {}  # type: ignore
     for obj in queryset:
         assert isinstance(obj, Payout)
         by_group_status.setdefault(obj.group_status, [Decimal("0.00"), 0])
@@ -1265,7 +1264,7 @@ def download_payouts_to_csv(modeladmin, request, queryset):  # type: ignore  # n
             "file_reference",
             "due_date",
         ]
-        column_headers: List[Any] = []
+        column_headers: List[Any] = []  # type: ignore
         for k0 in keys:
             if k0 in payout_party_vars:
                 for k in payout_party_keys:
@@ -1275,7 +1274,7 @@ def download_payouts_to_csv(modeladmin, request, queryset):  # type: ignore  # n
         rows = [column_headers]
         for obj in queryset.order_by("id").distinct():
             assert isinstance(obj, Payout)
-            row: List[Any] = []
+            row: List[Any] = []  # type: ignore
             for k0 in keys:
                 if k0 in payout_party_vars:
                     obj2 = getattr(obj, k0)

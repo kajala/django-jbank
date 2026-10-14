@@ -26,9 +26,11 @@ class Command(SafeCommand):
         parser.add_argument("--file-id-as-pmt-id", action="store_true")
         parser.add_argument("--generate-msg-id", action="store_true")
         parser.add_argument("--generate-end-to-end-id", action="store_true")
+        parser.add_argument("--verbose", action="store_true")
 
     def do(self, *args, **kwargs):  # type: ignore  # noqa
         target_dir = kwargs["dir"]
+        verbose = kwargs["verbose"]
         payout_qs = Payout.objects.all().filter(state=kwargs["state"])
 
         if kwargs["ws"]:
@@ -41,7 +43,8 @@ class Command(SafeCommand):
 
         first = payout_qs.first()
         if first is None:
-            print("(nothing to do)")
+            if verbose:
+                logger.debug("(nothing to do)")
             return
         assert isinstance(first, Payout)
         pp = first.payer
@@ -49,7 +52,7 @@ class Command(SafeCommand):
         payout_qs = payout_qs.filter(payer=pp)
         logger.info("Processing %s payouts (%s EUR)", payout_qs.count(), sum_queryset(payout_qs))
 
-        due_date: Optional[date] = None
+        due_date: Optional[date] = None  # type: ignore
         if kwargs["due_date"]:
             due_date = parse_date(kwargs["due_date"])
 

@@ -1,8 +1,7 @@
 import logging
 import os
-from pprint import pprint
+from pprint import pformat
 from django.core.management.base import CommandParser
-from django.db import transaction
 from jbank.camt import CAMT054_FILE_SUFFIXES, camt054_parse_file, camt054_create_reference_payment_batch, camt054_parse_ntfctn_acct
 from jbank.files import list_dir_files
 from jbank.helpers import save_or_store_media, get_or_create_bank_account
@@ -25,6 +24,7 @@ class Command(SafeCommand):
         parser.add_argument("--tag", type=str, default="")
 
     def do(self, *args, **options):  # pylint: disable=too-many-branches
+        verbose = options["verbose"]
         files = list_dir_files(options["path"])
         for filename in files:
             plain_filename = os.path.basename(filename)
@@ -38,31 +38,35 @@ class Command(SafeCommand):
 
             if options["test"]:
                 camt054_data = camt054_parse_file(filename)
-                pprint(camt054_data)
+                logger.debug("%s", pformat(camt054_data))
                 continue
 
-            if not ReferencePaymentBatch.objects.filter(name=plain_filename).first():
-                print("Importing statement file {}".format(filename))
+            if ReferencePaymentBatch.objects.filter(name=plain_filename).exists():
+                if verbose:
+                    logger.info("Skipping existing camt.054 since name %s", plain_filename)
+                continue
+            if ReferencePaymentBatchFile.objects.filter(original_filename=filename).exists():
+                if verbose:
+                    logger.info("Skipping existing camt.054 since original filename %s", filename)
+                continue
 
-                camt054_data = camt054_parse_file(filename)
-                if options["verbose"]:
-                    pprint(camt054_data)
+            logger.info("Importing camt.054 %s", filename)
+            camt054_data = camt054_parse_file(filename)
+            if options["verbose"]:
+                logger.debug("%s", pformat(camt054_data))
 
-                with transaction.atomic():
-                    file = ReferencePaymentBatchFile(original_filename=filename, tag=options["tag"])
-                    file.save()
-                    save_or_store_media(file.file, filename)
-                    file.save()
+            file = ReferencePaymentBatchFile(original_filename=filename, tag=options["tag"])
+            file.save()
+            save_or_store_media(file.file, filename)
+            file.save()
 
-                    for ntfctn in camt054_data["BkToCstmrDbtCdtNtfctn"]["Ntfctn"]:
-                        if options["auto_create_accounts"]:
-                            account_number, currency = camt054_parse_ntfctn_acct(ntfctn)
-                            if account_number:
-                                get_or_create_bank_account(account_number, currency)
+            for ntfctn in camt054_data["BkToCstmrDbtCdtNtfctn"]["Ntfctn"]:
+                if options["auto_create_accounts"]:
+                    account_number, currency = camt054_parse_ntfctn_acct(ntfctn)
+                    if account_number:
+                        get_or_create_bank_account(account_number, currency)
 
-                        camt054_create_reference_payment_batch(ntfctn, name=plain_filename, file=file)
+                camt054_create_reference_payment_batch(ntfctn, name=plain_filename, file=file)
 
-                    file.get_total_amount(force=True)
-            else:
-                if options["verbose"]:
-                    logger.info("Skipping reference payment file %s", filename)
+            logger.info("Marking camt.054 %s processed", file)
+            file.mark_processed()

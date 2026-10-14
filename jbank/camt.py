@@ -2,11 +2,10 @@ import logging
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Tuple, Any, Optional, Dict, List
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from jacc.models import Account, EntryType
 from jutil.format import dec2, dec4
@@ -178,8 +177,7 @@ def camt053_get_unified_str(qs, k: str) -> str:
     return camt053_get_unified_val(qs, k, "")
 
 
-@transaction.atomic  # noqa
-def camt053_create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:  # noqa
+def camt053_create_statement(statement_data: dict, name: str, file: StatementFile, created: Optional[datetime] = None, **kw) -> Statement:  # noqa
     """Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()
 
     Args:
@@ -190,6 +188,8 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
     Returns:
         Statement
     """
+    if created is None:
+        created = now()
     account_number = camt053_get_account_iban(statement_data)
     account_currency = camt053_get_account_currency(statement_data)
     if not account_number:
@@ -211,7 +211,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
 
     if Statement.objects.filter(name=name, account=account).first():
         raise ValidationError("Bank account {} statement {} of processed already".format(account_number, name))
-    stm = Statement(name=name, account=account, file=file)
+    stm = Statement(name=name, account=account, file=file, created=created)
     stm.account_number = stm.iban = account_number
     stm.bic = camt053_get_str(d_acct.get("Svcr", {}).get("FinInstnId", {}), "BIC", name="Stmt.Acct.Svcr.FinInstnId.BIC")
     stm.statement_identifier = camt053_get_str(d_stmt, "Id", name="Stmt.Id")
@@ -273,7 +273,7 @@ def camt053_create_statement(statement_data: dict, name: str, file: StatementFil
         if not e_type:
             raise ValidationError(_("Statement entry type {} not supported").format(cdt_dbt_ind))
 
-        rec = StatementRecord(statement=stm, account=account, type=e_type)
+        rec = StatementRecord(statement=stm, account=account, type=e_type, created=created)
         rec.amount = amount
         rec.archive_identifier = archive_id
         rec.entry_type = record_type_map[cdt_dbt_ind]
@@ -497,22 +497,23 @@ def camt054_parse_refs_endtoendid(data: dict, key: str) -> str:
     return refs.get("EndToEndId") or ""
 
 
-@transaction.atomic
 def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
-    ntfctn: dict, name: str, file: ReferencePaymentBatchFile
+    ntfctn: dict, name: str, file: ReferencePaymentBatchFile, created: Optional[datetime] = None
 ) -> ReferencePaymentBatch:
+    if created is None:
+        created = now()
     account_number, account_currency = camt054_parse_ntfctn_acct(ntfctn)
     account = Account.objects.get(name=account_number, currency=account_currency)
     assert isinstance(account, Account)
     created_datetime = parse_datetime(ntfctn["CreDtTm"])
     identifier = ntfctn["Id"]
-    batch = ReferencePaymentBatch(record_date=created_datetime, file=file, identifier=identifier, name=name)
+    batch = ReferencePaymentBatch(record_date=created_datetime, file=file, identifier=identifier, name=name, created=created)
     batch.clean()
     batch.save()
     e_deposit = EntryType.objects.get(code=settings.E_BANK_DEPOSIT)
     e_withdraw = EntryType.objects.get(code=settings.E_BANK_WITHDRAW)
     for ntry in ntfctn["Ntry"]:
-        rec = ReferencePaymentRecord(batch=batch, account_number=account_number, account=account)
+        rec = ReferencePaymentRecord(batch=batch, account_number=account_number, account=account, created=created)
         rec.record_date = camt054_parse_date(ntry, "BookgDt")
         rec.record_type = cdtdbtind = ntry.get("CdtDbtInd") or ""
         if cdtdbtind == "CRDT":
@@ -537,6 +538,7 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
                 rec_tx.payer_name = camt054_parse_debtor_name(txdtls, "RltdPties")
                 rec_tx.creditor_bank_bic = camt054_parse_rltdagts_cdtragt_fininstnid_bic(txdtls, "RltdAgts")
                 rec_tx.end_to_end_identifier = camt054_parse_refs_endtoendid(txdtls, "Refs")
+                rec_tx.created = created
                 rec_tx.clean()
                 rec_tx.save()
     return batch

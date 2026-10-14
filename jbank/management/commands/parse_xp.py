@@ -31,7 +31,7 @@ class Command(SafeCommand):
         if options["ws"]:
             qs = qs.filter(payout__connection_id=options["ws"])
         objs = list(qs)
-        print("Setting default path of {} status updates to {}".format(len(objs), strip_media_root(default_path)))
+        logger.info("Setting default path of %s status updates to %s", len(objs), strip_media_root(default_path))
         for obj in objs:
             assert isinstance(obj, PayoutStatus)
             full_path = os.path.join(default_path, obj.file_name)
@@ -46,29 +46,29 @@ class Command(SafeCommand):
             if not options["test"]:
                 PayoutStatus.objects.filter(id=obj.id).update(file_path=file_path)
                 admin_log([obj], 'File path set as "{}" from terminal (parse_xp)'.format(full_path))
-        print("Done")
+        logger.info("Done")
 
     def do(self, *args, **options):
         if options["set_default_paths"]:
             self._set_default_paths(options)
             return
 
+        verbose = options["verbose"]
         files = list_dir_files(options["path"], "." + options["suffix"])
         for f in files:
             if PayoutStatus.objects.is_file_processed(f):
                 if not options["force"]:
-                    if options["verbose"]:
-                        logger.info("Skipping processed payment status file %s", f)
-                    logger.info("Re-processing payment status file %s", f)
-                continue
-            if options["verbose"]:
-                print("Importing payment status file", f)
+                    if verbose:
+                        logger.info("Skipping existing pain.002 since file name %s", f)
+                    continue
+                logger.info("Re-processing pain.002 %s", f)
             try:
+                logger.info("Importing pain.002 %s", f)
                 with open(f, "rb") as fp:
                     pain002 = process_pain002_file_content(fp.read(), f)
-                    if options["verbose"]:
-                        print(json_dumps(pain002.data))
-            except Exception:
-                logger.error("Error while processing PayoutStatus id=%s: %s", f, traceback.format_exc())  # type: ignore
+                    if verbose:
+                        logger.debug("%s", json_dumps(pain002.data))
+            except Exception as exc:
+                logger.error("Error while processing PayoutStatus id=%s: %s\n%s", f, exc, traceback.format_exc())  # type: ignore
                 if not options["ignore_errors"]:
                     raise

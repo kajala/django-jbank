@@ -1,8 +1,9 @@
+from datetime import datetime
 from os.path import basename
 from typing import Union, Dict, List, Optional, Any
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
 from jbank.helpers import MESSAGE_STATEMENT_RECORD_FIELDS
@@ -140,18 +141,20 @@ def combine_svm_batch(header: Optional[Dict[str, Any]], records: List[Dict[str, 
     return data
 
 
-@transaction.atomic  # noqa
-def create_statement(statement_data: dict, name: str, file: StatementFile, **kw) -> Statement:  # noqa
+def create_statement(statement_data: dict, name: str, file: StatementFile, created: Optional[datetime] = None, **kw) -> Statement:  # noqa
     """Creates Statement from statement data parsed by parse_tiliote_statements()
 
     Args:
         statement_data: See parse_tiliote_statements
         name: File name of the account statement
         file: Source statement file
+        created: Optional datetime for creation
 
     Returns:
         Statement
     """
+    if created is None:
+        created = now()
     if "header" not in statement_data or not statement_data["header"]:
         raise ValidationError("Invalid header field in statement data {}: {}".format(name, statement_data.get("header")))
     header = statement_data["header"]
@@ -167,11 +170,10 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
 
     if Statement.objects.filter(name=name, account=account).first():
         raise ValidationError("Bank account {} statement {} of processed already".format(account_number, name))
-    stm = Statement(name=name, account=account, file=file)
+    stm = Statement(name=name, account=account, file=file, created=created)
     for k in ASSIGNABLE_STATEMENT_HEADER_FIELDS:
         if k in header:
             setattr(stm, k, header[k])
-    # pprint(statement_data['header'])
     for k, v in kw.items():
         setattr(stm, k, v)
     stm.full_clean()
@@ -189,7 +191,7 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
     for rec_data in statement_data["records"]:
         line_number = rec_data["line_number"]
         e_type = entry_types.get(rec_data["entry_type"])
-        rec = StatementRecord(statement=stm, account=account, type=e_type, line_number=line_number)
+        rec = StatementRecord(statement=stm, account=account, type=e_type, line_number=line_number, created=created)
         for k in ASSIGNABLE_STATEMENT_RECORD_FIELDS:
             if k in rec_data:
                 setattr(rec, k, rec_data[k])
@@ -205,37 +207,41 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, **kw)
             for k in ASSIGNABLE_STATEMENT_RECORD_SEPA_INFO_FIELDS:
                 if k in sepa_info_data:
                     setattr(sepa_info, k, sepa_info_data[k])
-            # pprint(rec_data['sepa'])
             sepa_info.full_clean()
             sepa_info.save()
 
     return stm
 
 
-@transaction.atomic
-def create_reference_payment_batch(batch_data: dict, name: str, file: ReferencePaymentBatchFile, **kw) -> ReferencePaymentBatch:
-    """Creates ReferencePaymentBatch from data parsed by parse_svm_batches()
+def create_reference_payment_batch(
+    batch_data: dict, name: str, file: ReferencePaymentBatchFile, created: Optional[datetime] = None, **kwargs  # pylint: disable=too-many-locals
+) -> ReferencePaymentBatch:
+    """
+    Creates ReferencePaymentBatch from data parsed by parse_svm_batches()
 
     Args:
         batch_data: See parse_svm_batches
-        name: File name of the batch file
+        name: File name of the batch
+        file: ReferencePaymentBatchFile
+        created: Optional created time for the records
 
     Returns:
         ReferencePaymentBatch
     """
-    if ReferencePaymentBatch.objects.exclude(file=file).filter(name=name).first():
+    if ReferencePaymentBatch.objects.exclude(file=file).filter(name=name).exists():
         raise ValidationError("Reference payment batch file {} already exists".format(name))
 
     if "header" not in batch_data or not batch_data["header"]:
         raise ValidationError("Invalid header field in reference payment batch data {}: {}".format(name, batch_data.get("header")))
     header = batch_data["header"]
 
-    batch = ReferencePaymentBatch(name=name, file=file)
+    if created is None:
+        created = now()
+    batch = ReferencePaymentBatch(name=name, file=file, created=created)
     for k in ASSIGNABLE_REFERENCE_PAYMENT_BATCH_HEADER_FIELDS:
         if k in header:
             setattr(batch, k, header[k])
-    # pprint(statement_data['header'])
-    for k, v in kw.items():
+    for k, v in kwargs.items():
         setattr(batch, k, v)
     batch.full_clean()
     batch.save()
@@ -252,11 +258,10 @@ def create_reference_payment_batch(batch_data: dict, name: str, file: ReferenceP
         account = accounts[0]
         assert isinstance(account, Account)
 
-        rec = ReferencePaymentRecord(batch=batch, account=account, type=e_type, line_number=line_number)
+        rec = ReferencePaymentRecord(batch=batch, account=account, type=e_type, line_number=line_number, created=created)
         for k in ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS:
             if k in rec_data:
                 setattr(rec, k, rec_data[k])
-        # pprint(rec_data)
         rec.full_clean()
         rec.save()
 

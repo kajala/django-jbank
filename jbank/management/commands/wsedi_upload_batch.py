@@ -37,7 +37,7 @@ class Command(SafeCommand):
         test = options["test"]
 
         for full_path in list_files(options["dir"], suffix):
-            payout_list: List[Payout] = []
+            payout_list: List[Payout] = []  # type: ignore
             response_code = ""
             response_text = ""
             base_name = os.path.basename(full_path)
@@ -54,7 +54,7 @@ class Command(SafeCommand):
 
                 # ensure we have payments waiting associated with the file
                 payout_qs = Payout.objects.filter(state=PAYOUT_WAITING_BATCH_UPLOAD, full_path=full_path)
-                payout_list: List[Payout] = list(payout_qs.order_by("id").distinct())
+                payout_list: List[Payout] = list(payout_qs.order_by("id").distinct())  # type: ignore
                 if not payout_list and not options["force"]:
                     logger.warning("Skipping file %s because it is not used by any Payout objects, use --force to upload it anyway", full_path)
                     continue

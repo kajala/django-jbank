@@ -69,7 +69,7 @@ class Command(SafeCommand):
                 return
             payouts = payouts.filter(connection=ws)
 
-        pain001_template: Optional[Template] = None
+        pain001_template: Optional[Template] = None  # type: ignore
         if kwargs["template_file"]:
             with open(kwargs["template_file"], "rt", encoding="UTF-8") as fp:
                 pain001_template = Template(fp.read())

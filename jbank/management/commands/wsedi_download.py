@@ -86,15 +86,7 @@ class Command(SafeCommand):
                     file_basename = file_reference + "." + file_type
                     file_path = os.path.join(path, file_basename)
                     if options["list_only"]:
-                        print(
-                            "{file_reference} ({file_type}/{status}): {user_filename} ({timestamp})".format(
-                                file_reference=file_reference,
-                                file_type=file_type,
-                                status=fd.get("Status"),
-                                user_filename=fd.get("UserFilename"),
-                                timestamp=fd.get("FileTimestamp"),
-                            )
-                        )
+                        logger.info("%s (%s/%s): %s (%s)", file_reference, file_type, fd.get("Status"), fd.get("UserFilename"), fd.get("FileTimestamp"))
                         continue
                     if options["overwrite"] or not os.path.isfile(file_path):
                         command = "DownloadFile"
@@ -122,14 +114,15 @@ class Command(SafeCommand):
                         if verbose:
                             logger.info("Skipping old file %s", file_path)
             else:
-                print("Empty file list downloaded")
+                if verbose:
+                    logger.debug("Empty file list downloaded")
         elif command == "DownloadFile":
             bcontent = base64.b64decode(data["Content"])
             file_path = os.path.join(path, file_reference)
             if options["overwrite"] or not os.path.isfile(file_path):
                 with open(file_path, "wb") as fp:
                     fp.write(bcontent)
-                logger.info("Wrote file {}".format(file_path))
+                logger.info("%s written", file_path)
             else:
                 if options["verbose"]:
                     logger.info("Skipping old file %s", file_path)
