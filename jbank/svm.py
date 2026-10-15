@@ -265,6 +265,7 @@ def create_reference_payment_batch(  # pylint: disable=too-many-locals
         rec.full_clean()
         rec.save()
 
+    batch.update_total_amount()
     return batch
 
 

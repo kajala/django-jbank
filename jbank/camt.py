@@ -541,4 +541,5 @@ def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
                 rec_tx.created = created
                 rec_tx.clean()
                 rec_tx.save()
+    batch.update_total_amount()
     return batch

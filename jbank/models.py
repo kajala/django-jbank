@@ -393,23 +393,16 @@ class ReferencePaymentBatch(AccountEntrySourceFile):
     institution_identifier = SafeCharField(_("institution"), max_length=2, blank=True, default="")
     service_identifier = SafeCharField(_("service"), max_length=9, blank=True, default="")
     currency_identifier = SafeCharField(_("currency"), max_length=3, blank=True, default="EUR")
-    cached_total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
+    total_amount = models.DecimalField(_("total amount"), max_digits=10, decimal_places=2, null=True, default=None, blank=True)
 
     class Meta:
         verbose_name = _("reference payment batch")
         verbose_name_plural = _("reference payment batches")
 
-    def get_total_amount(self, force: bool = False) -> Decimal:
-        if self.cached_total_amount is None or force:
-            self.cached_total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch=self))
-            self.save(update_fields=["cached_total_amount"])
-        return self.cached_total_amount
-
-    @property
-    def total_amount(self) -> Decimal:
-        return self.get_total_amount()
-
-    total_amount.fget.short_description = _("total amount")  # type: ignore
+    def update_total_amount(self, commit: bool = True):
+        self.total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch=self))
+        if commit:
+            self.save(update_fields=["total_amount"])
 
 
 class ReferencePaymentRecord(AccountEntry):
@@ -525,13 +518,14 @@ class ReferencePaymentBatchFile(models.Model):
     def __str__(self):
         return os.path.basename(str(self.file.name)) if self.file else ""
 
-    def get_total_amount(self) -> Decimal:
-        logger.warning("ReferencePaymentBatchFile.get_total_amount is deprecated, use total_amount instead")
-        return self.total_amount or Decimal("0.00")
+    def update_total_amount(self, commit: bool = True):
+        self.total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch=self))
+        if commit:
+            self.save(update_fields=["total_amount"])
 
     def mark_processed(self):
         self.processed = now()
-        self.total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch__file=self))
+        self.update_total_amount(commit=False)
         self.save(update_fields=["total_amount", "processed"])
 
 
