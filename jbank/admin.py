@@ -616,6 +616,7 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "instructed_currency",
         "creditor_bank_bic",
         "end_to_end_identifier",
+        "processed",
     ]
     readonly_fields = (
         "id",
@@ -656,12 +657,14 @@ class ReferencePaymentRecordAdmin(BankAdminBase):
         "instructed_currency",
         "creditor_bank_bic",
         "end_to_end_identifier",
+        "processed",
     )
     list_filter = (
         "batch__file__tag",
         AccountNameFilter,
         AccountEntryMatchedFilter,
         "correction_identifier",
+        "processed",
     )
     search_fields = (
         "=archive_identifier",
@@ -975,7 +978,10 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
         "total",
     )
 
-    list_filter = ("tag",)
+    list_filter = (
+        "tag",
+        "processed",
+    )
 
     search_fields = ("file__contains",)
 

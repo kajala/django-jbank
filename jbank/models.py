@@ -520,7 +520,7 @@ class ReferencePaymentBatchFile(models.Model):
         return os.path.basename(str(self.file.name)) if self.file else ""
 
     def update_total_amount(self, commit: bool = True):
-        self.total_amount = sum_queryset(ReferencePaymentRecord.objects.filter(batch__file=self))
+        self.total_amount = sum_queryset(ReferencePaymentBatch.objects.filter(file=self), "total_amount")
         if commit:
             self.save(update_fields=["total_amount"])
 
