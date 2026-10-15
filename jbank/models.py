@@ -429,6 +429,7 @@ class ReferencePaymentRecord(AccountEntry):
     instructed_currency = SafeCharField(_("instructed currency"), blank=True, default="", max_length=3)
     creditor_bank_bic = SafeCharField(_("creditor bank BIC"), max_length=16, blank=True, default="")
     end_to_end_identifier = SafeCharField(_("end to end identifier"), max_length=128, blank=True, default="")
+    processed = models.DateTimeField(_("processed"), default=None, null=True, blank=True, db_index=True, editable=False)
 
     class Meta:
         verbose_name = _("reference payment records")
