@@ -1,11 +1,19 @@
+import logging
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Optional
+
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import QuerySet, Sum, Q, F
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
-from jbank.models import AccountBalance, CurrencyExchange
+from jacc.models import EntryType
+
+from jbank.models import AccountBalance, CurrencyExchange, ReferencePaymentBatch, ReferencePaymentBatchFile, ReferencePaymentRecord
+from jbank.svm import ASSIGNABLE_REFERENCE_PAYMENT_BATCH_HEADER_FIELDS, ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS, get_account_by_account_number
+
+logger = logging.getLogger(__name__)  # type: ignore
 
 
 def create_account_balance(  # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -116,3 +124,50 @@ def filter_settlements_for_bank_reconciliation(queryset: QuerySet) -> QuerySet:
     queryset = queryset.exclude(marked_reconciled=True)  # ignore entries marked as reconciled
     queryset = queryset.annotate(child_set_amount=Sum("child_set__amount"))  # sum amount of children
     return queryset.filter(Q(child_set=None) | Q(child_set_amount__lt=F("amount")))  # return those which don't have children or children amount not enough
+
+
+def find_reference_payment_batch_by_svm_batch_data(file: ReferencePaymentBatchFile, batch_data: dict) -> Optional[ReferencePaymentBatch]:
+    header = batch_data["header"]
+    params = {}
+    for k in ASSIGNABLE_REFERENCE_PAYMENT_BATCH_HEADER_FIELDS:
+        params[k] = header[k]
+    return ReferencePaymentBatch.objects.filter(file=file, **params).first()
+
+
+def create_reference_payment_batch_by_svm_batch_data(file: ReferencePaymentBatchFile, batch_data: dict) -> ReferencePaymentBatch:
+    header = batch_data["header"]
+    params = {}
+    for k in ASSIGNABLE_REFERENCE_PAYMENT_BATCH_HEADER_FIELDS:
+        params[k] = header[k]
+    batch = ReferencePaymentBatch(file=file, **params)
+    batch.full_clean()
+    batch.save()
+    logger.info("ReferencePaymentBatch %s created to ReferencePaymentBatchFile %s", batch, file)
+    return batch
+
+
+def find_reference_payment_record_by_svm_record_data(file: ReferencePaymentBatchFile, rec_data: dict) -> Optional[ReferencePaymentRecord]:
+    params = {}
+    for k in ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS:
+        params[k] = rec_data[k]
+    recs = list(ReferencePaymentRecord.objects.filter(batch__file=file, **params).order_by("id").distinct())
+    if len(recs) == 0:
+        return None
+    if len(recs) > 1:
+        logger.error("Multiple payment records match %s", rec_data)
+        raise ValueError("Multiple payment records match")
+    return recs[0]
+
+
+def create_reference_payment_record_by_svm_record_data(batch: ReferencePaymentBatch, rec_data: dict) -> ReferencePaymentRecord:
+    params = {}
+    for k in ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS:
+        params[k] = rec_data[k]
+    account = get_account_by_account_number(rec_data["account_number"])
+    e_type = EntryType.objects.get(code=settings.E_BANK_REFERENCE_PAYMENT)
+    line_number = rec_data["line_number"]
+    rec = ReferencePaymentRecord(batch=batch, type=e_type, line_number=line_number, account=account, **params)
+    rec.full_clean()
+    rec.save()
+    logger.info("ReferencePaymentRecord %s created to ReferencePaymentBatch %s", batch, batch)
+    return rec

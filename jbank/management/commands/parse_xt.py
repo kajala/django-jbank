@@ -1,6 +1,8 @@
 import logging
 import os
 from pprint import pformat
+from time import perf_counter
+
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandParser
 from django.utils.timezone import now
@@ -83,7 +85,7 @@ class Command(SafeCommand):
                             rec.save(update_fields=["recipient_account_number"])
                             logger.info("%s recipient_account_number %s", rec, rec.recipient_account_number)
 
-    def do(self, *args, **options):  # pylint: disable=too-many-branches
+    def do(self, *args, **options):  # pylint: disable=too-many-branches,too-many-locals
         if options["parse_creditor_account_data"]:
             self.parse_creditor_account_data()
             return
@@ -140,7 +142,9 @@ class Command(SafeCommand):
                     if account_number:
                         get_or_create_bank_account(account_number, currency)
 
-                camt053_create_statement(data, name=plain_filename, file=file, created=time_now)  # pytype: disable=not-callable
+                timing_start = perf_counter()
+                stm = camt053_create_statement(data, name=plain_filename, file=file, created=time_now)  # pytype: disable=not-callable
+                logger.info("Statement %s created in %s", stm, perf_counter() - timing_start)
 
             logger.info("Marking camt.053 %s processed", file)
             file.mark_processed()

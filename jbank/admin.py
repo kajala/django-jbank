@@ -1023,8 +1023,9 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
     entries.short_description = _("account entries")  # type: ignore
 
     def construct_change_message(self, request, form, formsets, add=False):
+        instance = form.instance
+        assert isinstance(instance, ReferencePaymentBatchFile)
         if add:
-            instance = form.instance
             assert isinstance(instance, ReferencePaymentBatchFile)
             if instance.file:
                 full_path = instance.full_path
@@ -1044,6 +1045,11 @@ class ReferencePaymentBatchFileAdmin(BankAdminBase):
                     logger.error("%s: %s", plain_filename, msg)
                     add_message(request, ERROR, msg)
                     instance.delete()
+
+        for batch in instance.referencepaymentbatch_set.distinct():
+            assert isinstance(batch, ReferencePaymentBatch)
+            batch.update_total_amount()
+        instance.update_total_amount()
 
         return super().construct_change_message(request, form, formsets, add)
 

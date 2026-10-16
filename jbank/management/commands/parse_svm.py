@@ -1,9 +1,10 @@
 import logging
 import os
 from pprint import pformat
+from time import perf_counter
+
 from django.core.management.base import CommandParser
 from django.utils.timezone import now
-
 from jbank.helpers import get_or_create_bank_account, save_or_store_media
 from jbank.files import list_dir_files
 from jbank.models import ReferencePaymentBatch, ReferencePaymentBatchFile
@@ -26,7 +27,7 @@ class Command(SafeCommand):
         parser.add_argument("--resolve-original-filenames", action="store_true")
         parser.add_argument("--tag", type=str, default="")
 
-    def do(self, *args, **options):  # pylint: disable=too-many-branches
+    def do(self, *args, **options):  # pylint: disable=too-many-branches,too-many-locals
         files = list_dir_files(options["path"])
         verbose = options["verbose"]
         for filename in files:
@@ -80,7 +81,9 @@ class Command(SafeCommand):
                         if account_number:
                             get_or_create_bank_account(account_number)
 
-                create_reference_payment_batch(data, name=plain_filename, file=file, created=time_now)
+                timing_start = perf_counter()
+                batch = create_reference_payment_batch(data, name=plain_filename, file=file, created=time_now)
+                logger.info("ReferencePaymentBatch %s created in %s", batch, perf_counter() - timing_start)
 
             logger.info("Marking SVM %s processed", plain_filename)
             file.mark_processed()

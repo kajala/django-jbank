@@ -1,6 +1,8 @@
 import logging
 import os
 from pprint import pformat
+from time import perf_counter
+
 from django.core.management.base import CommandParser
 from jbank.camt import CAMT054_FILE_SUFFIXES, camt054_parse_file, camt054_create_reference_payment_batch, camt054_parse_ntfctn_acct
 from jbank.files import list_dir_files
@@ -66,7 +68,9 @@ class Command(SafeCommand):
                     if account_number:
                         get_or_create_bank_account(account_number, currency)
 
-                camt054_create_reference_payment_batch(ntfctn, name=plain_filename, file=file)
+                timing_start = perf_counter()
+                batch = camt054_create_reference_payment_batch(ntfctn, name=plain_filename, file=file)
+                logger.info("ReferencePaymentBatch %s created in %s", batch, perf_counter() - timing_start)
 
             logger.info("Marking camt.054 %s processed", file)
             file.mark_processed()

@@ -1,6 +1,8 @@
 import logging
 import os
 from pprint import pformat
+from time import perf_counter
+
 from django.core.management.base import CommandParser
 from django.utils.timezone import now
 from jbank.helpers import get_or_create_bank_account, save_or_store_media
@@ -79,4 +81,6 @@ class Command(SafeCommand):
                     if account_number:
                         get_or_create_bank_account(account_number)
 
-                create_statement(data, name=plain_filename, file=file, created=time_now)  # pytype: disable=not-callable
+                timing_start = perf_counter()
+                stm = create_statement(data, name=plain_filename, file=file, created=time_now)  # pytype: disable=not-callable
+                logger.info("Statement %s created in %s", stm, perf_counter() - timing_start)

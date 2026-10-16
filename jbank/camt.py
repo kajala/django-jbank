@@ -4,6 +4,7 @@ from decimal import Decimal
 from typing import Tuple, Any, Optional, Dict, List
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils.dateparse import parse_date
 from django.utils.timezone import now
 from django.utils.translation import gettext as _
@@ -177,6 +178,7 @@ def camt053_get_unified_str(qs, k: str) -> str:
     return camt053_get_unified_val(qs, k, "")
 
 
+@transaction.atomic
 def camt053_create_statement(statement_data: dict, name: str, file: StatementFile, created: Optional[datetime] = None, **kw) -> Statement:  # noqa
     """Creates camt.053 Statement from statement data parsed by camt053_parse_statement_from_file()
 
@@ -497,6 +499,7 @@ def camt054_parse_refs_endtoendid(data: dict, key: str) -> str:
     return refs.get("EndToEndId") or ""
 
 
+@transaction.atomic
 def camt054_create_reference_payment_batch(  # pylint: disable=too-many-locals
     ntfctn: dict, name: str, file: ReferencePaymentBatchFile, created: Optional[datetime] = None
 ) -> ReferencePaymentBatch:

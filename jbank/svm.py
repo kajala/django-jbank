@@ -3,6 +3,7 @@ from os.path import basename
 from typing import Union, Dict, List, Optional, Any
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from jacc.models import Account, EntryType
@@ -141,6 +142,7 @@ def combine_svm_batch(header: Optional[Dict[str, Any]], records: List[Dict[str, 
     return data
 
 
+@transaction.atomic
 def create_statement(statement_data: dict, name: str, file: StatementFile, created: Optional[datetime] = None, **kw) -> Statement:  # noqa
     """Creates Statement from statement data parsed by parse_tiliote_statements()
 
@@ -213,6 +215,18 @@ def create_statement(statement_data: dict, name: str, file: StatementFile, creat
     return stm
 
 
+def get_account_by_account_number(account_number: str, filename: str = "") -> Account:
+    if not account_number:
+        raise ValidationError(filename + ": " + _("account.not.found").format(account_number=""))
+    accounts = list(Account.objects.filter(name=account_number).order_by("id").distinct())
+    if len(accounts) != 1:
+        raise ValidationError(filename + ": " + _("account.not.found").format(account_number=account_number))
+    account = accounts[0]
+    assert isinstance(account, Account)
+    return account
+
+
+@transaction.atomic
 def create_reference_payment_batch(  # pylint: disable=too-many-locals
     batch_data: dict, name: str, file: ReferencePaymentBatchFile, created: Optional[datetime] = None, **kwargs  # pylint: disable=too-many-locals
 ) -> ReferencePaymentBatch:
@@ -249,15 +263,7 @@ def create_reference_payment_batch(  # pylint: disable=too-many-locals
 
     for rec_data in batch_data["records"]:
         line_number = rec_data["line_number"]
-        account_number = rec_data["account_number"]
-        if not account_number:
-            raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=""))
-        accounts = list(Account.objects.filter(name=account_number))
-        if len(accounts) != 1:
-            raise ValidationError("{name}: ".format(name=name) + _("account.not.found").format(account_number=account_number))
-        account = accounts[0]
-        assert isinstance(account, Account)
-
+        account = get_account_by_account_number(rec_data["account_number"], filename=name)
         rec = ReferencePaymentRecord(batch=batch, account=account, type=e_type, line_number=line_number, created=created)
         for k in ASSIGNABLE_REFERENCE_PAYMENT_RECORD_FIELDS:
             if k in rec_data:
